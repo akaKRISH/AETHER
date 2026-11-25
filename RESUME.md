@@ -82,6 +82,29 @@ Posterior weighting tied the fixed prior on utility in all 480 cases despite 55 
 
 Twenty-three targeted tests, strict engine Clippy, formatting, the release example builds and frozen artifact checks passed. The archived pilot estimate and held-out protocol remain in place. [Execution queue](EXECUTION_QUEUE.md)
 
+## DAE-05B reliability and information bonus ablation
+
+The archived DAE-05 posterior and fixed-prior arms changed 55 of 480 action traces. In 54 of those cases they ran the same actions in a different order. All 55 preserved the verified and false-verified counts. The original stage rules allow at most two receipts before the final challenge. This explains why ranking changes often had no effect on the utility reached within the cap.
+
+Build `cargo build --locked --release -p aether-engine --example ecar_reliability` and run `target/release/examples/ecar_reliability --ablation`. The predefined grid uses the five DAE-05 development families, seeds 301–306, caps 24 and 84, and receipt noise of 10% and 30%. Exogenous histories contain 0, 2 or 8 source groups per claim. The 8-group condition is also repeated with four exact copies per group. Each consistent group contributes one vote and mixed signs within a group abstain. History acquisition is outside the matched scheduling budget and supplies no verdict evidence. Scheduled observations, shared random draws and verdict rules match across arms. A separate usable receipt is drawn after scheduling for each claim to check calibration.
+
+At Beta(1,1), the grid crosses direct-only, full downstream mass, fixed half-weight and posterior weight with information multipliers 0, 1 and 2. Beta(4,4) and Beta(12,12) compare fixed and posterior weights with the bonus off and on. Both arms can update the information term with receipts when it is enabled. With the bonus off, the fixed versus posterior contrast isolates learning in the downstream discount. Rankings compare affordable action order on shared histories up to the first divergent action. Reported utility is true verified weight divided by total claim weight. Calibration uses terminal posterior probabilities for next-receipt support, Brier score and five fixed-width calibration bins. The fixed forecast of 0.5 has Brier 0.25.
+
+| Controlled contrast | Utility change (points) | Wins / ties / losses | Shared-state ranking changes |
+|---|---:|---:|---:|
+| Posterior vs fixed prior at Beta(1,1), bonus off | +0.0004 | 3 / 354 / 3 | 196 |
+| Posterior vs fixed prior at Beta(1,1), bonus 1 | +0.0123 | 2 / 358 / 0 | 152 |
+| Full mass vs direct-only at Beta(1,1), bonus off | +0.5709 | 54 / 306 / 0 | 288 |
+| Fixed half-weight vs full mass at Beta(1,1), bonus off | −0.0185 | 0 / 357 / 3 | 144 |
+| Posterior bonus 1 vs off at Beta(1,1) | +0.2226 | 11 / 349 / 0 | 269 |
+| Posterior bonus 2 vs off at Beta(1,1) | +0.7644 | 25 / 333 / 2 | 318 |
+| Posterior bonus 1 vs off at Beta(4,4) | −0.2773 | 1 / 354 / 5 | 223 |
+| Posterior bonus 1 vs off at Beta(12,12) | 0 | 0 / 360 / 0 | 76 |
+
+Each contrast pools 360 matched cases and excludes the duplicate histories. All 2,400 cloned-history pairs matched votes, action rankings, outcomes and probes. At the reference posterior setting, eight groups at 10% noise moved the initial mean 0.323 from 0.5 on average. Subsequent scheduling moved it 0.020 on average, versus 0.112 in the cold-start condition. Brier improved from 0.194 to 0.106. At 30% noise it improved from 0.253 to 0.228, while five-bin calibration error worsened from 0.064 to 0.097. Rich history at 30% noise used 40.27 ms per case versus 39.00 ms at cold start and retained three false verifications in both cases. Better forecasts did not translate into more verified utility. At Beta(1,1) and bonus 1 the posterior scheduler averaged 3.48 µs per call versus 3.58 µs for the fixed prior. These are single host measurements excluding rank logging and simulated task execution.
+
+The [compact sensitivity results](research/results/dae-ecar-reliability-ablation.json) retain all settings, paired contrasts, calibration, false verification, resource use and scheduler timings. Two release processes reproduced all 9,600 outcomes. Their canonical outcomes SHA-256 is `cd1bcfb1513abc9d0a201324f7403d66da400a7fc5041b0017af05da8101441a` using UTF-8 JSON with sorted object keys and separators `,` and `:`. The unflagged run reproduced all 2,880 DAE-05 rows. Twenty-five targeted tests, strict Clippy, formatting and the release build passed. The experiment uses synthetic receipts and exact copies. A future development grid should include partial dependence and independently selected task families before choosing an information bonus. [Execution queue](EXECUTION_QUEUE.md)
+
 ## Latest verification
 
 Baseline passed 33 Rust and three frontend tests. The final Windows run passed 50 Rust and three frontend tests, format, strict Clippy, release build, frontend lint/type/build, browser smoke, advisory checks, and evidence validation. The release re-exported three prior reports byte for byte and completed a new objective-derived campaign with advice frozen under protocol v3. The hardware CLI observed the physical NVIDIA device. Crossref, OpenAlex and arXiv public probes returned 200. The recovery drill reconciled one interrupted lease. [Tests](docs/testing/TEST_RESULTS.md) · [Measurements](docs/research/BENCHMARK_RESULTS.md)

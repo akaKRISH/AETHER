@@ -10,6 +10,10 @@ use aether_engine::{
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
+#[path = "ecar_reliability/ablation.rs"]
+mod ablation;
+use ablation::{AblationTrace, Condition};
+
 const INPUT: &[u8] = include_bytes!("../../../benchmarks/dae-ecar-reliability-development.json");
 
 #[derive(Deserialize)]
@@ -114,6 +118,8 @@ struct Outcome<'a> {
     verification_wall_ms: u64,
     evidence_receipts: usize,
     blocked_descendants: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    ablation: Option<AblationTrace>,
 }
 
 // Same encoding as the original v2 development runner for matched baseline replay.
@@ -134,6 +140,7 @@ fn run<'a>(
     seed: u32,
     cap: u64,
     mode: Mode,
+    condition: Option<Condition>,
     timing: &mut Timing,
 ) -> Result<Outcome<'a>, Box<dyn Error>> {
     let mut evidence: Vec<_> = scenario
@@ -154,6 +161,9 @@ fn run<'a>(
                 && draw(seed, family, index as u8, 1) < scenario.truth[index],
         );
     }
+    let noise = condition.map_or(scenario.noise, |condition| condition.noise);
+    let experiment =
+        condition.map(|condition| condition.initialize(seed, family, &truth, &mut evidence));
     let mut budget = Budget::with_quarter_reserve(ResourceVec {
         wall_ms: cap,
         attempts: 48,
@@ -180,6 +190,7 @@ fn run<'a>(
         verification_wall_ms: 0,
         evidence_receipts: 0,
         blocked_descendants: 0,
+        ablation: experiment,
     };
     let prepare = Instant::now();
     let mut mass = scenario.weights.clone();
@@ -195,10 +206,13 @@ fn run<'a>(
     timing.scheduler_ns += prepare.elapsed().as_nanos();
     loop {
         let started = Instant::now();
-        let ranks = mode
-            .weighting()
-            .map(|weighting| priorities(&evidence, weighting))
-            .transpose()?;
+        let ranks = if let Some(condition) = condition {
+            Some(condition.priorities(&evidence)?)
+        } else {
+            mode.weighting()
+                .map(|weighting| priorities(&evidence, weighting))
+                .transpose()?
+        };
         let mut actions = Vec::new();
         for (index, state) in states.iter().enumerate() {
             let Some((kind, wall_ms, gain)) =
@@ -241,16 +255,18 @@ fn run<'a>(
                 action.eligible &= action.kind == ActionKind::Explore;
             }
         }
-        let decision = schedule_with_trace(
+        let trace = schedule_with_trace(
             &budget,
             &actions,
             ScoreWeights::default(),
             ScheduleContext::default(),
-        )?
-        .decision;
+        )?;
         timing.scheduler_calls += 1;
         timing.scheduler_ns += started.elapsed().as_nanos();
-        let Decision::Run { action_id, kind } = decision else {
+        if let Some(experiment) = &mut outcome.ablation {
+            experiment.record_order(&trace)?;
+        }
+        let Decision::Run { action_id, kind } = trace.decision else {
             if let Some(ranks) = ranks {
                 outcome.blocked_descendants = ranks
                     .iter()
@@ -289,7 +305,7 @@ fn run<'a>(
             outcome.failed_attempts += 1;
             continue;
         }
-        let receipt = truth[index] ^ (draw(seed, family, index as u8, stream + 1) < scenario.noise);
+        let receipt = truth[index] ^ (draw(seed, family, index as u8, stream + 1) < noise);
         outcome.evidence_receipts += 1;
         if receipt {
             evidence[index].support += 1;
@@ -307,6 +323,9 @@ fn run<'a>(
             _ => Status::Rejected,
         };
         evidence[index].rejected = states[index] == Status::Rejected;
+    }
+    if let Some(experiment) = &mut outcome.ablation {
+        experiment.finish(seed, family, &truth, &evidence);
     }
     for ((&state, &actual), &weight) in states.iter().zip(&truth).zip(&scenario.weights) {
         if state == Status::Verified {
@@ -337,8 +356,10 @@ fn config() -> Result<Config, Box<dyn Error>> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    if std::env::args_os().len() != 1 {
-        return Err("uses only the embedded development grid".into());
+    match std::env::args().skip(1).collect::<Vec<_>>().as_slice() {
+        [flag] if flag == "--ablation" => return ablation::run_grid(config()?),
+        [] => {}
+        _ => return Err("uses only the embedded development grid".into()),
     }
     let config = config()?;
     let mut timings: [Timing; ARMS.len()] = std::array::from_fn(|_| Timing::default());
@@ -354,6 +375,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         seed,
                         cap,
                         mode,
+                        None,
                         &mut timings[index],
                     )?);
                 }
@@ -382,6 +404,7 @@ mod tests {
             301,
             24,
             Mode::EvidenceWeighted,
+            None,
             &mut Timing::default(),
         )
         .unwrap();
@@ -399,6 +422,7 @@ mod tests {
             301,
             24,
             Mode::EvidenceWeighted,
+            None,
             &mut Timing::default(),
         )
         .unwrap();
@@ -417,6 +441,7 @@ mod tests {
                             301,
                             cap,
                             mode,
+                            None,
                             &mut Timing::default(),
                         )
                         .unwrap()

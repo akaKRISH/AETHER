@@ -14,8 +14,10 @@ pub struct ClaimEvidence {
     pub rejected: bool,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum DownstreamWeight {
+    DirectOnly,
     Full,
     PriorMean,
     PosteriorMean,
@@ -55,6 +57,19 @@ pub fn priorities(
     claims: &[ClaimEvidence],
     weighting: DownstreamWeight,
 ) -> Result<Vec<Priority>, &'static str> {
+    controlled_priorities(claims, weighting, 1, 1)
+}
+
+/// Sensitivity controls for the development policy. Prior strength is per Beta side.
+pub fn controlled_priorities(
+    claims: &[ClaimEvidence],
+    weighting: DownstreamWeight,
+    prior: u8,
+    information_multiplier: u8,
+) -> Result<Vec<Priority>, &'static str> {
+    if !(1..=12).contains(&prior) || information_multiplier > 2 {
+        return Err("prior or information multiplier outside development bounds");
+    }
     if !(1..=16).contains(&claims.len()) {
         return Err("expected 1–16 claim evidence records");
     }
@@ -76,37 +91,40 @@ pub fn priorities(
             mass[parent] += mass[index];
         }
     }
-    Ok(claims
+    claims
         .iter()
         .enumerate()
         .map(|(index, claim)| {
             if blocked[index] {
-                return Priority {
+                return Ok(Priority {
                     blocked: true,
                     importance: 0,
                     verification_information: 0,
-                };
+                });
             }
-            let a = 1 + u64::from(claim.support);
-            let b = 1 + u64::from(claim.contradiction);
+            let a = u64::from(prior) + u64::from(claim.support);
+            let b = u64::from(prior) + u64::from(claim.contradiction);
             let n = a + b;
             let direct = u64::from(claim.weight);
             let downstream = (mass[index] - direct) * UNIT;
             let weighted = match weighting {
+                DownstreamWeight::DirectOnly => 0,
                 DownstreamWeight::Full => downstream,
                 DownstreamWeight::PriorMean => downstream / 2,
                 DownstreamWeight::PosteriorMean => downstream * a / n,
             };
             // Var(E[theta | next usable receipt]) is the expected variance reduction.
             // Multiply by 36 so cold-start information has the same scale as claim mass.
-            let information = mass[index] * UNIT * 36 * a * b / (n * n * (n + 1) * (n + 1));
-            Priority {
+            let information = mass[index] * UNIT * 36 * u64::from(information_multiplier) * a * b
+                / (n * n * (n + 1) * (n + 1));
+            Ok(Priority {
                 blocked: false,
                 importance: (direct * UNIT + weighted) as u16,
-                verification_information: information as u16,
-            }
+                verification_information: u16::try_from(information)
+                    .map_err(|_| "information score exceeds bound")?,
+            })
         })
-        .collect())
+        .collect()
 }
 
 #[cfg(test)]
@@ -197,6 +215,28 @@ mod tests {
                 action_id: "a".into(),
                 kind: ActionKind::Replay
             }
+        );
+    }
+
+    #[test]
+    fn controls_change_only_the_intended_terms() {
+        let mut claims = [claim(2, None), claim(12, Some(0))];
+        claims[0].support = 8;
+        let score =
+            |weight, prior, bonus| controlled_priorities(&claims, weight, prior, bonus).unwrap()[0];
+        use DownstreamWeight::*;
+        assert_eq!(score(DirectOnly, 1, 1).importance, 2 * 32);
+        assert_eq!(score(PriorMean, 1, 1).importance, 8 * 32);
+        assert_eq!(score(Full, 1, 1).importance, 14 * 32);
+        assert!(score(PosteriorMean, 1, 1).importance > score(PosteriorMean, 12, 1).importance);
+        assert_eq!(score(PosteriorMean, 1, 0).verification_information, 0);
+        assert_eq!(
+            score(PosteriorMean, 1, 0).importance,
+            score(PosteriorMean, 1, 2).importance
+        );
+        assert!(
+            score(PriorMean, 1, 2).verification_information
+                > score(PriorMean, 1, 1).verification_information
         );
     }
 }
