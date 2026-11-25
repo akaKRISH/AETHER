@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "files": {
+    "includes": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx", "tests/**/*.mjs", "vite.config.ts"]
+  },
+  "linter": {
+    "rules": {
+      "preset": "recommended"
+    }
+  }
+}

@@ -67,4 +67,15 @@ These rows map the authorized A–N work to runnable evidence and outstanding sc
 | M · Developer experience | [Startup and recovery guide](../operations/LOCAL_WORKBENCH.md) covers local scripts, health, backups and pinned release builds | Executed Linux and hosted CI qualification |
 | N · Learning | [Codebase tour](../../CODEBASE_TOUR.md) and [rebuild curriculum](../learning/REBUILD_AETHER_FROM_SCRATCH.md) connect lessons to implemented source | Learner submissions and independent rebuild |
 
+## Prometheus evidence
+
+| Scope | Implementation evidence |
+|---|---|
+| Local correctness and admission | [Engineering audit](../engineering/PROMETHEUS_AUDIT.md) and [current tests](TEST_RESULTS.md) |
+| Reviewed task and negative results | [Frozen taskpack](../../taskpacks/example-max-subarray.json) and [release report](../../research/results/prometheus-max-subarray.json) |
+| Proposal boundary and normalized research sources | [Planner adapters](../operations/MODEL_PROVIDERS.md) and [literature adapters](../research/LITERATURE_ADAPTERS.md) |
+| Search, policy and performance evidence | [Development benchmarks](../research/BENCHMARK_RESULTS.md) and [simulated pilot](../research/PROMETHEUS_POLICY_PILOT.md) |
+| UI, recovery and reproducibility | [Browser smoke](../../tests/browser-smoke.cjs) and [security review](../security/SECURITY_REVIEW.md) |
+| Readiness and learning | [Remaining gates](../../NEXT_ACTIONS.md) and [Prometheus curriculum](../learning/IMPLEMENTATION_PROMETHEUS.md) |
+
 Sources: [PRD](../product/FUNCTIONAL_REQUIREMENTS.md), [v0.2 technical requirements](../archive/v0.2/AETHER/04_TRD_SRS.md), [threat model](../security/THREAT_MODEL.md), [M1 acceptance](../roadmap/MILESTONE_01_NATIVE_FIXTURE.md) and [test plan](TEST_PLAN.md).

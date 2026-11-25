@@ -2,7 +2,7 @@
 
 AETHER is the Autonomous Research and Engineering Laboratory. It is designed to help researchers run bounded computational experiments, trace every quantitative claim to evidence, and test whether allocating resources to verification improves results.
 
-**Status:** Implementation-first. The local Rust platform includes a native fixture CLI, evidence storage, ECAR and a loopback workbench. See [project status](PROJECT_STATUS.md) for verified scope and remaining work.
+**Status:** Prometheus implementation-first. The local Rust workbench runs reviewed sorting and maximum-subarray tasks, records replay and negative evidence, and offers bounded evolutionary search, optional provider adapters and actual NVIDIA driver telemetry. See [project status](PROJECT_STATUS.md) for verified scope and remaining work.
 
 ## Run locally
 

@@ -1,0 +1,55 @@
+{
+  "campaign": {
+    "caps": {
+      "attempts": 5,
+      "micro_usd": 0,
+      "tokens": 0,
+      "wall_ms": 12000
+    },
+    "evaluator_hash": "3cfe02c12bf6abff28b9eab478bac24accd3c3d1fe46fd0468c5d6998ce6e389",
+    "id": "prometheus-objective-01",
+    "objective": "Compare reviewed sorting candidates using the same generated inputs and reference evaluator.",
+    "policy_hash": "a5d303db49b5b2ee4b8c1537a0df74705990fb4cc25c52c0e67809a888ce9754",
+    "protocol_hash": "9814e10e3ed04fcfd1e68599fdf25c7187740f0c502ed8e752c399a6ea79f794",
+    "requires_replay": true,
+    "state": "draft",
+    "title": "Objective-guided sorting study"
+  },
+  "candidate_selection": "first eligible proposal from the deterministic provider",
+  "planning": {
+    "proposals": [
+      {
+        "algorithm": "standard",
+        "items": 128,
+        "rationale": "Evaluate the standard-library sort with the same independent reference.",
+        "seed": 19
+      },
+      {
+        "algorithm": "insertion",
+        "items": 128,
+        "rationale": "Measure how insertion shifts behave on bounded generated input.",
+        "seed": 19
+      },
+      {
+        "algorithm": "selection",
+        "items": 128,
+        "rationale": "Compare a simple fixed-pass selection algorithm on the same input.",
+        "seed": 19
+      }
+    ],
+    "provenance": {
+      "model_digest": null,
+      "protocol": "aether.mock/1",
+      "provider": "mock",
+      "reported_model": "deterministic-v1",
+      "requested_model": "deterministic-v1"
+    },
+    "request_sha256": "cc0f67142b646a471399e433456f738ca78657dcbab9fc3da89f1882e3755af6",
+    "schema": "aether.planning/1",
+    "tokens": {
+      "input_tokens": 0,
+      "output_tokens": 0
+    },
+    "wall_ms": 0
+  }
+}

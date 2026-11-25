@@ -63,16 +63,20 @@ export interface Snapshot {
   events: Row[]
 }
 
-export interface NewCampaign {
+interface CampaignInputs {
   id: string
   title: string
   objective: string
   seed: number
   items: number
-  algorithm: string
   attempts: number
   wall_ms: number
 }
+
+export type NewCampaign = CampaignInputs & (
+  { algorithm: string; optimization?: never } |
+  { algorithm?: never; optimization: { challenge_seed: number } }
+)
 
 export interface StudyReport {
   protocol: string
@@ -178,7 +182,7 @@ export async function post(token: string, path: string, data?: unknown) {
   await request(token, path, { method: 'POST', body: data === undefined ? undefined : JSON.stringify(data) })
 }
 
-export async function getRecord(token: string, path: 'runtime' | 'literature', signal: AbortSignal, query = ''): Promise<unknown> {
+export async function getRecord(token: string, path: 'runtime' | 'literature' | 'hardware', signal: AbortSignal, query = ''): Promise<unknown> {
   const search = path === 'literature' && query ? `?${new URLSearchParams({ query })}` : ''
   return json(token, `/${path}${search}`, { signal })
 }
@@ -188,6 +192,14 @@ export async function runStudy(token: string): Promise<StudyReport> {
   const report = isRow(result) && isRow(result.report) ? result.report : result
   if (!isRow(report) || !Array.isArray(report.campaigns)) throw new Error('Invalid benchmark report returned by the API.')
   return report as unknown as StudyReport
+}
+
+export async function runEvolution(token: string, seed: number, evaluations: number): Promise<Row> {
+  const result = await json(token, '/evolution', { method: 'POST', body: JSON.stringify({ seed, evaluations }) })
+  if (!isRow(result) || result.scope !== 'aether.knapsack-development/1' || !Array.isArray(result.arms)) {
+    throw new Error('Invalid evolution report returned by the API.')
+  }
+  return result
 }
 
 export async function proposeResearch(token: string, request: { objective: string; seed: number; items: number }) {

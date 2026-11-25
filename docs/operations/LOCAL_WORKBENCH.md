@@ -21,6 +21,18 @@ cargo run --locked --release --bin aether-lab -- report sorting-demo
 
 To choose your own bounded inputs, copy the [plan example](../../taskpacks/example-campaign.json), set a fresh ID, and run `aether-lab plan <plan.json>`. Use the returned digest with `aether-lab approve <id> <sha256>`, then run `aether-lab run <id>`. Keep the same build through plan and run because each campaign pins the executable.
 
+The [maximum-subarray plan](../../taskpacks/example-max-subarray.json) uses the same commands. It freezes the original input and a different input for the challenge. For an offline draft from a research objective, edit a copy of the [planning request](../../taskpacks/example-planning.json) and run the following with a fresh campaign ID.
+
+```powershell
+$lab = '.\target\release\aether-lab.exe'
+$draft = & $lab plan-objective objective-local .\taskpacks\example-planning.json | ConvertFrom-Json
+& $lab approve objective-local $draft.campaign.protocol_hash
+& $lab run objective-local
+& $lab report objective-local
+```
+
+Inspect the frozen draft and planning output before approving. The planner ranks reviewed sorting methods using the deterministic offline provider. Use `aether-lab propose-provider <request.json> <provider> <model>` for standalone proposals with explicit provenance. Hosted providers and outbound literature metadata each have separate opt-in. [Model configuration](MODEL_PROVIDERS.md) · [Literature metadata](../research/LITERATURE_ADAPTERS.md)
+
 ## Interface
 
 Set a process-local token and start the workbench. The token is needed to enter the interface. Use a private terminal and keep the token out of shared logs.
@@ -38,3 +50,5 @@ Open `http://127.0.0.1:8080`. The startup script installs pinned web dependencie
 Use `aether-lab recover <id>` after an interrupted supervisor has exited and its leases have expired. Recovery closes the campaign as failed and preserves its evidence. Use a fresh ID to run another campaign.
 
 `aether-lab benchmark` runs the matched A–E simulation. `aether-lab benchmark-native` records measured process-inclusive timings for the reviewed sorting variants. Both are development checks. [Benchmark interpretation](../research/BENCHMARK_RESULTS.md)
+
+Run `aether-lab evolve 19 48` to compare four search policies on one generated knapsack problem under equal evaluation-slot caps. The same comparison is available in **Evolution explorer**, including candidate lineage and rejected candidates. Run `aether-lab hardware` or open **Runtime** for a bounded observation from the installed NVIDIA driver tool. [Search protocol](../research/KNAPSACK_DEVELOPMENT_STUDY.md)

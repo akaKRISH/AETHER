@@ -16,6 +16,7 @@ aether-store.workspace = true
 axum.workspace = true
 futures-util.workspace = true
 rusqlite.workspace = true
+roxmltree.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true

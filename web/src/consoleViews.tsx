@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { getRecord, getReport, isRow, message, proposeResearch, rows, runStudy, type Row, type Snapshot, type StudyReport } from './api'
-import { Empty, Fields, Panel, RecordTable, errorText, externalLink, readableRecord, text } from './components'
+import { getRecord, getReport, isRow, message, proposeResearch, rows, runEvolution, runStudy, type Row, type Snapshot, type StudyReport } from './api'
+import { Empty, Fields, Panel, RecordTable, errorText, externalLink, keyedRows, readableRecord, text } from './components'
 
 export function Hypotheses({ token, snapshot }: { token: string; snapshot: Snapshot }) {
   const [proposals, setProposals] = useState<Row[]>([])
@@ -52,6 +52,7 @@ export function Catalog({ token, kind }: { token: string; kind: 'runtime' | 'lit
   const [error, setError] = useState('')
   const [request, setRequest] = useState(0)
   const [query, setQuery] = useState('')
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Refresh repeats the lookup even when the query is unchanged.
   useEffect(() => {
     const controller = new AbortController()
     getRecord(token, kind, controller.signal, query).then(
@@ -87,16 +88,50 @@ export function Catalog({ token, kind }: { token: string; kind: 'runtime' | 'lit
         ? <Fields data={readableRecord(data)} />
         : entries.length
           ? <div className="bibliography">
-            {entries.map((entry, index) => {
+            {keyedRows(entries).map(({ row: entry, key }) => {
               const url = externalLink(entry.url ?? entry.link ?? entry.source_url ?? entry.doi)
               const title = text(entry.title ?? entry.name ?? entry.id ?? url)
-              return <article className="source-entry" key={`${title}-${index}`}>
+              return <article className="source-entry" key={key}>
                 <h3>{url ? <a href={url} target="_blank" rel="noopener noreferrer">{title} ↗</a> : title}</h3>
                 <Fields data={entry} omit={['title', 'name', 'url', 'link', 'source_url']} />
               </article>
             })}
           </div>
           : <Empty title="The service returned no literature records." />}
+  </Panel>
+}
+
+export function GpuTelemetry({ token }: { token: string }) {
+  const [request, setRequest] = useState(0)
+  const [data, setData] = useState<Row>()
+  const [error, setError] = useState('')
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: The button requests a fresh driver observation.
+  useEffect(() => {
+    const controller = new AbortController()
+    getRecord(token, 'hardware', controller.signal).then(
+      (value) => {
+        if (!controller.signal.aborted) setData(readableRecord(value))
+      },
+      (reason) => {
+        if (!controller.signal.aborted) setError(message(reason))
+      },
+    )
+    return () => controller.abort()
+  }, [token, request])
+
+  return <Panel title="NVIDIA driver telemetry" aside={
+    <button type="button" className="button button--quiet" onClick={() => {
+      setData(undefined)
+      setError('')
+      setRequest((count) => count + 1)
+    }}>Refresh GPU reading</button>
+  }>
+    {error ? errorText(error) : data === undefined
+      ? <p className="loading" role="status">Reading driver telemetry…</p>
+      : <RecordTable label="Observed devices" data={rows(data.devices)}
+          columns={['name', 'driver', 'memory_total_mib', 'memory_free_mib', 'utilization_percent']}
+          empty="NVIDIA driver telemetry is unavailable." />}
   </Panel>
 }
 
@@ -174,6 +209,56 @@ export function Benchmarks({ token }: { token: string }) {
   </>
 }
 
+export function Evolution({ token }: { token: string }) {
+  const [report, setReport] = useState<Row>()
+  const [arm, setArm] = useState('random')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+  const arms = rows(report?.arms)
+  const selected = arms.find((entry) => entry.mode === arm)
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (busy) return
+    const form = new FormData(event.currentTarget)
+    setError('')
+    setBusy(true)
+    try {
+      setReport(await runEvolution(token, Number(form.get('seed')), Number(form.get('evaluations'))))
+    } catch (reason) {
+      setError(message(reason))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return <>
+    <Panel title="Knapsack candidate search">
+      <p className="panel-note">Development comparison on generated items. The oracle checks the optimum and reports the difference from each method’s best value.</p>
+      <form className="toolbar" onSubmit={submit}>
+        <label>Fixture seed<input name="seed" type="number" min={0} max={4_294_967_295} step={1} defaultValue={19} required /></label>
+        <label>Evaluation slots per policy<input name="evaluations" type="number" min={8} max={96} step={1} defaultValue={48} required /></label>
+        <button className="button button--primary" type="submit" disabled={busy}>{busy ? 'Running…' : 'Compare search policies'}</button>
+      </form>
+      {errorText(error)}
+    </Panel>
+    {report && <>
+      <Panel title="Search results">
+        <Fields data={{ seed: report.seed, capacity: report.capacity, oracle_optimal_value: report.oracle_optimal_value }} />
+        <RecordTable label="Compared search policies" data={arms}
+          columns={['mode', 'proposal_count', 'verification_count', 'unique_genotypes', 'best', 'verified', 'value_regret']} />
+      </Panel>
+      <Panel title="Candidate archive">
+        <label>Search policy<select value={arm} onChange={(event) => setArm(event.target.value)}>
+          {arms.map((entry) => text(entry.mode)).map((mode) => <option key={mode} value={mode}>{mode.replaceAll('_', ' ')}</option>)}
+        </select></label>
+        <RecordTable label="Candidate archive" data={rows(selected?.archive)}
+          columns={['kind', 'candidate', 'parent_slot', 'disposition', 'improves_incumbent', 'candidate_slot', 'passed']} />
+      </Panel>
+    </>}
+  </>
+}
+
 export function Report({ token, campaignId }: { token: string; campaignId: string }) {
   const [report, setReport] = useState('')
   const [error, setError] = useState('')
@@ -205,8 +290,9 @@ export function Report({ token, campaignId }: { token: string; campaignId: strin
     {report && <button className="button button--primary" type="button" onClick={download}>Download JSON</button>}
   </div>}>
     {errorText(error)}
-    {report
-      ? <pre className="report-view" tabIndex={0} aria-label="Loaded campaign report">{report}</pre>
-      : <Empty title="Load the campaign report to inspect its protocol, evidence and limitations." />}
+    {report ? (
+      // biome-ignore lint/a11y/noNoninteractiveTabindex: Keep the raw export scrollable with the keyboard.
+      <section className="report-view" tabIndex={0} aria-label="Loaded campaign report"><pre>{report}</pre></section>
+    ) : <Empty title="Load the campaign report to inspect its protocol, evidence and limitations." />}
   </Panel>
 }

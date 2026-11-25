@@ -90,6 +90,131 @@ fn reviewed_campaign_persists_independent_replay_and_verified_report() {
 }
 
 #[test]
+fn frozen_optimization_preserves_negative_results_across_processes() {
+    let work = Workspace::new();
+    let plan_path = work.0.join("optimization.json");
+    fs::write(
+        &plan_path,
+        include_bytes!("../../../taskpacks/example-max-subarray.json"),
+    )
+    .unwrap();
+    let plan = work.success(&["plan", plan_path.to_str().unwrap()]);
+    let id = plan["id"].as_str().unwrap();
+    work.success(&["approve", id, plan["protocol_hash"].as_str().unwrap()]);
+    let report = work.success(&["run", id]);
+    assert_eq!(work.success(&["report", id]), report);
+
+    let protocol = &report["protocol"];
+    assert_eq!(protocol["version"], "aether.protocol/2");
+    let inputs = protocol["optimization_inputs"].as_array().unwrap();
+    assert_eq!(inputs.len(), 2);
+    assert_eq!(inputs[0].as_array().unwrap().len(), 128);
+    assert_ne!(inputs[0], inputs[1]);
+
+    let evidence = &report["evidence"];
+    assert_eq!(evidence["campaign"]["state"], "completed");
+    let runs = evidence["runs"].as_array().unwrap();
+    let run = |action| runs.iter().find(|run| run["action"] == action).unwrap();
+    assert_eq!(run("explore")["seed"], 19);
+    assert_eq!(run("replay")["seed"], 19);
+    assert_eq!(run("challenge")["seed"], 281);
+    assert_eq!(run("explore")["input_hash"], run("replay")["input_hash"]);
+    assert_ne!(run("explore")["input_hash"], run("challenge")["input_hash"]);
+    assert_eq!(evidence["replications"][0]["passed"], true);
+    assert_eq!(evidence["claims"][0]["state"], "rejected");
+    assert_eq!(evidence["claims"][1]["state"], "verified");
+    assert_eq!(evidence["contradictions"].as_array().unwrap().len(), 2);
+    let attempts = evidence["attempts"].as_array().unwrap();
+    assert_eq!(attempts.len(), 3);
+    for attempt in attempts {
+        let digest = attempt["manifest_sha256"].as_str().unwrap();
+        let bytes: Vec<u8> =
+            serde_json::from_value(report["blobs_by_sha256"][digest].clone()).unwrap();
+        assert_eq!(aether_runner::sha256(&bytes), digest);
+        let manifest: Value = serde_json::from_slice(&bytes).unwrap();
+        let comparison = &manifest["optimization_comparison"];
+        assert_eq!(comparison["candidate_sum"], comparison["reference_sum"]);
+        assert_eq!(comparison["baseline_sum"], 127);
+        assert_eq!(
+            comparison["reference_sum"],
+            if manifest["task"]["seed"] == 19 {
+                623
+            } else {
+                1131
+            }
+        );
+        assert_eq!(comparison["baseline_is_optimal"], false);
+        assert_eq!(manifest["task"]["kind"], "max_subarray");
+    }
+}
+
+#[test]
+fn optimization_rejects_duplicate_inputs_and_preserves_the_first_frozen_protocol() {
+    let work = Workspace::new();
+    let plan_path = work.0.join("optimization.json");
+    let path = plan_path.to_str().unwrap();
+    let mut request = json!({
+        "id":"one-element", "title":"One element", "objective":"Test the exact optimum edge case",
+        "seed":19,"items":1,"attempts":5,"wall_ms":12000,
+        "optimization":{"challenge_seed":19}
+    });
+    fs::write(path, request.to_string()).unwrap();
+    assert!(!work.invoke(&["plan", path]).status.success());
+    request["optimization"]["challenge_seed"] = json!(281);
+    request["algorithm"] = json!("insertion");
+    fs::write(path, request.to_string()).unwrap();
+    assert!(!work.invoke(&["plan", path]).status.success());
+    request.as_object_mut().unwrap().remove("algorithm");
+    request["title"] = json!("Invalid\0title");
+    fs::write(path, request.to_string()).unwrap();
+    assert!(!work.invoke(&["plan", path]).status.success());
+    assert_eq!(fs::read_dir(work.0.join("protocols")).unwrap().count(), 0);
+    request["title"] = json!("One element");
+    fs::write(path, request.to_string()).unwrap();
+    let plan = work.success(&["plan", path]);
+    assert_eq!(work.success(&["plan", path]), plan);
+    request["title"] = json!("Different protocol, same immutable ID");
+    fs::write(path, request.to_string()).unwrap();
+    assert!(!work.invoke(&["plan", path]).status.success());
+    assert_eq!(fs::read_dir(work.0.join("protocols")).unwrap().count(), 1);
+
+    let id = plan["id"].as_str().unwrap();
+    work.success(&["approve", id, plan["protocol_hash"].as_str().unwrap()]);
+    let report = work.success(&["run", id]);
+    let evidence = &report["evidence"];
+    assert_eq!(evidence["claims"][0]["state"], "verified");
+    assert_eq!(evidence["claims"][1]["state"], "verified");
+    assert!(evidence["contradictions"].as_array().unwrap().is_empty());
+}
+
+#[test]
+fn workspace_worker_lock_fences_another_process_before_dispatch() {
+    let work = Workspace::new();
+    let path = work.0.join("request.json");
+    fs::write(
+        &path,
+        json!({
+            "id":"slot", "title":"Worker slot", "objective":"Enforce the workspace worker limit",
+            "seed":5,"items":8,"algorithm":"standard","attempts":1,"wall_ms":8000
+        })
+        .to_string(),
+    )
+    .unwrap();
+    let plan = work.success(&["plan", path.to_str().unwrap()]);
+    work.success(&["approve", "slot", plan["protocol_hash"].as_str().unwrap()]);
+    let guard = fs::File::create(work.0.join("worker.lock")).unwrap();
+    guard.try_lock().unwrap();
+    let blocked = work.invoke(&["run", "slot"]);
+    assert!(!blocked.status.success());
+    assert!(String::from_utf8_lossy(&blocked.stderr).contains("workspace worker lock"));
+    let report = work.success(&["report", "slot"]);
+    assert_eq!(report["evidence"]["campaign"]["state"], "approved");
+    assert_eq!(report["evidence"]["budget"]["used"]["attempts"], 0);
+    drop(guard);
+    work.success(&["run", "slot"]);
+}
+
+#[test]
 fn one_attempt_budget_yields_inconclusive_claim() {
     let work = Workspace::new();
     let path = work.0.join("request.json");

@@ -1,5 +1,13 @@
 # Changelog
 
+## Operation Prometheus
+
+- Added maximum-subarray optimization with stored counterexamples, an exhaustive verifier and distinct frozen challenge input. Kept the original sorting protocol readable.
+- Added offline objective-to-draft planning, explicit local and hosted model adapters, and opt-in Crossref, OpenAlex and arXiv metadata discovery.
+- Added four bounded knapsack search policies and their candidate archives, actual NVIDIA driver telemetry, and a matched policy pilot.
+- Fenced cross-process worker admission, kept citation and protocol updates bounded, unified evidence and journal snapshots, and improved SSE page delivery.
+- Added Criterion performance harnesses, a loopback timing harness, frontend linting, and an expanded keyboard and browser smoke. [Project status](PROJECT_STATUS.md)
+
 ## Local platform 0.1.0
 
 - Implemented deterministic native classification with checked inputs, exact counts, digest-addressed manifests and a fresh-process CLI replay.

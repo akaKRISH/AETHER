@@ -37,7 +37,7 @@ export function Budgets({ snapshot }: { snapshot: Snapshot }) {
           <div className="budget-item-label"><span>{label}</span>
             <strong className="mono">{present ? `${spent.toLocaleString()} / ${cap.toLocaleString()}${unit}` : '—'}</strong></div>
           {present && cap > 0
-            ? <progress aria-label={label + ' budget used'} max={cap} value={Math.min(spent, cap)} />
+            ? <progress aria-label={`${label} budget used`} max={cap} value={Math.min(spent, cap)} />
             : <div className="budget-track" aria-hidden="true" />}
           {present && pending > 0 && <small>{pending.toLocaleString()}{unit} reserved</small>}
         </div>
@@ -202,7 +202,7 @@ function evidenceLayout(snapshot: Snapshot) {
   function position(kind: Node['kind'], item: Node['item'], column: number) {
     const row = rowsByColumn.get(column) ?? 0
     rowsByColumn.set(column, row + 1)
-    nodes.push({ key: kind + ':' + item.id, item, kind, x: 26 + column * (nodeWidth + colGap), y: 26 + row * (nodeHeight + rowGap) })
+    nodes.push({ key: `${kind}:${item.id}`, item, kind, x: 26 + column * (nodeWidth + colGap), y: 26 + row * (nodeHeight + rowGap) })
   }
   for (const evidence of snapshot.evidence) position('evidence', evidence, 0)
   for (const claim of snapshot.claims) position('claim', claim, (rank.get(claim.id) ?? 0) + evidenceColumn)
@@ -252,14 +252,15 @@ export function EvidenceGraph({ snapshot }: { snapshot: Snapshot }) {
     <div className="graph-grid">
       <Panel title="Claim dependencies" aside={<span className="mono muted">{graph.nodes.length} nodes · {graph.edges.length} links</span>}>
         {graph.nodes.length ? (
-          <div className="graph-scroll" role="region" tabIndex={0} aria-label="Interactive claim graph">
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: Users can scroll the graph before selecting a node.
+          <section className="graph-scroll" tabIndex={0} aria-label="Interactive claim graph">
             <div className="graph-canvas" style={{ width: graph.width, height: graph.height }}>
               <svg className="graph-lines" width={graph.width} height={graph.height} aria-hidden="true">
-                {graph.edges.map(({ from, to, start, finish, style }, index) => {
+                {graph.edges.map(({ from, to, start, finish, style }) => {
                   const x1 = start.x + nodeWidth, y1 = start.y + nodeHeight / 2
                   const x2 = finish.x, y2 = finish.y + nodeHeight / 2
                   const bend = Math.max(24, (x2 - x1) / 2)
-                  return <path key={`${from}-${to}-${index}`} className={`graph-link graph-link--${style}`}
+                  return <path key={JSON.stringify([from, to])} className={`graph-link graph-link--${style}`}
                     d={`M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`} />
                 })}
               </svg>
@@ -272,7 +273,7 @@ export function EvidenceGraph({ snapshot }: { snapshot: Snapshot }) {
                 <strong title={item.item.id}>{item.item.id}</strong>
               </button>)}
             </div>
-          </div>
+          </section>
         ) : <Empty title="No claims or evidence have been recorded." />}
       </Panel>
       <Panel title="Evidence inspector">

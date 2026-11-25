@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 
+mod hardware;
 mod http;
 mod lab;
 mod literature;
@@ -24,14 +25,18 @@ AETHER local research platform
 Commands
   aether-lab demo <id> [seed]       Run a reviewed synthetic sorting campaign
   aether-lab plan <plan.json>       Freeze an explicit research protocol
+  aether-lab plan-objective <id> <request.json>  Draft an offline model-guided sorting protocol
   aether-lab approve <id> <sha256>  Approve exactly the frozen protocol digest
   aether-lab run <id>               Run an approved campaign
   aether-lab report <id>            Inspect evidence and validate artifact digests
   aether-lab list                   List local campaigns
   aether-lab benchmark [study.json] Execute the matched synthetic A–E simulation
   aether-lab benchmark-native       Measure bounded native sorting variants
+  aether-lab evolve <seed> <evaluation-slots>  Compare four bounded knapsack search policies
+  aether-lab hardware               Read local NVIDIA driver telemetry, when available
   aether-lab propose <request.json> Produce deterministic reviewed-task proposals
   aether-lab propose-local <request.json> <model>  Use an existing local Ollama model
+  aether-lab propose-provider <request.json> <provider> <model>  Plan with explicit provider provenance
   aether-lab bibliography [query]   Search the local citation catalog
   aether-lab import-citations <json> Import bounded DOI citation metadata
   aether-lab recover <id>           Reconcile an interrupted campaign
@@ -88,6 +93,10 @@ fn execute(args: &[String]) -> Result<()> {
             print_json(&benchmark_native()?)?;
             return Ok(());
         }
+        [command] if command == "hardware" => return print_json(&hardware::gpu_snapshot()),
+        [command, seed, evaluations] if command == "evolve" => {
+            return print_json(&aether_engine::evolve(seed.parse()?, evaluations.parse()?)?);
+        }
         [command, path] if command == "propose" => {
             let request = read_json_file(&PathBuf::from(path))?;
             return print_json(&planning::propose(&planning::MockModel, &request)?);
@@ -97,6 +106,15 @@ fn execute(args: &[String]) -> Result<()> {
             return print_json(&planning::propose(
                 &planning::OllamaModel::new(model.clone())?,
                 &request,
+            )?);
+        }
+        [command, path, provider, model] if command == "propose-provider" => {
+            let request = read_json_file(&PathBuf::from(path))?;
+            return print_json(&planning::propose_with_provider(
+                provider,
+                model,
+                &request,
+                &AtomicBool::new(false),
             )?);
         }
         _ => {}
@@ -109,6 +127,27 @@ fn execute(args: &[String]) -> Result<()> {
         [command, id, seed] if command == "demo" => demo(&lab, id, seed.parse()?),
         [command, path] if command == "plan" => {
             print_json(&lab.create(&read_json_file(&PathBuf::from(path))?)?)
+        }
+        [command, id, path] if command == "plan-objective" => {
+            let request: planning::PlanningRequest = read_json_file(&PathBuf::from(path))?;
+            let planning = planning::propose_with_provider(
+                "mock",
+                "deterministic-v1",
+                &request,
+                &AtomicBool::new(false),
+            )?;
+            let selected = &planning.proposals[0];
+            let mut draft = PlanRequest::example(id.clone(), selected.seed);
+            draft.title = "Objective-guided sorting study".into();
+            draft.objective = request.objective;
+            draft.items = selected.items;
+            draft.algorithm = Some(selected.algorithm);
+            let campaign = lab.create(&draft)?;
+            print_json(&json!({
+                "campaign": campaign,
+                "planning": planning,
+                "candidate_selection": "first eligible proposal from the deterministic provider",
+            }))
         }
         [command, id, digest] if command == "approve" => print_json(&lab.approve(id, digest)?),
         [command, id] if command == "run" => print_json(&lab.run(id, &AtomicBool::new(false))?),

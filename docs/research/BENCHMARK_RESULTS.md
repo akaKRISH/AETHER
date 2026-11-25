@@ -25,3 +25,28 @@ The Windows x64 run used Rust and Cargo 1.96.1 on the local Intel Core i5-13420H
 ### Matched synthetic simulation
 
 `aether-lab benchmark` ran 45 simulated campaigns in 1,404 µs of total host wall time. The run crossed five policies A–E with seeds 11, 23 and 37 on flat, shared-prerequisite and challenged-prerequisite task structures. Utility and verification outcomes in this file come from the simulator's assumptions. The run exposes deterministic policy behavior under matched caps. Experimental ECAR efficacy and comparative algorithm performance remain open. [Raw simulation](../../research/results/ecar-policy-simulation.json)
+
+## Prometheus development runs
+
+### Maximum subarray and objective workflow
+
+The maximum-subarray release campaign froze 128 signed integers per seed. The trusted verifier enumerated every nonempty interval. Kadane's candidate matched the exact maximum on both inputs. The largest-single-item claim was rejected with two retained counterexamples. The worker charges totaled 132 ms for the three attempts, with zero model tokens and zero paid cost. Elapsed time includes both methods and process overhead. [Campaign export](../../research/results/prometheus-max-subarray.json)
+
+| Frozen input | Exact maximum | Kadane | Largest single item |
+|---|---:|---:|---:|
+| Seed 19, Explore and Replay | 623 | 623 | 127 |
+| Seed 281, Challenge | 1,131 | 1,131 | 127 |
+
+Replay repeats seed 19 in a fresh process. Challenge uses a distinct frozen input. All observations share the same evaluator and generated input distribution. The objective demonstration used the deterministic provider to produce a draft and kept approval separate. A fresh process exported the same completed report. [Draft and planner provenance](../../research/results/prometheus-objective-draft.json) · [Completed objective campaign](../../research/results/prometheus-objective-report.json)
+
+### Knapsack candidate search
+
+`aether-lab evolve <seed> 48` compared four methods at equal evaluation-slot caps on the same 12 items within each seed. The independent exhaustive oracle computed the optimum for each fixture. Random search had the lowest gap in two fixtures and tied on the third. Every method missed the optimum. The experiment covers three development fixtures, with one search trajectory per arm per seed. [Protocol](KNAPSACK_DEVELOPMENT_STUDY.md) · [Raw archives](../../research/results/prometheus-knapsack.json)
+
+| Seed | Optimum | Random gap | Evolution gap | Fixed verification gap | ECAR-guided gap |
+|---|---:|---:|---:|---:|---:|
+| 19 | 333 | 12 | 143 | 171 | 150 |
+| 281 | 370 | 81 | 81 | 81 | 81 |
+| 919 | 373 | 43 | 76 | 76 | 76 |
+
+The separate 180-case matched policy simulation found no verified-utility change from graph weighting in its tested pairs. It retains the action-order differences and the adaptive versus fixed allocation contrast. [Prometheus policy pilot](PROMETHEUS_POLICY_PILOT.md)

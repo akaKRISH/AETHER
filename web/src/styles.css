@@ -225,6 +225,7 @@ summary { color: var(--blue); padding: 11px 15px; cursor: pointer; overflow-wrap
   margin: 0; padding: 15px; font-size: 12px; line-height: 1.6;
   max-height: min(70vh, 700px); overflow: auto; color: var(--blue); white-space: pre-wrap; overflow-wrap: anywhere;
 }
+.report-view pre { margin: 0; white-space: inherit; }
 @media (max-width: 920px) {
   .workspace { grid-template-columns: 184px minmax(0, 1fr); }
   .graph-grid, .dashboard-columns { grid-template-columns: minmax(0, 1fr); }

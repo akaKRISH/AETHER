@@ -47,25 +47,36 @@ export function Panel({ title, children, aside, className = '' }: {
 
 type Column = string | { key: string; label: string; render?: (value: unknown, row: Row) => ReactNode }
 
+export function keyedRows(data: Row[]) {
+  const seen = new Map<string, number>()
+  return data.map((row) => {
+    const identity = JSON.stringify(row.id ?? row.sequence ?? row.url ?? row)
+    const occurrence = (seen.get(identity) ?? 0) + 1
+    seen.set(identity, occurrence)
+    return { key: `${identity}|${occurrence}`, row }
+  })
+}
+
 export function RecordTable({ label, data, columns, empty = 'No records have been written.' }: {
   label: string; data: Row[]; columns: Column[]; empty?: string
 }) {
   if (!data.length) return <Empty title={empty} />
   const normalized = columns.map((column) => typeof column === 'string'
     ? { key: column, label: pretty(column), render: undefined } : column)
-  return <div className="table-scroll" tabIndex={0} role="region" aria-label={label}>
+  // biome-ignore lint/a11y/noNoninteractiveTabindex: Wide tables need a keyboard-focusable scroll container.
+  return <section className="table-scroll" tabIndex={0} aria-label={label}>
     <table>
       <caption className="sr-only">{label}</caption>
       <thead><tr>{normalized.map(({ key, label }) => <th key={key} scope="col">{label}</th>)}</tr></thead>
-      <tbody>{data.map((row, index) =>
-        <tr key={`${text(row.id ?? row.sequence ?? row.sha256)}-${index}`}>
+      <tbody>{keyedRows(data).map(({ row, key }) =>
+        <tr key={key}>
           {normalized.map(({ key, render }) =>
             <td key={key} className={key.includes('hash') || key === 'sha256' || key === 'id' ? 'mono data-id' : undefined}>
               {render ? render(row[key], row) : text(row[key])}
             </td>)}
         </tr>)}</tbody>
     </table>
-  </div>
+  </section>
 }
 
 export function Fields({ data, omit = [] }: { data: Row; omit?: string[] }) {
@@ -84,6 +95,7 @@ export function Modal({ title, children, onClose }: { title: string; children: R
     const element = dialog.current
     if (!element) return
     element.showModal()
+    element.querySelector<HTMLElement>('[data-initial-focus]')?.focus()
     return () => { if (element.open) element.close() }
   }, [])
 

@@ -23,3 +23,10 @@ The review found a shutdown path that left live streams and workers active and a
 - The restore drill reproduced the campaign report byte for byte. The abrupt-supervisor drill used one reviewed child with short, bounded work. That child exited and the controller reconciled its expired lease. This profile still needs OS-level child-tree and isolation qualification before it can supervise externally supplied work. [Operational checks](../testing/TEST_RESULTS.md)
 
 [Threat model](THREAT_MODEL.md) · [Permission model](PERMISSION_MODEL.md) · [Test results](../testing/TEST_RESULTS.md)
+
+## Prometheus
+
+- Workspace admission now fences work across CLI and server processes. Campaign-level recovery and short protocol publication have separate locks. Store tests check committed snapshot visibility during a write. [Engineering audit](../engineering/PROMETHEUS_AUDIT.md)
+- Optimization workers return typed candidate intervals and sums. The trusted reference independently recomputes every nonempty interval. Malformed output and incorrect scores cannot establish the verified claim. Rejected baseline evidence remains queryable.
+- Model responses select only typed reviewed methods. Hosted calls require explicit opt-in. The optional driver diagnostic uses a known local absolute executable path and retains only the Windows directories required by the NVIDIA loader. The authenticated browser smoke exercises private endpoint denial, rejected path-shaped asset input and default-disabled metadata requests.
+- The approved profile runs short reviewed code. Windows Job Objects can address group teardown and resource limits for a qualified profile. Separate identity, filesystem and egress controls and an independent boundary test would still be needed for arbitrary workloads. [Microsoft Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)

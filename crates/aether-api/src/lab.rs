@@ -2,7 +2,10 @@ use aether_engine::{
     Action, ActionKind, Budget, Decision, ReservationOutcome, ResourceVec, ScheduleContext,
     ScoreWeights, StopReason, schedule_with_trace,
 };
-use aether_runner::{MAX_OUTPUT, Output, SortAlgorithm, Task, evaluate, sha256, supervise};
+use aether_runner::{
+    MAX_OUTPUT, Output, SortAlgorithm, Task, evaluate, evaluate_optimization, optimization_input,
+    sha256, supervise,
+};
 use aether_store::{
     Action as StoredAction, ArtifactInput, AttemptCompletion, AttemptOutcome, BudgetUnits,
     Campaign, CampaignState, EvidenceRelation, EvidenceTarget, MetricInput, NewAttempt,
@@ -20,7 +23,8 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use thiserror::Error;
 
 const ACTION_LIMIT_MS: u64 = 2_000;
-const POLICY: &str = "aether-reviewed-sort-ecar/v1";
+const SORT_POLICY: &str = "aether-reviewed-sort-ecar/v1";
+const OPTIMIZATION_POLICY: &str = "aether-reviewed-max-subarray-ecar/v1";
 static STAGE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Debug, Error)]
@@ -57,9 +61,18 @@ pub struct PlanRequest {
     pub objective: String,
     pub seed: u32,
     pub items: u16,
-    pub algorithm: SortAlgorithm,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub algorithm: Option<SortAlgorithm>,
     pub attempts: u64,
     pub wall_ms: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub optimization: Option<OptimizationPlan>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct OptimizationPlan {
+    pub challenge_seed: u32,
 }
 
 impl PlanRequest {
@@ -70,9 +83,10 @@ impl PlanRequest {
             objective: "Evaluate a reviewed sorting candidate against an independent reference, replay, and challenge".into(),
             seed,
             items: 128,
-            algorithm: SortAlgorithm::Insertion,
+            algorithm: Some(SortAlgorithm::Insertion),
             attempts: 5,
             wall_ms: 12_000,
+            optimization: None,
         }
     }
 
@@ -80,26 +94,79 @@ impl PlanRequest {
         if !valid_id(&self.id)
             || self.title.trim().is_empty()
             || self.title.len() > 120
+            || self.title.contains('\0')
             || self.objective.trim().is_empty()
             || self.objective.len() > 512
+            || self.objective.contains('\0')
             || !(1..=128).contains(&self.items)
             || !(1..=12).contains(&self.attempts)
             || !(2_000..=30_000).contains(&self.wall_ms)
         {
             return Err(Error::Input("campaign requires an ASCII id (1–32 lowercase letters/digits/hyphens), bounded objective, 1–128 items, 1–12 attempts and 2000–30000 ms".into()));
         }
+        if self.algorithm.is_some() == self.optimization.is_some() {
+            return Err(Error::Input(
+                "choose exactly one sorting algorithm or optimization task".into(),
+            ));
+        }
         Ok(())
     }
 
+    fn policy(&self) -> &'static str {
+        if self.optimization.is_some() {
+            OPTIMIZATION_POLICY
+        } else {
+            SORT_POLICY
+        }
+    }
+
+    fn protocol_version(&self) -> &'static str {
+        if self.optimization.is_some() {
+            "aether.protocol/2"
+        } else {
+            "aether.protocol/1"
+        }
+    }
+
+    fn challenge_seed(&self) -> u32 {
+        self.optimization
+            .as_ref()
+            .map_or(self.seed ^ 0x854a_6817, |task| task.challenge_seed)
+    }
+
+    fn optimization_inputs(&self) -> Result<Option<[Vec<i16>; 2]>> {
+        if self.optimization.is_none() {
+            return Ok(None);
+        }
+        let materialize = |seed| {
+            optimization_input(seed, self.items).map_err(|error| Error::Input(error.to_string()))
+        };
+        let original = materialize(self.seed)?;
+        let challenge = materialize(self.challenge_seed())?;
+        if original == challenge {
+            return Err(Error::Input(
+                "optimization requires distinct original and challenge inputs".into(),
+            ));
+        }
+        Ok(Some([original, challenge]))
+    }
+
     fn task(&self, challenge: bool) -> Task {
-        Task::Sort {
-            seed: if challenge {
-                self.seed ^ 0x854a_6817
-            } else {
-                self.seed
+        let seed = if challenge {
+            self.challenge_seed()
+        } else {
+            self.seed
+        };
+        match self.algorithm {
+            Some(algorithm) => Task::Sort {
+                seed,
+                items: self.items,
+                algorithm,
             },
-            items: self.items,
-            algorithm: self.algorithm,
+            None => Task::MaxSubarray {
+                seed,
+                items: self.items,
+            },
         }
     }
 }
@@ -111,6 +178,8 @@ struct FrozenPlan {
     evaluator_hash: String,
     policy_hash: String,
     plan: PlanRequest,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    optimization_inputs: Option<[Vec<i16>; 2]>,
 }
 
 pub fn valid_id(id: &str) -> bool {
@@ -206,15 +275,18 @@ impl Lab {
             return Err(Error::Input("invalid campaign id".into()));
         }
         let path = self.root.join("supervisors").join(format!("{id}.lock"));
+        Self::try_lock(&path, "campaign supervisor")
+    }
+
+    fn try_lock(path: &Path, scope: &str) -> Result<File> {
         let file = OpenOptions::new()
             .read(true)
             .write(true)
             .create(true)
             .truncate(false)
             .open(path)?;
-        file.try_lock().map_err(|error| {
-            Error::Conflict(format!("cannot acquire campaign supervisor lock: {error}"))
-        })?;
+        file.try_lock()
+            .map_err(|error| Error::Conflict(format!("cannot acquire {scope} lock: {error}")))?;
         Ok(file)
     }
 
@@ -248,11 +320,15 @@ impl Lab {
         let records = sources
             .iter()
             .map(|(doi, title, year, venue)| crate::literature::Citation {
-                doi: (*doi).into(),
+                doi: Some((*doi).into()),
+                arxiv_id: None,
+                openalex_id: None,
+                related_doi: None,
                 title: (*title).into(),
                 authors: Vec::new(),
                 published_year: Some(*year),
                 container_title: Some((*venue).into()),
+                topics: Vec::new(),
                 license_urls: Vec::new(),
                 provenance: crate::literature::CitationProvenance::default(),
             })
@@ -269,23 +345,37 @@ impl Lab {
         storage(self.catalog()?.import_manual(citations))
     }
 
+    pub fn save_discovered_citations(
+        &self,
+        citations: Vec<crate::literature::Citation>,
+    ) -> Result<usize> {
+        storage(self.catalog()?.import(citations))
+    }
+
     pub fn create(&self, plan: &PlanRequest) -> Result<Campaign> {
         plan.validate()?;
+        let optimization_inputs = plan.optimization_inputs()?;
         let frozen = FrozenPlan {
-            version: "aether.protocol/1".into(),
+            version: plan.protocol_version().into(),
             evaluator_hash: self.evaluator_hash.clone(),
-            policy_hash: sha256(POLICY.as_bytes()),
+            policy_hash: sha256(plan.policy().as_bytes()),
             plan: plan.clone(),
+            optimization_inputs,
         };
         let bytes = serde_json::to_vec(&frozen)?;
         let digest = sha256(&bytes);
-        self.publish_protocol(&digest, &bytes)?;
+        // ponytail: one short local publication lock serializes draft creation.
+        // Use an ID-scoped publication lock if concurrent planning needs more throughput.
+        let _publication = Self::try_lock(
+            &self.root.join("protocol-publication.lock"),
+            "protocol publication",
+        )?;
         let mut store = self.store()?;
         let campaign = NewCampaign {
             id: plan.id.clone(),
             title: plan.title.clone(),
             objective: plan.objective.clone(),
-            protocol_hash: digest,
+            protocol_hash: digest.clone(),
             policy_hash: frozen.policy_hash,
             evaluator_hash: frozen.evaluator_hash,
             requires_replay: true,
@@ -297,6 +387,7 @@ impl Lab {
         };
         if let Some(existing) = storage(store.campaign(&plan.id))? {
             return if existing.spec == campaign {
+                self.publish_protocol(&digest, &bytes)?;
                 Ok(existing)
             } else {
                 Err(Error::Conflict(
@@ -304,6 +395,7 @@ impl Lab {
                 ))
             };
         }
+        self.publish_protocol(&digest, &bytes)?;
         storage(store.create_campaign(&campaign))?;
         self.get(&store, &plan.id)
     }
@@ -379,9 +471,7 @@ impl Lab {
     pub fn snapshot(&self, id: &str) -> Result<Value> {
         let store = self.store()?;
         self.get(&store, id)?;
-        let mut snapshot = serde_json::to_value(storage(store.snapshot(id))?)?;
-        snapshot["events"] = serde_json::to_value(storage(store.events(id))?)?;
-        Ok(snapshot)
+        Ok(serde_json::to_value(storage(store.snapshot(id))?)?)
     }
 
     pub fn events(&self, id: &str, after: u64) -> Result<Vec<Value>> {
@@ -409,6 +499,25 @@ impl Lab {
         let campaign = self.get(&store, id)?;
         let protocol: Value =
             serde_json::from_slice(&self.protocol_bytes(&campaign.spec.protocol_hash)?)?;
+        let (scope, limitations) = if protocol["plan"]["optimization"].is_object() {
+            (
+                "local development experiment on reviewed maximum-subarray optimization",
+                [
+                    "Explore and Replay repeat the original dataset in separate processes.",
+                    "Challenge examines a distinct frozen dataset using the same pinned evaluator.",
+                    "The conclusions apply to the two frozen development datasets and reviewed methods.",
+                ],
+            )
+        } else {
+            (
+                "local development experiment on reviewed synthetic sorting inputs",
+                [
+                    "The frozen comparison covers the original and one challenge seed.",
+                    "Replay uses a fresh process and the same pinned executable.",
+                    "No held-out scientific study is implied.",
+                ],
+            )
+        };
         let data = self.snapshot(id)?;
         let mut digests = BTreeSet::new();
         let refs = data
@@ -441,12 +550,12 @@ impl Lab {
         }
         Ok(json!({
             "version": "aether.campaign-report/1",
-            "scope": "local development experiment on reviewed synthetic sorting inputs",
+            "scope": scope,
             "protocol": protocol,
             "protocol_hash": campaign.spec.protocol_hash,
             "evidence": data,
             "blobs_by_sha256": blobs,
-            "limitations": ["The frozen comparison covers the original and one challenge seed.", "Replay uses a fresh process and the same pinned executable.", "No held-out scientific study is implied."]
+            "limitations": limitations
         }))
     }
 
@@ -469,6 +578,7 @@ impl Lab {
     }
 
     pub fn run(&self, id: &str, cancelled: &AtomicBool) -> Result<Value> {
+        let _worker = Self::try_lock(&self.root.join("worker.lock"), "workspace worker")?;
         let _supervisor = self.supervisor_lock(id)?;
         let mut store = self.store()?;
         let campaign = self.get(&store, id)?;
@@ -477,31 +587,31 @@ impl Lab {
                 "campaign must be approved and ready".into(),
             ));
         }
-        if campaign.spec.evaluator_hash != self.evaluator_hash
-            || campaign.spec.policy_hash != sha256(POLICY.as_bytes())
-        {
+        if campaign.spec.evaluator_hash != self.evaluator_hash {
             return Err(Error::Conflict(
                 "frozen campaign pins a different evaluator or policy build".into(),
             ));
         }
         let frozen: FrozenPlan =
             serde_json::from_slice(&self.protocol_bytes(&campaign.spec.protocol_hash)?)?;
-        if frozen.version != "aether.protocol/1"
+        let plan = &frozen.plan;
+        plan.validate()?;
+        if frozen.version != plan.protocol_version()
             || frozen.evaluator_hash != campaign.spec.evaluator_hash
             || frozen.policy_hash != campaign.spec.policy_hash
+            || frozen.policy_hash != sha256(plan.policy().as_bytes())
+            || frozen.optimization_inputs != plan.optimization_inputs()?
             || self.evaluator_hash != sha256(&fs::read(&self.executable)?)
         {
             return Err(Error::Integrity(
                 "protocol or executable does not match the approved build".into(),
             ));
         }
-        let plan = frozen.plan;
-        plan.validate()?;
         if plan.id != id {
             return Err(Error::Integrity("stored protocol campaign mismatch".into()));
         }
         storage(store.transition_campaign(id, CampaignState::Running))?;
-        match self.run_approved(&mut store, &campaign, &plan, cancelled) {
+        match self.run_approved(&mut store, &campaign, plan, cancelled) {
             Ok(state) => storage(store.transition_campaign(id, state))?,
             Err(error) => {
                 storage(store.record_decision(id, json!({"failure": error.to_string()})))?;
@@ -522,14 +632,30 @@ impl Lab {
         let id = &plan.id;
         let main_claim = format!("{id}-correct");
         let hypothesis = format!("{id}-hypothesis");
-        let experiment = format!("{id}-sort");
-        let statement = format!(
-            "The {:?} candidate exactly sorts {} generated integers on seeds {} and {} and replays the original output.",
-            plan.algorithm,
-            plan.items,
-            plan.seed,
-            plan.seed ^ 0x854a_6817
-        );
+        let optimization = plan.optimization.is_some();
+        let (experiment, task_key, statement, baseline_statement) = match plan.algorithm {
+            Some(algorithm) => (
+                format!("{id}-sort"),
+                "seeded-sort-v1",
+                format!(
+                    "The {algorithm:?} candidate exactly sorts {} generated integers on seeds {} and {} and replays the original output.",
+                    plan.items,
+                    plan.seed,
+                    plan.challenge_seed()
+                ),
+                "A follow-up study can use this protocol to compare alternative variants.",
+            ),
+            None => (
+                format!("{id}-max-subarray"),
+                "seeded-max-subarray-v1",
+                format!(
+                    "Kadane's method attains the exact maximum nonempty contiguous subarray sum on seeds {} and {} and replays the original interval.",
+                    plan.seed,
+                    plan.challenge_seed()
+                ),
+                "The largest-single-item baseline attains the exact maximum sum on both frozen inputs.",
+            ),
+        };
         storage(store.add_hypothesis(&NewHypothesis {
             id: hypothesis.clone(),
             campaign_id: id.clone(),
@@ -540,19 +666,20 @@ impl Lab {
             campaign_id: id.clone(),
             statement,
         }))?;
-        let followup = format!("{id}-baseline");
+        let baseline_claim = format!("{id}-baseline");
         storage(store.add_claim(&NewClaim {
-            id: followup.clone(),
+            id: baseline_claim.clone(),
             campaign_id: id.clone(),
-            statement:
-                "A follow-up study can use this protocol to compare alternative variants.".into(),
+            statement: baseline_statement.into(),
         }))?;
-        storage(store.add_dependency(&followup, &main_claim))?;
+        if !optimization {
+            storage(store.add_dependency(&baseline_claim, &main_claim))?;
+        }
         storage(store.add_experiment(&NewExperiment {
             id: experiment.clone(),
             campaign_id: id.clone(),
             hypothesis_id: Some(hypothesis),
-            task_key: "seeded-sort-v1".into(),
+            task_key: task_key.into(),
             definition_hash: campaign.spec.protocol_hash.clone(),
         }))?;
         let mut budget = Budget::with_quarter_reserve(ResourceVec {
@@ -569,6 +696,7 @@ impl Lab {
         };
         let mut accepted: [Option<(String, Output)>; 3] = [None, None, None];
         let mut failed = false;
+        let mut baseline_rejected = false;
 
         loop {
             let objective_met = accepted.iter().all(Option::is_some);
@@ -619,7 +747,7 @@ impl Lab {
                 },
             )
             .map_err(|error| Error::Schedule(error.to_string()))?;
-            storage(store.record_decision(id, json!({"policy": POLICY, "used": budget.used(), "remaining": budget.remaining(), "dependent_claims": importance, "candidates": candidates, "trace": trace})))?;
+            storage(store.record_decision(id, json!({"policy": plan.policy(), "used": budget.used(), "remaining": budget.remaining(), "dependent_claims": importance, "candidates": candidates, "trace": trace})))?;
             let Decision::Run { action_id, kind } = trace.decision else {
                 let Decision::Stop(reason) = trace.decision else {
                     unreachable!()
@@ -637,6 +765,33 @@ impl Lab {
                     replay_attempt_id: accepted[1].as_ref().map(|(attempt, _)| attempt.clone()),
                     reason: format!("Scheduler stopped with {reason:?}; frozen predicates evaluated against stored evidence"),
                 }))?;
+                if optimization {
+                    let (baseline_verdict, explanation) = if baseline_rejected {
+                        (
+                            VerificationVerdict::Rejected,
+                            "The singleton baseline fell short of the reference optimum on a frozen input.",
+                        )
+                    } else if objective_met && reason != StopReason::Cancelled {
+                        (
+                            VerificationVerdict::Verified,
+                            "The singleton baseline exactly matched the reference on both frozen inputs and replayed.",
+                        )
+                    } else {
+                        (
+                            VerificationVerdict::Inconclusive,
+                            "The baseline comparison did not complete on both frozen inputs.",
+                        )
+                    };
+                    storage(store.record_verification(&NewVerification {
+                        id: format!("{baseline_claim}-verdict"),
+                        claim_id: baseline_claim,
+                        verdict: baseline_verdict,
+                        rule_hash: campaign.spec.protocol_hash.clone(),
+                        evaluator_hash: campaign.spec.evaluator_hash.clone(),
+                        replay_attempt_id: accepted[1].as_ref().map(|(attempt, _)| attempt.clone()),
+                        reason: explanation.into(),
+                    }))?;
+                }
                 return Ok(if reason == StopReason::Cancelled {
                     CampaignState::Cancelled
                 } else {
@@ -668,7 +823,7 @@ impl Lab {
                 parent_run_id: (index != 0).then(|| format!("{id}-explore")),
                 action,
                 seed: u64::from(if index == 2 {
-                    plan.seed ^ 0x854a_6817
+                    plan.challenge_seed()
                 } else {
                     plan.seed
                 }),
@@ -709,10 +864,25 @@ impl Lab {
                 output_bytes,
                 ..ResourceVec::default()
             };
-            let trusted = observation
-                .as_ref()
-                .ok()
-                .and_then(|receipt| evaluate(&task, &receipt.output).ok());
+            let comparison = if optimization {
+                observation
+                    .as_ref()
+                    .ok()
+                    .and_then(|receipt| evaluate_optimization(&task, &receipt.output).ok())
+            } else {
+                None
+            };
+            let trusted = if optimization {
+                comparison
+                    .as_ref()
+                    .filter(|score| score.candidate_sum == score.reference_sum)
+                    .map(|_| (1, 1))
+            } else {
+                observation
+                    .as_ref()
+                    .ok()
+                    .and_then(|receipt| evaluate(&task, &receipt.output).ok())
+            };
             let replica_matches = index != 1
                 || observation
                     .as_ref()
@@ -744,7 +914,7 @@ impl Lab {
                 (outcome == AttemptOutcome::Cancelled).then(|| "cancelled by supervisor".into())
             });
             let metric_id = format!("{attempt}-correct");
-            let metrics = trusted
+            let mut metrics = trusted
                 .filter(|_| outcome == AttemptOutcome::Succeeded)
                 .map_or_else(Vec::new, |(correct, total)| {
                     vec![MetricInput {
@@ -756,6 +926,25 @@ impl Lab {
                         value: correct as f64 / total as f64,
                     }]
                 });
+            if outcome == AttemptOutcome::Succeeded
+                && let Some(score) = &comparison
+            {
+                metrics.extend(
+                    [
+                        ("reference_sum", score.reference_sum),
+                        ("largest_item_sum", score.baseline_sum),
+                        ("kadane_sum", score.candidate_sum),
+                    ]
+                    .map(|(name, sum)| MetricInput {
+                        id: format!("{attempt}-{name}"),
+                        name: name.into(),
+                        unit: "integer sum".into(),
+                        evaluator_hash: campaign.spec.evaluator_hash.clone(),
+                        split_hash: input_hash.clone(),
+                        value: f64::from(sum),
+                    }),
+                );
+            }
             let artifacts = observed.map_or_else(Vec::new, |receipt| {
                 vec![ArtifactInput {
                     name: "worker-receipt.json".into(),
@@ -763,15 +952,24 @@ impl Lab {
                     bytes: receipt.artifact.clone(),
                 }]
             });
-            storage(store.complete_attempt(&AttemptCompletion {
-                id: attempt.clone(), lease_token, outcome,
-                manifest: serde_json::to_vec(&json!({
+            let mut manifest = json!({
                     "version": "aether.lab-manifest/1", "attempt": attempt, "campaign": id, "task": task,
                     "protocol_hash": campaign.spec.protocol_hash, "input_hash": input_hash,
                     "evaluator_hash": campaign.spec.evaluator_hash, "usage": actual,
                     "worker": observed, "trusted_counts": trusted, "replica_matches": replica_matches, "reason": reason,
-                }))?,
-                usage: units(actual), metrics, artifacts, reason,
+            });
+            if let Some(score) = &comparison {
+                manifest["optimization_comparison"] = serde_json::to_value(score)?;
+            }
+            storage(store.complete_attempt(&AttemptCompletion {
+                id: attempt.clone(),
+                lease_token,
+                outcome,
+                manifest: serde_json::to_vec(&manifest)?,
+                usage: units(actual),
+                metrics,
+                artifacts,
+                reason,
             }))?;
             budget
                 .settle(&attempt, actual)
@@ -805,6 +1003,17 @@ impl Lab {
                 ));
             }
             let receipt = observation.map_err(|error| Error::Integrity(error.to_string()))?;
+            if let Some(score) = comparison {
+                self.record_baseline_comparison(
+                    store,
+                    &baseline_claim,
+                    &attempt,
+                    &receipt.artifact_sha256,
+                    score.baseline_is_optimal,
+                    kind,
+                )?;
+                baseline_rejected |= !score.baseline_is_optimal;
+            }
             storage(store.link_evidence(&NewEvidence {
                 id: format!("{attempt}-metric-edge"),
                 claim_id: main_claim.clone(),
@@ -839,6 +1048,58 @@ impl Lab {
             }
             accepted[index] = Some((attempt, receipt.output));
         }
+    }
+
+    fn record_baseline_comparison(
+        &self,
+        store: &mut Store,
+        baseline_claim: &str,
+        attempt: &str,
+        artifact_hash: &str,
+        optimum: bool,
+        kind: ActionKind,
+    ) -> Result<()> {
+        let evidence_id = format!("{attempt}-baseline-edge");
+        let (target, relation) = if optimum {
+            (
+                EvidenceTarget::Metric {
+                    metric_id: format!("{attempt}-largest_item_sum"),
+                },
+                if kind == ActionKind::Replay {
+                    EvidenceRelation::Reproduces
+                } else {
+                    EvidenceRelation::Supports
+                },
+            )
+        } else {
+            (
+                EvidenceTarget::Artifact {
+                    attempt_id: attempt.into(),
+                    sha256: artifact_hash.into(),
+                },
+                EvidenceRelation::Contradicts,
+            )
+        };
+        storage(store.link_evidence(&NewEvidence {
+            id: evidence_id.clone(),
+            claim_id: baseline_claim.into(),
+            target,
+            relation,
+        }))?;
+        if !optimum && kind != ActionKind::Replay {
+            storage(
+                store.record_contradiction(&NewContradiction {
+                    id: format!("{attempt}-baseline-counterexample"),
+                    claim_id: baseline_claim.into(),
+                    evidence_id,
+                    reason:
+                        "An enumerated interval exceeds the best singleton on this frozen input."
+                            .into(),
+                    invalidates: true,
+                }),
+            )?;
+        }
+        Ok(())
     }
 }
 

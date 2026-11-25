@@ -2,6 +2,9 @@
 
 //! Process supervision for the built-in, reviewed native tasks.
 
+mod optimization;
+
+pub use optimization::{Interval, OptimizationComparison, optimization_input};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::fs;
@@ -41,14 +44,28 @@ pub enum Task {
         items: u16,
         target: i16,
     },
+    MaxSubarray {
+        seed: u32,
+        items: u16,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Output {
-    Classification { predictions: Vec<u8> },
-    Sort { values: Vec<i16> },
-    Search { index: Option<usize> },
+    Classification {
+        predictions: Vec<u8>,
+    },
+    Sort {
+        values: Vec<i16>,
+    },
+    Search {
+        index: Option<usize>,
+    },
+    MaxSubarray {
+        baseline: Interval,
+        candidate: Interval,
+    },
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -105,7 +122,9 @@ impl Task {
     pub fn validate(&self) -> Result<(), Error> {
         match *self {
             Self::Classification => Ok(()),
-            Self::Sort { items, .. } | Self::Search { items, .. }
+            Self::Sort { items, .. }
+            | Self::Search { items, .. }
+            | Self::MaxSubarray { items, .. }
                 if (1..=MAX_ITEMS).contains(&items) =>
             {
                 Ok(())
@@ -189,6 +208,13 @@ pub fn execute_worker(request: &str) -> Result<Vec<u8>, Error> {
                     .map(|_| position),
             }
         }
+        Task::MaxSubarray { seed, items } => {
+            let (baseline, candidate) = optimization::solve(&optimization_input(seed, items)?);
+            Output::MaxSubarray {
+                baseline,
+                candidate,
+            }
+        }
     };
     Ok(serde_json::to_vec(&Receipt {
         version: job.version,
@@ -231,6 +257,30 @@ pub fn evaluate(task: &Task, output: &Output) -> Result<(usize, usize), Error> {
             }
             Ok((1, 1))
         }
+        (Task::MaxSubarray { .. }, Output::MaxSubarray { .. }) => {
+            let comparison = evaluate_optimization(task, output)?;
+            if comparison.candidate_sum != comparison.reference_sum {
+                return Err(Error::Evidence);
+            }
+            Ok((1, 1))
+        }
+        _ => Err(Error::Protocol),
+    }
+}
+
+/// Independently evaluate the baseline and candidate from the reviewed optimization receipt.
+pub fn evaluate_optimization(
+    task: &Task,
+    output: &Output,
+) -> Result<OptimizationComparison, Error> {
+    match (task, output) {
+        (
+            Task::MaxSubarray { seed, items },
+            Output::MaxSubarray {
+                baseline,
+                candidate,
+            },
+        ) => optimization::compare(&optimization_input(*seed, *items)?, baseline, candidate),
         _ => Err(Error::Protocol),
     }
 }

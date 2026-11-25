@@ -396,6 +396,39 @@ fn file_reopen_preserves_schema_state_and_audit() {
 }
 
 #[test]
+fn opening_an_existing_store_reads_through_an_uncommitted_write() {
+    let path = std::env::temp_dir().join(format!(
+        "aether-store-reader-{}-{}.sqlite",
+        std::process::id(),
+        now_ms().unwrap()
+    ));
+    {
+        let mut writer = Store::open(&path).unwrap();
+        writer.create_campaign(&spec(CAMPAIGN)).unwrap();
+        let tx = writer
+            .conn
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        tx.execute(
+            "UPDATE campaign SET title = 'Pending title' WHERE id = ?",
+            [CAMPAIGN],
+        )
+        .unwrap();
+        append(&tx, CAMPAIGN, "test.title_updated", json!({})).unwrap();
+
+        let reader = Store::open(&path).unwrap();
+        let existing = reader.snapshot(CAMPAIGN).unwrap();
+        assert_eq!(existing.campaign.spec.title, spec(CAMPAIGN).title);
+        assert_eq!(existing.events.len(), 1);
+        tx.commit().unwrap();
+        let committed = reader.snapshot(CAMPAIGN).unwrap();
+        assert_eq!(committed.campaign.spec.title, "Pending title");
+        assert_eq!(committed.events[1].kind, "test.title_updated");
+    }
+    std::fs::remove_file(path).unwrap();
+}
+
+#[test]
 fn corrupted_content_is_rejected_as_evidence() {
     let mut store = store_running();
     run(&mut store, "baseline", None);

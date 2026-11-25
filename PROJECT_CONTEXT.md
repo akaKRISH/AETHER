@@ -16,7 +16,7 @@ The [Rust v0.2 design package](docs/archive/v0.2/AETHER/README.md) and [Project 
 
 ## Sequence and boundaries
 
-The native classification fixture and fresh-process replay are the foundation. The local workbench adds the reviewed sorting campaign, evidence store, ECAR and optional model proposals. Remote compute, hosted access, an external worker SDK and held-out studies have additional gates. Use only reviewed, lawful, benign computational tasks. Keep protected information outside tracked data and outputs.
+The native classification fixture and fresh-process replay are the foundation. The local workbench adds reviewed sorting and maximum-subarray campaigns, evidence storage, ECAR, and optional model proposals. Prometheus brings individually configured model and literature adapters into the local architecture. Model suggestions have no worker, credential or verdict permissions. Remote compute, hosted access, an external worker SDK and held-out studies have additional gates. Use only reviewed, lawful, benign computational tasks. Keep protected information outside tracked data and outputs.
 
 Student exercises run in the standalone [Rust practice workspace](learning/README.md). Production evaluation belongs in approved crates and is validated against the milestone criteria.
 

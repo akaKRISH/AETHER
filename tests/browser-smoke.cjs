@@ -31,7 +31,7 @@ async function connect(page, origin, token) {
   await page.goto(origin)
   await page.getByRole('button', { name: 'Connect API', exact: true }).click()
   await page.getByLabel('API Bearer token').fill(token)
-  await page.getByRole('button', { name: 'Connect', exact: true }).click()
+  await page.getByLabel('API Bearer token').press('Enter')
   await page.getByRole('button', { name: 'Disconnect' }).waitFor()
 }
 
@@ -40,13 +40,27 @@ async function main() {
   const token = randomBytes(32).toString('hex')
   const server = spawn(executable, ['serve', '0'], {
     cwd: root,
-    env: { ...process.env, AETHER_DATA_DIR: directory, AETHER_TOKEN: token },
+    env: {
+      ...process.env,
+      AETHER_DATA_DIR: directory, AETHER_TOKEN: token,
+      AETHER_ALLOW_CROSSREF: '0', AETHER_ALLOW_OPENALEX: '0', AETHER_ALLOW_ARXIV: '0',
+    },
     stdio: ['ignore', 'ignore', 'pipe'],
     windowsHide: true,
   })
   let browser
   try {
     const origin = await address(server)
+    assert.equal((await fetch(origin + '/v1/hardware')).status, 401)
+    assert.equal((await fetch(origin + '/assets/%2e%2e%2findex.html')).status, 404)
+    for (const provider of ['crossref', 'openalex', 'arxiv']) {
+      const denied = await fetch(origin + '/v1/literature/lookup', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider, query: 'deterministic evaluation' }),
+      })
+      assert.equal(denied.status, 409)
+    }
     browser = await chromium.launch({
       executablePath: process.env.AETHER_CHROMIUM_PATH || undefined,
     })
@@ -108,6 +122,37 @@ async function main() {
     await desktop.getByRole('button', { name: 'Run default study' }).click()
     assert.equal((await bench).status(), 200)
     await desktop.getByRole('progressbar', { name: 'Mode D verified utility' }).waitFor()
+    await desktop.getByRole('button', { name: 'Evolution explorer', exact: true }).click()
+    await desktop.getByRole('button', { name: 'Compare search policies' }).click()
+    const policies = desktop.getByRole('table', { name: 'Compared search policies' })
+    await policies.waitFor()
+    assert.equal(await policies.getByRole('row').count(), 5)
+    await desktop.getByRole('table', { name: 'Candidate archive' }).waitFor()
+    await desktop.getByRole('button', { name: 'Runtime', exact: true }).click()
+    await desktop.getByRole('heading', { name: 'NVIDIA driver telemetry' }).waitFor()
+    await desktop.getByRole('table', { name: 'Observed devices' })
+      .or(desktop.getByText('NVIDIA driver telemetry is unavailable.')).waitFor()
+
+    await desktop.getByRole('button', { name: 'Overview', exact: true }).click()
+    await desktop.getByRole('button', { name: 'New campaign', exact: true }).click()
+    await desktop.getByLabel('Campaign ID').fill('opt-browser')
+    await desktop.getByLabel('Title', { exact: true }).fill('Maximum subarray verification')
+    await desktop.getByLabel('Research objective').fill('Check the best contiguous interval and look for a singleton baseline counterexample.')
+    await desktop.getByLabel('Task domain').selectOption('optimization')
+    await desktop.getByLabel('Random seed').fill('19')
+    await desktop.getByLabel('Challenge seed').fill('281')
+    await desktop.getByRole('button', { name: 'Create draft' }).click()
+    await desktop.getByRole('button', { name: 'Approve protocol' }).click()
+    await desktop.getByRole('button', { name: 'Approve this hash' }).click()
+    await desktop.getByRole('button', { name: 'Start campaign' }).click()
+    await desktop.getByRole('button', { name: 'Verification', exact: true }).click()
+    await desktop.locator('.campaign-meta').getByText('Completed', { exact: true }).waitFor()
+    const verdicts = desktop.getByRole('table', { name: 'Verdict history' })
+    await verdicts.getByText('Verified', { exact: true }).waitFor()
+    await verdicts.getByText('Rejected', { exact: true }).waitFor()
+    if (process.env.AETHER_SCREENSHOT_DIR) {
+      await desktop.screenshot({ path: join(process.env.AETHER_SCREENSHOT_DIR, 'aether-optimization.png') })
+    }
 
     const phone = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
     phone.on('pageerror', error => browserErrors.push(error.message))
@@ -118,7 +163,7 @@ async function main() {
       await phone.screenshot({ path: join(process.env.AETHER_SCREENSHOT_DIR, 'aether-mobile.png'), fullPage: true })
     }
     assert.deepEqual(browserErrors, [])
-    console.log('Browser smoke passed: authentication, campaign, evidence, verification, planner, ECAR traces, report, literature, benchmark, and mobile layout.')
+    console.log('Browser smoke passed: keyboard authentication, sorting and optimization campaigns, verified and rejected claims, evidence, planner, report, metadata gates, benchmark, GPU panel, and mobile layout.')
   } finally {
     await browser?.close()
     if (server.exitCode === null && server.signalCode === null) {

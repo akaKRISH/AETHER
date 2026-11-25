@@ -23,6 +23,7 @@ aether-store = { path = "crates/aether-store" }
 axum = "0.8"
 futures-util = "0.3"
 rusqlite = { version = "0.43", features = ["bundled"] }
+roxmltree = "0.21"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"

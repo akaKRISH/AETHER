@@ -21,6 +21,8 @@ Read [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md), [PROJECT_STATUS.md](PROJECT_STATU
 
 Follow the owner-authorized implementation-first policy. Build, validate, reverse-engineer, teach, then innovate. Proceed through eligible milestones in dependency order and record the actual results and continuation. Explain the important decisions, tradeoffs, source code and exercises alongside each implemented component. Student submissions are optional for implementation progress.
 
+Operation Prometheus authorizes continued local engineering. See the [engineering audit](docs/engineering/PROMETHEUS_AUDIT.md) and [continuation](NEXT_ACTIONS.md). Keep real provider measurements, loopback fixtures, synthetic studies and observations from reviewed workers identified by their provenance.
+
 Retain separate approval for destructive operations, paid resources, public deployment, external transfers, broader execution permissions and major architecture changes. See [project status](PROJECT_STATUS.md) and [human approval](docs/governance/HUMAN_APPROVAL_POLICY.md).
 
 Use project-relative paths in repository artifacts and descriptive linked requirement IDs. Keep engineering and research outputs small and reproducible. Where development instructions conflict, follow the explicit owner decision and record it.

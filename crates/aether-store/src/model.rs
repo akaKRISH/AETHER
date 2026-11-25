@@ -292,4 +292,6 @@ pub struct Snapshot {
     pub verifications: Vec<NewVerification>,
     pub contradictions: Vec<NewContradiction>,
     pub replications: Vec<NewReplication>,
+    #[serde(default)]
+    pub events: Vec<Event>,
 }

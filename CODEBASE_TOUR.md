@@ -36,8 +36,15 @@ The repository is a modular Rust workspace with two entry points and a React/Typ
 
 9. Start at `App` in the [React console](web/src/App.tsx). `request` and `getSnapshot` in the [API client](web/src/api.ts) use a same-origin endpoint and in-memory bearer token. `EvidenceGraph` in [campaign views](web/src/campaignViews.tsx) renders meaning already present in the snapshot.
 10. Follow the request into `serve` and `authorize` in [http.rs](crates/aether-api/src/http.rs), then compare `detail`, `start`, `cancel`, and `live`. The console refreshes snapshots. The server also provides cursor-based event reads and an SSE stream.
-11. Inspect [planning.rs](crates/aether-api/src/planning.rs) and [literature.rs](crates/aether-api/src/literature.rs). A model proposes only reviewed sort choices and Crossref provides metadata. Neither adapter writes evidence or runs tasks. [API and agents lesson](docs/learning/IMPLEMENTATION_API_AGENTS.md).
+11. Inspect `propose_recorded` in [planning.rs](crates/aether-api/src/planning.rs) and `search_metadata` in [literature discovery](crates/aether-api/src/literature/discovery.rs). Optional providers suggest reviewed sort choices or return bibliographic metadata. They have no authority to run a task or assign a verdict. [API and agents lesson](docs/learning/IMPLEMENTATION_API_AGENTS.md).
 12. Compare `benchmark` and `benchmark_native` in [main.rs](crates/aether-api/src/main.rs). The first runs matched synthetic policies. The second times real native process startup and sorting under its stated scope. GPU and remote worker work has independent gates. [Compute lesson](docs/learning/IMPLEMENTATION_COMPUTE_DISTRIBUTED.md).
+
+## Walk Prometheus in source order
+
+13. Read `PlanRequest::optimization_inputs` and `Lab::run_approved` in the [controller](crates/aether-api/src/lab.rs). Then compare `solve` and `compare` in the [optimization worker](crates/aether-runner/src/optimization.rs). Trace how a rejected baseline becomes contradictory evidence.
+14. In [evolution.rs](crates/aether-engine/src/evolution.rs), follow `evolve`, `search`, `check`, and `exhaustive_optimum`. Read the candidate parent and evaluation costs before checking the final regret. Reordering search attempts and repeating a problem are different concepts.
+15. Compare read-side `snapshot` in [read.rs](crates/aether-store/src/read.rs) and batch draining in [http.rs](crates/aether-api/src/http.rs). Session state, claims and journal are consistent at one read snapshot. Stream delivery uses the committed sequence.
+16. Trace `gpu_snapshot` in [hardware.rs](crates/aether-api/src/hardware.rs) and `GpuTelemetry` in [console views](web/src/consoleViews.tsx). Check how missing readings show up in the UI. Compare driver memory with separately measured inference capability. [Prometheus practice](docs/learning/IMPLEMENTATION_PROMETHEUS.md)
 
 ## Run the checks
 

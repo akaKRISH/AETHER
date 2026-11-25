@@ -74,19 +74,11 @@ impl Store {
              WHERE campaign_id = ? AND sequence > ? ORDER BY sequence LIMIT ?",
         )?;
         Ok(query
-            .query_map(params![campaign_id, after, limit], |row| {
-                Ok(Event {
-                    campaign_id: row.get(0)?,
-                    sequence: row_u64(row, 1)?,
-                    kind: row.get(2)?,
-                    occurred_at_ms: row_u64(row, 3)?,
-                    detail: row_json(row, 4)?,
-                })
-            })?
+            .query_map(params![campaign_id, after, limit], map_event)?
             .collect::<rusqlite::Result<_>>()?)
     }
 
-    /// Read a consistent bounded view of one campaign. Audit events are paged separately.
+    /// Read a consistent bounded view of one campaign, including its journal.
     pub fn snapshot(&self, campaign_id: &str) -> Result<Snapshot> {
         validate_id(campaign_id)?;
         let tx = self.conn.unchecked_transaction()?;
@@ -236,6 +228,13 @@ impl Store {
                 passed: row.get(3)?, reason: row.get(4)?,
             }),
         )?;
+        let events = bounded(
+            &tx,
+            campaign_id,
+            "SELECT campaign_id, sequence, kind, occurred_at_ms, detail FROM event
+             WHERE campaign_id = ? ORDER BY sequence LIMIT ?",
+            map_event,
+        )?;
         tx.commit()?;
         Ok(Snapshot {
             campaign,
@@ -252,8 +251,19 @@ impl Store {
             verifications,
             contradictions,
             replications,
+            events,
         })
     }
+}
+
+fn map_event(row: &Row<'_>) -> rusqlite::Result<Event> {
+    Ok(Event {
+        campaign_id: row.get(0)?,
+        sequence: row_u64(row, 1)?,
+        kind: row.get(2)?,
+        occurred_at_ms: row_u64(row, 3)?,
+        detail: row_json(row, 4)?,
+    })
 }
 
 fn bounded<T>(

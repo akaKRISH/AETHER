@@ -1,4 +1,5 @@
 use crate::lab::{Error, Lab, PlanRequest, valid_id};
+use crate::literature::{LiteratureError, MetadataProvider};
 use axum::{
     Json, Router,
     body::Body,
@@ -74,6 +75,7 @@ pub async fn serve(lab: Lab, port: u16, token: String, assets: PathBuf) -> std::
     };
     let protected = Router::new()
         .route("/v1/runtime", get(runtime))
+        .route("/v1/hardware", get(hardware))
         .route("/v1/campaigns", get(list).post(create))
         .route("/v1/campaigns/{id}", get(detail))
         .route("/v1/campaigns/{id}/runs", get(runs))
@@ -86,8 +88,9 @@ pub async fn serve(lab: Lab, port: u16, token: String, assets: PathBuf) -> std::
         .route("/v1/campaigns/{id}/report", get(report))
         .route("/v1/artifacts/{sha256}", get(artifact))
         .route("/v1/benchmarks", post(benchmarks))
+        .route("/v1/evolution", post(evolution))
         .route("/v1/literature", get(literature))
-        .route("/v1/literature/lookup", post(crossref))
+        .route("/v1/literature/lookup", post(lookup_metadata))
         .route("/v1/proposals", post(proposals))
         .layer(DefaultBodyLimit::max(8192))
         .route_layer(middleware::from_fn_with_state(app.clone(), authorize));
@@ -323,28 +326,34 @@ async fn live(
         .unwrap_or(cursor.after);
     let probe = app.lab.clone();
     let probe_id = id.clone();
-    blocking(move || probe.snapshot(&probe_id)).await?;
+    let first_page = blocking(move || tail(&probe, &probe_id, after)).await?;
     let updates = stream::unfold(
-        (app.lab, id, after, app.shutdown),
-        |(lab, id, mut after, shutdown)| async move {
+        (app.lab, id, after, app.shutdown, first_page.into_iter()),
+        |(lab, id, mut after, shutdown, mut pending)| async move {
             loop {
                 if shutdown.load(Ordering::Acquire) {
                     return None;
                 }
-                let query = lab.clone();
-                let campaign = id.clone();
-                let batch = blocking(move || tail(&query, &campaign, after))
-                    .await
-                    .ok()?;
-                if let Some(event) = batch.into_iter().next() {
+                if let Some(event) = pending.next() {
                     after = event["sequence"].as_u64()?;
                     let datum = Event::default()
                         .id(after.to_string())
                         .event("campaign")
                         .data(event.to_string());
-                    return Some((Ok::<_, Infallible>(datum), (lab, id, after, shutdown)));
+                    return Some((
+                        Ok::<_, Infallible>(datum),
+                        (lab, id, after, shutdown, pending),
+                    ));
                 }
-                tokio::time::sleep(Duration::from_millis(450)).await;
+                let query = lab.clone();
+                let campaign = id.clone();
+                pending = blocking(move || tail(&query, &campaign, after))
+                    .await
+                    .ok()?
+                    .into_iter();
+                if pending.len() == 0 {
+                    tokio::time::sleep(Duration::from_millis(450)).await;
+                }
             }
         },
     );
@@ -374,6 +383,23 @@ async fn benchmarks() -> ApiResult<Json<Value>> {
         .map(Json)
 }
 
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct EvolutionRequest {
+    seed: u32,
+    evaluations: u16,
+}
+
+async fn evolution(Json(request): Json<EvolutionRequest>) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        let result = aether_engine::evolve(request.seed, request.evaluations)
+            .map_err(|error| Error::Input(error.to_string()))?;
+        Ok(serde_json::to_value(result)?)
+    })
+    .await
+    .map(Json)
+}
+
 async fn runtime(State(app): State<App>) -> Json<Value> {
     let active = app.active.lock().map_or(0, |jobs| jobs.len());
     Json(json!({
@@ -383,6 +409,12 @@ async fn runtime(State(app): State<App>) -> Json<Value> {
         "worker_profile": "reviewed native executable, no untrusted code",
         "network_by_default": false, "isolation": "trusted built-in worker only",
     }))
+}
+
+async fn hardware() -> ApiResult<Json<Value>> {
+    blocking(|| Ok(serde_json::to_value(crate::hardware::gpu_snapshot())?))
+        .await
+        .map(Json)
 }
 
 #[derive(Default, Deserialize)]
@@ -402,7 +434,8 @@ async fn literature(
             .map(|item| {
                 Ok(json!({
                     "title": item.title, "doi": item.doi, "year": item.published_year,
-                    "source": item.container_title, "url": format!("https://doi.org/{}", item.doi),
+                    "source": item.container_title, "url": item.source_url(),
+                    "arxiv_id": item.arxiv_id, "openalex_id": item.openalex_id, "topics": item.topics,
                     "provenance": item.provenance,
                 }))
             })
@@ -412,17 +445,54 @@ async fn literature(
     .map(Json)
 }
 
-async fn crossref(Json(query): Json<LiteratureQuery>) -> ApiResult<Json<Value>> {
-    if std::env::var("AETHER_ALLOW_CROSSREF").as_deref() != Ok("1") {
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct MetadataQuery {
+    query: String,
+    #[serde(default)]
+    provider: MetadataProvider,
+    #[serde(default)]
+    save: bool,
+}
+
+async fn lookup_metadata(
+    State(app): State<App>,
+    Json(query): Json<MetadataQuery>,
+) -> ApiResult<Response> {
+    let flag = match query.provider {
+        MetadataProvider::Crossref => "AETHER_ALLOW_CROSSREF",
+        MetadataProvider::OpenAlex => "AETHER_ALLOW_OPENALEX",
+        MetadataProvider::Arxiv => "AETHER_ALLOW_ARXIV",
+    };
+    if std::env::var(flag).as_deref() != Ok("1") {
         return Err(Error::Conflict("external citation lookup is disabled".into()).into());
     }
-    blocking(move || {
-        let result = crate::literature::search_crossref(&query.query, 12)
-            .map_err(|error| Error::Input(error.to_string()))?;
-        Ok(serde_json::to_value(result)?)
+    let result = blocking(move || {
+        let records = match crate::literature::search_metadata(query.provider, &query.query, 12) {
+            Ok(records) => records,
+            Err(error) => return Ok(Err(error)),
+        };
+        if query.save && !records.is_empty() {
+            app.lab.save_discovered_citations(records.clone())?;
+        }
+        Ok(Ok(records))
     })
-    .await
-    .map(Json)
+    .await?;
+    match result {
+        Ok(records) => Ok(Json(records).into_response()),
+        Err(LiteratureError::RateLimited { retry_after_secs }) => Ok((
+            StatusCode::TOO_MANY_REQUESTS,
+            [(header::RETRY_AFTER, retry_after_secs.to_string())],
+            Json(json!({"code": "metadata_rate_limited", "error": "retry the metadata lookup later"})),
+        )
+            .into_response()),
+        Err(LiteratureError::InvalidQuery) => Err(Error::Input("invalid metadata query".into()).into()),
+        Err(_) => Ok((
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({"code": "metadata_unavailable", "error": "metadata provider unavailable"})),
+        )
+            .into_response()),
+    }
 }
 
 async fn proposals(

@@ -1,0 +1,11 @@
+{
+  "seeds": [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112],
+  "caps": {
+    "wall_ms": 120,
+    "model_tokens": 0,
+    "paid_microusd": 0,
+    "output_bytes": 0,
+    "attempts": 12
+  },
+  "modes": ["A", "B", "C", "D", "E"]
+}

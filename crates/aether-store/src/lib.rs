@@ -102,17 +102,23 @@ impl Store {
         conn.pragma_update(None, "foreign_keys", true)?;
         conn.pragma_update(None, "journal_mode", "DELETE")?;
         conn.pragma_update(None, "synchronous", "FULL")?;
-        let tx = conn.transaction_with_behavior(TransactionBehavior::Immediate)?;
-        let version: u32 = tx.pragma_query_value(None, "user_version", |row| row.get(0))?;
+        let version: u32 = conn.pragma_query_value(None, "user_version", |row| row.get(0))?;
         match version {
             SCHEMA_VERSION => {}
             0 => {
-                tx.execute_batch(include_str!("001_initial.sql"))?;
-                tx.pragma_update(None, "user_version", SCHEMA_VERSION)?;
+                let tx = conn.transaction_with_behavior(TransactionBehavior::Immediate)?;
+                match tx.pragma_query_value(None, "user_version", |row| row.get(0))? {
+                    SCHEMA_VERSION => {}
+                    0 => {
+                        tx.execute_batch(include_str!("001_initial.sql"))?;
+                        tx.pragma_update(None, "user_version", SCHEMA_VERSION)?;
+                    }
+                    unsupported => return Err(StoreError::UnsupportedSchema(unsupported)),
+                }
+                tx.commit()?;
             }
             unsupported => return Err(StoreError::UnsupportedSchema(unsupported)),
         }
-        tx.commit()?;
         Ok(Self { conn })
     }
 

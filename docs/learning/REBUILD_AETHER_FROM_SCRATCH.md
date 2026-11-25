@@ -21,6 +21,7 @@ The goal is to reconstruct the ideas in a new practice program and explain every
 | 6. Process supervision | Run a known program in a bounded child process | Validate identity of a small result, exercise timeout with a sleeping fixture and reap the child | [Operating systems and security](IMPLEMENTATION_OS_SECURITY.md) |
 | 7. API and UI | Protected read endpoint plus one browser table and a draft-only planner | Valid token reads snapshot, absent token gets 401, and typed planner output cannot launch anything | [API and agents](IMPLEMENTATION_API_AGENTS.md) |
 | 8. Study and compute | Run a matched synthetic comparison, then record one separately labelled end-to-end timing exercise | Preserve all paired attempts and prove which quantities are modeled and which you measured | [ECAR and statistics](IMPLEMENTATION_ECAR_STATISTICS.md) and [Compute](IMPLEMENTATION_COMPUTE_DISTRIBUTED.md) |
+| 9. Prometheus | Rebuild bounded optimization, candidate lineage, optional model/catalog adapters, and performance measurements | Verify a result with an independent oracle, preserve a failed candidate and trace a structured provider response to a draft | [Prometheus practice](IMPLEMENTATION_PROMETHEUS.md) |
 
 ## First practice run
 

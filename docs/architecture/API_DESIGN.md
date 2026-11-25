@@ -9,7 +9,8 @@ In the table, `{id}` is the campaign ID. Send JSON bodies with `Content-Type: ap
 | Method and path | Request and response |
 |---|---|
 | GET /v1/runtime | Host OS, architecture, logical CPU count and reviewed worker profile |
-| POST /v1/campaigns | [Plan request](../../taskpacks/example-campaign.json). Returns the frozen draft and protocol hash with 201. |
+| GET /v1/hardware | A bounded read from the local NVIDIA driver tool. Reports observation status and device memory/utilization fields when available. |
+| POST /v1/campaigns | Send a [sorting](../../taskpacks/example-campaign.json) or [maximum-subarray](../../taskpacks/example-max-subarray.json) plan. Returns the frozen draft and protocol hash with 201. |
 | GET /v1/campaigns | Bounded list. Optional `after` campaign ID and `limit` of 1–512, with a default of 128. |
 | GET /v1/campaigns/{id} | Campaign snapshot with budget, claims, dependency graph, attempts and evidence |
 | POST /v1/campaigns/{id}/approve | `{"protocol_hash":"<sha256>"}` approves the exact frozen document. Returns 409 if the digest or state conflicts. |
@@ -22,9 +23,10 @@ In the table, `{id}` is the campaign ID. Send JSON bodies with `Content-Type: ap
 | GET /v1/campaigns/{id}/report | Self-contained JSON report after digest checks |
 | GET /v1/artifacts/{sha256} | Digest-checked raw bytes as a download |
 | POST /v1/benchmarks | Matched synthetic default study and measured simulator wall time |
+| POST /v1/evolution | Send `{"seed":19,"evaluations":48}` for the four-policy knapsack development comparison. Accepts 8–96 evaluation slots per policy. The report includes retained candidate lineage, exact feasibility checks, and regret relative to exhaustive enumeration. |
 | POST /v1/proposals | [Planning request](../../taskpacks/example-planning.json). Returns reviewed-task proposals from the deterministic offline provider. |
 | GET /v1/literature | Local citation metadata. Optional `query` filters the catalog. |
-| POST /v1/literature/lookup | `{"query":"<search text>"}` requests Crossref metadata only when enabled explicitly. |
+| POST /v1/literature/lookup | Send `query`, optional `provider` (`crossref`, `openalex`, `arxiv`) and optional `save` (default false). Each provider requires its own explicit opt-in. HTTP 429 includes `Retry-After`. [Provider configuration](../research/LITERATURE_ADAPTERS.md) |
 
 Application error bodies contain `code` and `error`. Typical statuses are 400 for invalid input, 401 for missing or incorrect credentials, 404 for missing resources, 409 for state or integrity conflicts, and 503 for internal operation failures. Router and JSON extractor rejections can also occur before an application handler runs. The loopback API uses one owner token across the local workspace. [HTTP implementation](../../crates/aether-api/src/http.rs) · [API tests](../../crates/aether-api/tests/platform.rs)
 

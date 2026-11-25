@@ -1,0 +1,12 @@
+{
+  "id": "max-subarray-01",
+  "title": "Frozen maximum-subarray comparison",
+  "objective": "Compare the largest-single-item baseline with Kadane's method on two separately seeded inputs against an exhaustive verifier.",
+  "seed": 19,
+  "items": 128,
+  "attempts": 5,
+  "wall_ms": 12000,
+  "optimization": {
+    "challenge_seed": 281
+  }
+}

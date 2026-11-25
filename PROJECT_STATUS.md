@@ -1,6 +1,15 @@
 # Project status
 
-25 November 2026 · **Implementation-first local workbench.** The owner approved successive implementation milestones and superseded the lesson pauses. The existing Rust-first architecture and security approval boundaries govern the work.
+25 November 2026 · **Operation Prometheus.** The owner approved further implementation-first engineering. The existing Rust-first architecture and security approval boundaries govern the work.
+
+## Prometheus
+
+- Independently rebuilt and tested the clean `c017c05` baseline. Fixed workspace worker admission, conflicting protocol publication, SQLite read contention, mixed-time journal snapshots and repeated SSE page queries. Preserved the earlier sorting export byte for byte. [Engineering audit](docs/engineering/PROMETHEUS_AUDIT.md)
+- Added a frozen maximum-subarray campaign with an exhaustive verifier, a fresh replay process, a distinct challenge input and two retained baseline counterexamples. Added offline objective-to-draft planning and a verified release demonstration. [Campaign results](docs/research/BENCHMARK_RESULTS.md)
+- Added deterministic, Ollama, llama.cpp, OpenAI and Anthropic planning adapters. Added opt-in Crossref, OpenAlex and arXiv metadata discovery with normalizing storage and retained provenance. Loopback and offline fixtures passed. Live inference and live metadata retrieval remain unqualified. [Model adapters](docs/operations/MODEL_PROVIDERS.md) · [Metadata adapters](docs/research/LITERATURE_ADAPTERS.md)
+- Added a bounded knapsack comparison and lineage explorer, an authenticated GPU panel with real driver readings, and focused scheduler, evidence and HTTP performance measurements. [Development study](docs/research/KNAPSACK_DEVELOPMENT_STUDY.md) · [GPU profile](docs/operations/PROMETHEUS_GPU_PROFILE.md) · [Performance and study results](docs/research/BENCHMARK_RESULTS.md)
+- The 180-case synthetic pilot preserved both matched policy ablations. Graph weighting changed action order in some cases and produced equal utility in every pair tested. The knapsack fixtures also retained worse and tied outcomes. [Policy pilot](docs/research/PROMETHEUS_POLICY_PILOT.md)
+- The Windows rerun passed 49 Rust and three frontend tests, strict Clippy, formatting, native release build, frontend linting, type checking and production build. Desktop and mobile browser coverage exercised the new optimization campaign and browseable evidence. [Test results](docs/testing/TEST_RESULTS.md)
 
 ## Completed
 
@@ -21,8 +30,6 @@
 
 ADR-009 (Rust Edition 2024 trusted architecture) remains the accepted direction. Exercises remain available in parallel. Start with the tested code in the [rebuild curriculum](docs/learning/REBUILD_AETHER_FROM_SCRATCH.md) or the existing [Lesson 1](docs/learning/LESSON_01_CLASSIFICATION_AND_RUST.md).
 
-The local workbench runs reviewed seeded sorting and deterministic fixture tasks. OS-enforced hostile worker isolation, external datasets, hosted authorization, distributed workers, GPU workload accounting and independent held-out evaluation remain open. Live Ollama generation and Crossref retrieval were not verified. [Security review](docs/security/SECURITY_REVIEW.md) · [Continuation](NEXT_ACTIONS.md)
-
-The recorded experiments are local development checks on synthetic inputs. ECAR efficacy and the comparison with close prior work including CAVEAT remain open research questions. [Originality assessment](docs/research/ORIGINALITY_ASSESSMENT.md)
+The local, repeatable platform includes Level 4 features and still has open Level 4 integration gates around live models, metadata, provider accounting, and a complete AI-assisted run. Level 5 requires a frozen, adequately powered independent evaluation. OS isolation, remote execution and GPU inference are separate qualification tracks. [Security review](docs/security/SECURITY_REVIEW.md) · [Continuation](NEXT_ACTIONS.md) · [Originality assessment](docs/research/ORIGINALITY_ASSESSMENT.md)
 
 [Blueprint](docs/AETHER_MASTER_BLUEPRINT.md) · [Decisions](docs/governance/DECISION_LOG.md) · [Reconciliations](docs/SOURCE_RECONCILIATION.md)

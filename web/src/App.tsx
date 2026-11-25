@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { campaignPath, getSnapshot, listCampaigns, message, post, type Campaign, type NewCampaign, type Snapshot } from './api'
 import { Budgets, Decisions, Events, EvidenceGraph, Experiments, Overview, Verification } from './campaignViews'
-import { Benchmarks, Catalog, Hypotheses, Report } from './consoleViews'
+import { Benchmarks, Catalog, Evolution, GpuTelemetry, Hypotheses, Report } from './consoleViews'
 import { Badge, Empty, Modal, Panel, errorText, integer, readNumber } from './components'
 
 const campaignViews = [
@@ -18,6 +18,7 @@ const campaignViews = [
 ] as const
 const labViews = [
   ['benchmarks', 'Benchmarks'],
+  ['evolution', 'Evolution explorer'],
   ['runtime', 'Runtime'],
   ['literature', 'Literature'],
   ['settings', 'Security settings'],
@@ -49,7 +50,7 @@ function ConnectionForm({ connect, close }: { connect: (token: string) => Promis
   return <Modal title="Connect to AETHER" onClose={close}>
     <form className="modal-form" onSubmit={submit}>
       <p className="muted">Use the value configured as <code>AETHER_TOKEN</code> on your local API. The console keeps it in this tab until you disconnect or reload.</p>
-      <label>API Bearer token<input name="token" type="password" required autoComplete="off" autoFocus /></label>
+      <label>API Bearer token<input name="token" type="password" required autoComplete="off" data-initial-focus /></label>
       {errorText(error)}
       <button type="submit" className="button button--primary" disabled={busy}>{busy ? 'Connecting…' : 'Connect'}</button>
     </form>
@@ -59,14 +60,19 @@ function ConnectionForm({ connect, close }: { connect: (token: string) => Promis
 function CampaignForm({ create, close }: { create: (value: NewCampaign) => Promise<void>; close: () => void }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [optimization, setOptimization] = useState(false)
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const data = new FormData(event.currentTarget)
+    const task = optimization
+      ? { optimization: { challenge_seed: readNumber(data.get('challenge_seed')) } }
+      : { algorithm: String(data.get('algorithm')) }
     const campaign: NewCampaign = {
       id: String(data.get('id') ?? '').trim(), title: String(data.get('title') ?? '').trim(),
-      objective: String(data.get('objective') ?? '').trim(), algorithm: String(data.get('algorithm')),
+      objective: String(data.get('objective') ?? '').trim(),
       seed: readNumber(data.get('seed')), items: readNumber(data.get('items')),
       attempts: readNumber(data.get('attempts')), wall_ms: readNumber(data.get('wall_ms')),
+      ...task,
     }
     const bytes = new TextEncoder()
     if (!/^[a-z0-9][a-z0-9-]{0,31}$/.test(campaign.id) || !campaign.title || !campaign.objective
@@ -74,6 +80,11 @@ function CampaignForm({ create, close }: { create: (value: NewCampaign) => Promi
       || !integer(campaign.seed, 0, 4_294_967_295) || !integer(campaign.items, 1, 128)
       || !integer(campaign.attempts, 1, 12) || !integer(campaign.wall_ms, 2_000, 30_000)) {
       setError('Use a lowercase campaign ID, a short title and objective, and values within the shown limits.')
+      return
+    }
+    if (campaign.optimization && (!integer(campaign.optimization.challenge_seed, 0, 4_294_967_295)
+      || campaign.optimization.challenge_seed === campaign.seed)) {
+      setError('Choose a valid challenge seed different from the original seed.')
       return
     }
     setBusy(true)
@@ -89,14 +100,21 @@ function CampaignForm({ create, close }: { create: (value: NewCampaign) => Promi
   return <Modal title="New campaign" onClose={close}>
     <form className="modal-form" onSubmit={submit}>
       <div className="form-columns">
-        <label>Campaign ID<input name="id" required maxLength={32} pattern="[a-z0-9][a-z0-9\-]*" placeholder="sorting-study" autoFocus /></label>
+        <label>Campaign ID<input name="id" required maxLength={32} pattern="[a-z0-9][a-z0-9\-]*" placeholder="sorting-study" data-initial-focus /></label>
         <label>Title<input name="title" maxLength={120} required placeholder="Sorting study" /></label>
       </div>
       <label>Research objective<textarea name="objective" rows={3} maxLength={512} required /></label>
       <div className="form-columns">
-        <label>Algorithm<select name="algorithm" defaultValue="insertion">
-          <option value="insertion">Insertion sort</option><option value="selection">Selection sort</option><option value="standard">Standard sort</option>
+        <label>Task domain<select value={optimization ? 'optimization' : 'sort'}
+          onChange={(event) => setOptimization(event.target.value === 'optimization')}>
+          <option value="sort">Seeded sorting</option>
+          <option value="optimization">Maximum subarray</option>
         </select></label>
+        {optimization
+          ? <label>Challenge seed<input name="challenge_seed" type="number" min={0} max={4_294_967_295} step={1} defaultValue={281} required /></label>
+          : <label>Algorithm<select name="algorithm" defaultValue="insertion">
+            <option value="insertion">Insertion sort</option><option value="selection">Selection sort</option><option value="standard">Standard sort</option>
+          </select></label>}
         <label>Random seed<input name="seed" type="number" min={0} max={4_294_967_295} step={1} defaultValue={11} required /></label>
         <label>Fixture items<input name="items" type="number" min={1} max={128} step={1} defaultValue={128} required /></label>
         <label>Attempt cap<input name="attempts" type="number" min={1} max={12} step={1} defaultValue={5} required /></label>
@@ -160,6 +178,7 @@ export function App() {
   const [busy, setBusy] = useState(false)
   const [refresh, setRefresh] = useState(0)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: A mutation increments refresh to restart the poll immediately.
   useEffect(() => {
     if (!token || !selected) return
     const controller = new AbortController()
@@ -248,8 +267,13 @@ export function App() {
     </section>
   } else if (view === 'benchmarks') {
     content = <Benchmarks token={token} />
+  } else if (view === 'evolution') {
+    content = <Evolution token={token} />
   } else if (view === 'runtime' || view === 'literature') {
-    content = <Catalog key={view} token={token} kind={view} />
+    content = <>
+      <Catalog key={view} token={token} kind={view} />
+      {view === 'runtime' && <GpuTelemetry token={token} />}
+    </>
   } else if (view === 'settings') {
     content = <>
       <Panel title="Local session">
