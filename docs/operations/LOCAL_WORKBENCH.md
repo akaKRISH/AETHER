@@ -31,7 +31,7 @@ $draft = & $lab plan-objective objective-local .\taskpacks\example-planning.json
 & $lab report objective-local
 ```
 
-Inspect the frozen draft and planning output before approving. The planner ranks reviewed sorting methods using the deterministic offline provider. Use `aether-lab propose-provider <request.json> <provider> <model>` for standalone proposals with explicit provenance. Hosted providers and outbound literature metadata each have separate opt-in. [Model configuration](MODEL_PROVIDERS.md) · [Literature metadata](../research/LITERATURE_ADAPTERS.md)
+Inspect the frozen draft and planning output before approving. The planner defaults to the deterministic offline provider and binds validated advice to the protocol. Append a configured provider and model to `plan-objective` to select an adapter. Use `aether-lab propose-provider <request.json> <provider> <model>` for standalone proposals. Hosted providers and outbound literature metadata each have separate opt-in. [Model configuration](MODEL_PROVIDERS.md) · [Literature metadata](../research/LITERATURE_ADAPTERS.md)
 
 ## Interface
 

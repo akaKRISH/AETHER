@@ -2,7 +2,7 @@
 
 ## Checkpoint and phase
 
-Baseline `c017c05` is the last independently confirmed clean foundation. The Prometheus recovery commit preserves the current implementation on `main`. The active phase is Windows release verification and integration closeout.
+The current validated local checkpoint is `prometheus-windows-verified` on `main`. Recovery commit `41d3919` and foundation `c017c05` remain in history. The active phase is Prometheus qualification after the Windows integration release.
 
 ## Preserved implementation
 
@@ -12,12 +12,12 @@ Baseline `c017c05` is the last independently confirmed clean foundation. The Pro
 
 ## Latest verification
 
-The baseline rerun passed 33 Rust and three frontend tests. The expanded pre-fix integration passed 49 Rust tests, formatting, strict Clippy, native release, frontend lint/type/test/build, Chromium desktop/mobile smoke, and Criterion. The recorded optimization report verifies sums 623 and 1,131 on the frozen inputs and retains two counterexamples to the rejected singleton claim. The simulated policy pilot and measured knapsack checks have tracked exports.
+Baseline passed 33 Rust and three frontend tests. The final Windows run passed 50 Rust and three frontend tests, format, strict Clippy, release build, frontend lint/type/build, browser smoke, advisory checks, and evidence validation. The release re-exported three prior reports byte for byte and completed a new objective-derived campaign with advice frozen under protocol v3. The hardware CLI observed the physical NVIDIA device. Crossref, OpenAlex and arXiv public probes returned 200. The recovery drill reconciled one interrupted lease. [Tests](docs/testing/TEST_RESULTS.md) · [Measurements](docs/research/BENCHMARK_RESULTS.md)
 
 ## Exact next action
 
-Build the release with the minimal Windows NVML environment fix and run `aether-lab hardware`. Before that patch, a cleared child environment with only `SystemRoot` produced `Failed to initialize NVML: Unknown Error`. The direct driver probe succeeded with `SystemRoot` and `ProgramFiles`. If the release passes, capture final timing and driver observations, check browser workflows, then complete the audit records and local checkpoint.
+Add exact local citation identity resolution to objective-derived planning and freeze selected sources with the hypothesis under a reviewed protocol. Reuse the typed records in `crates/aether-api/src/literature.rs` and the versioned freezing path in `crates/aether-api/src/lab.rs`. Preserve v1–v3 report compatibility and add a test for dangling identifiers. In parallel, qualify real inference only when a cloud-disabled authorized endpoint and sufficient memory are available.
 
 ## Remaining dependencies
 
-Live model and bibliographic retrieval require an authorized ready endpoint or explicit outbound query. The preflight found no listener and 1.30 GiB free host RAM. GPU inference, stronger worker isolation and an independently controlled scientific evaluation have separate readiness gates. [Continuation](NEXT_ACTIONS.md) · [Test results](docs/testing/TEST_RESULTS.md)
+Live model inference remains incomplete. Ollama 0.40.17 was reachable with cloud features enabled and no loaded model. AETHER's release policy gate rejected it before sending a prompt. GPU inference, stronger worker isolation and a held-out scientific evaluation remain separate qualification tracks. [Continuation](NEXT_ACTIONS.md) · [Provider status](docs/operations/MODEL_PROVIDERS.md)

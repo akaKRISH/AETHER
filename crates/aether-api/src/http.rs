@@ -304,13 +304,9 @@ async fn events(
     Path(id): Path<String>,
     Query(cursor): Query<Cursor>,
 ) -> ApiResult<Json<Vec<Value>>> {
-    blocking(move || tail(&app.lab, &id, cursor.after))
+    blocking(move || app.lab.events(&id, cursor.after))
         .await
         .map(Json)
-}
-
-fn tail(lab: &Lab, id: &str, after: u64) -> Result<Vec<Value>, Error> {
-    lab.events(id, after)
 }
 
 async fn live(
@@ -326,7 +322,7 @@ async fn live(
         .unwrap_or(cursor.after);
     let probe = app.lab.clone();
     let probe_id = id.clone();
-    let first_page = blocking(move || tail(&probe, &probe_id, after)).await?;
+    let first_page = blocking(move || probe.events(&probe_id, after)).await?;
     let updates = stream::unfold(
         (app.lab, id, after, app.shutdown, first_page.into_iter()),
         |(lab, id, mut after, shutdown, mut pending)| async move {
@@ -347,7 +343,7 @@ async fn live(
                 }
                 let query = lab.clone();
                 let campaign = id.clone();
-                pending = blocking(move || tail(&query, &campaign, after))
+                pending = blocking(move || query.events(&campaign, after))
                     .await
                     .ok()?
                     .into_iter();
@@ -428,18 +424,18 @@ async fn literature(
     Query(query): Query<LiteratureQuery>,
 ) -> ApiResult<Json<Vec<Value>>> {
     blocking(move || {
-        app.lab
+        Ok(app.lab
             .citations(&query.query)?
             .into_iter()
             .map(|item| {
-                Ok(json!({
+                json!({
                     "title": item.title, "doi": item.doi, "year": item.published_year,
                     "source": item.container_title, "url": item.source_url(),
                     "arxiv_id": item.arxiv_id, "openalex_id": item.openalex_id, "topics": item.topics,
                     "provenance": item.provenance,
-                }))
+                })
             })
-            .collect()
+            .collect())
     })
     .await
     .map(Json)

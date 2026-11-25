@@ -22,7 +22,11 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use thiserror::Error;
 
+use crate::planning::{PlanningReport, PlanningRequest};
+
 const ACTION_LIMIT_MS: u64 = 2_000;
+const MAX_PROTOCOL_BYTES: usize = 4096;
+const OBJECTIVE_PROTOCOL: &str = "aether.protocol/3";
 const SORT_POLICY: &str = "aether-reviewed-sort-ecar/v1";
 const OPTIMIZATION_POLICY: &str = "aether-reviewed-max-subarray-ecar/v1";
 static STAGE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
@@ -120,11 +124,11 @@ impl PlanRequest {
         }
     }
 
-    fn protocol_version(&self) -> &'static str {
-        if self.optimization.is_some() {
-            "aether.protocol/2"
-        } else {
-            "aether.protocol/1"
+    fn protocol_version(&self, has_planning: bool) -> &'static str {
+        match (has_planning, self.optimization.is_some()) {
+            (true, _) => OBJECTIVE_PROTOCOL,
+            (_, true) => "aether.protocol/2",
+            _ => "aether.protocol/1",
         }
     }
 
@@ -180,6 +184,8 @@ struct FrozenPlan {
     plan: PlanRequest,
     #[serde(skip_serializing_if = "Option::is_none")]
     optimization_inputs: Option<[Vec<i16>; 2]>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    planning: Option<Value>,
 }
 
 pub fn valid_id(id: &str) -> bool {
@@ -353,16 +359,95 @@ impl Lab {
     }
 
     pub fn create(&self, plan: &PlanRequest) -> Result<Campaign> {
+        self.create_frozen(plan, None)
+    }
+
+    pub fn lock_objective_draft(&self, id: &str) -> Result<File> {
+        if !valid_id(id) {
+            return Err(Error::Input("invalid campaign id".into()));
+        }
+        let path = self
+            .root
+            .join("supervisors")
+            .join(format!("{id}.objective.lock"));
+        Self::try_lock(&path, "objective draft")
+    }
+
+    pub fn existing_objective_draft(
+        &self,
+        id: &str,
+        request_digest: &str,
+        provider: &str,
+        model: &str,
+    ) -> Result<Option<(Campaign, Value)>> {
+        let store = self.store()?;
+        let Some(campaign) = storage(store.campaign(id))? else {
+            return Ok(None);
+        };
+        let frozen: FrozenPlan =
+            serde_json::from_slice(&self.protocol_bytes(&campaign.spec.protocol_hash)?)?;
+        if let Some(planning) = frozen.planning
+            && frozen.version == OBJECTIVE_PROTOCOL
+            && planning["request_sha256"] == request_digest
+            && planning["provenance"]["provider"] == provider
+            && planning["provenance"]["requested_model"] == model
+        {
+            return Ok(Some((campaign, planning)));
+        }
+        Err(Error::Conflict(
+            "campaign id already belongs to another frozen plan".into(),
+        ))
+    }
+
+    pub fn create_objective_draft(
+        &self,
+        id: &str,
+        request: PlanningRequest,
+        advice: &PlanningReport,
+    ) -> Result<(Campaign, Value)> {
+        let digest = request
+            .digest()
+            .map_err(|error| Error::Input(error.to_string()))?;
+        let Some(selected) = advice.proposals.first() else {
+            return Err(Error::Integrity(
+                "validated planning has no candidate".into(),
+            ));
+        };
+        if digest != advice.request_sha256
+            || selected.seed != request.seed
+            || selected.items != request.items
+        {
+            return Err(Error::Integrity(
+                "planning advice belongs to another request".into(),
+            ));
+        }
+        let mut plan = PlanRequest::example(id.into(), selected.seed);
+        plan.title = "Objective-guided sorting study".into();
+        plan.objective = request.objective;
+        plan.items = selected.items;
+        plan.algorithm = Some(selected.algorithm);
+        let frozen_advice = serde_json::to_value(advice)?;
+        let campaign = self.create_frozen(&plan, Some(frozen_advice.clone()))?;
+        Ok((campaign, frozen_advice))
+    }
+
+    fn create_frozen(&self, plan: &PlanRequest, planning: Option<Value>) -> Result<Campaign> {
         plan.validate()?;
         let optimization_inputs = plan.optimization_inputs()?;
         let frozen = FrozenPlan {
-            version: plan.protocol_version().into(),
+            version: plan.protocol_version(planning.is_some()).into(),
             evaluator_hash: self.evaluator_hash.clone(),
             policy_hash: sha256(plan.policy().as_bytes()),
             plan: plan.clone(),
             optimization_inputs,
+            planning,
         };
         let bytes = serde_json::to_vec(&frozen)?;
+        if bytes.len() > MAX_PROTOCOL_BYTES {
+            return Err(Error::Input(
+                "frozen protocol exceeds the local size limit".into(),
+            ));
+        }
         let digest = sha256(&bytes);
         // ponytail: one short local publication lock serializes draft creation.
         // Use an ID-scoped publication lock if concurrent planning needs more throughput.
@@ -448,8 +533,10 @@ impl Lab {
             return Err(Error::Integrity("invalid protocol file type".into()));
         }
         let mut bytes = Vec::new();
-        File::open(path)?.take(4097).read_to_end(&mut bytes)?;
-        if bytes.len() > 4096 || sha256(&bytes) != digest {
+        File::open(path)?
+            .take(MAX_PROTOCOL_BYTES as u64 + 1)
+            .read_to_end(&mut bytes)?;
+        if bytes.len() > MAX_PROTOCOL_BYTES || sha256(&bytes) != digest {
             return Err(Error::Integrity("frozen protocol bytes changed".into()));
         }
         Ok(bytes)
@@ -596,7 +683,8 @@ impl Lab {
             serde_json::from_slice(&self.protocol_bytes(&campaign.spec.protocol_hash)?)?;
         let plan = &frozen.plan;
         plan.validate()?;
-        if frozen.version != plan.protocol_version()
+        if frozen.version != plan.protocol_version(frozen.planning.is_some())
+            || (frozen.planning.is_some() && plan.optimization.is_some())
             || frozen.evaluator_hash != campaign.spec.evaluator_hash
             || frozen.policy_hash != campaign.spec.policy_hash
             || frozen.policy_hash != sha256(plan.policy().as_bytes())

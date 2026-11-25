@@ -1,5 +1,18 @@
 # Dependency inventory
 
+## Prometheus lock updates
+
+| Lock | SHA-256 | Latest advisory result |
+|---|---|---|
+| Cargo | `d9ab513ddb54407b02b26392eecec8b49038de32dc6eb1566ca771c21bbbab7c` | RustSec 0.23.0 scanned 188 entries against 1,568 advisories. Exit 0, with zero findings and no warnings. |
+| npm | `33b523e51e635e441b6a5e1b03f32592d26128563159ccd93cdf5369cc3fdccb` | npm 12.0.2 scanned 82 reported dependency entries. Exit 0, with zero findings. |
+
+The RustSec run verified the official Windows tool download digest and used advisory database revision `b9b8a3c2cb1f2a3c76ab17a551193568c9f8b7a4`. The npm audit used `--package-lock-only`. These results cover known advisories for the recorded locks. [RustSec snapshot](https://github.com/RustSec/advisory-db/commit/b9b8a3c2cb1f2a3c76ab17a551193568c9f8b7a4) · [npm audit](https://docs.npmjs.com/cli/commands/npm-audit/)
+
+Direct additions are `roxmltree` 0.21.2 for bounded Atom metadata parsing, Criterion 0.8.2 for two development-only benchmark targets, and Biome 2.6.9 for frontend development linting. Each publishes a permissive MIT or Apache-2.0 choice. The full updated lockfiles include the related transitive and platform entries. Recheck exact notice requirements before distribution. [Cargo lock](../../Cargo.lock) · [npm lock](../../web/package-lock.json)
+
+## Foundation inventory
+
 **Snapshot dated 25 November 2026.** This inventory covers the complete native [Cargo lock](../../Cargo.lock) and [web npm lock](../../web/package-lock.json), including transitive, development, optional and platform-specific entries. A lock can contain dependencies for several targets. Only the selected dependency graph reaches a particular build.
 
 | Lock | SHA-256 | Scope |

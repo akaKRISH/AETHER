@@ -39,6 +39,8 @@ The maximum-subarray release campaign froze 128 signed integers per seed. The tr
 
 Replay repeats seed 19 in a fresh process. Challenge uses a distinct frozen input. All observations share the same evaluator and generated input distribution. The objective demonstration used the deterministic provider to produce a draft and kept approval separate. A fresh process exported the same completed report. [Draft and planner provenance](../../research/results/prometheus-objective-draft.json) · [Completed objective campaign](../../research/results/prometheus-objective-report.json)
 
+The continuation repeated the workflow under protocol v3 with the provider advice included in the approved hash. An identical draft request reused the advice, a start before approval failed, and the completed run matched the fresh-process report byte for byte. This run used the offline provider. [Bound draft](../../research/results/prometheus-objective-bound-draft.json) · [Bound report](../../research/results/prometheus-objective-bound-report.json)
+
 ### Knapsack candidate search
 
 `aether-lab evolve <seed> 48` compared four methods at equal evaluation-slot caps on the same 12 items within each seed. The independent exhaustive oracle computed the optimum for each fixture. Random search had the lowest gap in two fixtures and tied on the third. Every method missed the optimum. The experiment covers three development fixtures, with one search trajectory per arm per seed. [Protocol](KNAPSACK_DEVELOPMENT_STUDY.md) · [Raw archives](../../research/results/prometheus-knapsack.json)
@@ -50,3 +52,28 @@ Replay repeats seed 19 in a fresh process. Challenge uses a distinct frozen inpu
 | 919 | 373 | 43 | 76 | 76 | 76 |
 
 The separate 180-case matched policy simulation found no verified-utility change from graph weighting in its tested pairs. It retains the action-order differences and the adaptive versus fixed allocation contrast. [Prometheus policy pilot](PROMETHEUS_POLICY_PILOT.md)
+
+### Native performance laboratory
+
+Criterion 0.8.2 used the Rust 1.96.1 optimized bench profile on the Windows i5-13420H host. Each operation had one second of warmup and 20 samples. The durable append exceeded its two-second target and collected all 20 samples in approximately 2.57 seconds. The table reports the estimated time per operation and Criterion's 95% interval. [Scheduler harness](../../crates/aether-engine/benches/scheduler.rs) · [Evidence harness](../../crates/aether-store/benches/evidence.rs) · [Raw samples and estimates](../../research/results/prometheus-criterion.json)
+
+| Operation | Estimate | 95% interval |
+|---|---:|---:|
+| Scheduler with trace, 3 actions | 1.205 µs | 1.171–1.245 µs |
+| Scheduler with trace, 32 actions | 15.696 µs | 14.360–16.799 µs |
+| Scheduler with trace, 128 actions | 78.719 µs | 75.699–81.332 µs |
+| Reject a cycle in a 64-claim chain | 113.99 µs | 111.28–116.57 µs |
+| Combined in-memory 64-claim evidence and journal snapshot | 1.221 ms | 1.196–1.248 ms |
+| Append one durable SQLite decision | 11.576 ms | 10.512–13.473 ms |
+
+The journal append used one temporary on-disk database with rollback journaling and full synchronous writes. The graph measurements used an in-memory database. The recovery drill took 173.39 ms to execute the release CLI after the interrupted attempt's lease became eligible. This timing includes process startup and excludes the lease wait. No matched language-speed or concurrent throughput comparison has run. [Recovery and validation](../testing/TEST_RESULTS.md)
+
+The final release API was measured over loopback on one completed sorting campaign. Each route had ten warmup requests and 50 measured requests. Times include HTTP round trip and full response body read. Peak server working set was 13,082,624 bytes (about 12.5 MiB) during the run. [Timing harness](../../tests/measure-loopback.cjs) · [Raw route samples](../../research/results/prometheus-loopback-performance.json)
+
+| Route | Body bytes | p50 | p95 |
+|---|---:|---:|---:|
+| Health | 34 | 14.78 ms | 16.70 ms |
+| Campaign snapshot | 20,031 | 14.89 ms | 19.01 ms |
+| Campaign event page | 12,963 | 15.26 ms | 17.44 ms |
+
+The final release sorting worker measured 48–59 ms across nine process-inclusive runs on seeds 11, 19 and 281. Every output matched all 128 positions. Startup, scheduling noise and output capture contribute to the timing. [Native worker measurements](../../research/results/prometheus-native-worker.json)

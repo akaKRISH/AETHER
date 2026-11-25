@@ -27,6 +27,7 @@ impl Workspace {
         let mut command = Command::new(EXE);
         command
             .env("AETHER_DATA_DIR", &self.0)
+            .env_remove("AETHER_ALLOW_EXTERNAL_MODELS")
             .env_remove("AETHER_ALLOW_CROSSREF");
         command
     }
@@ -56,6 +57,8 @@ impl Drop for Workspace {
 fn reviewed_campaign_persists_independent_replay_and_verified_report() {
     let work = Workspace::new();
     let report = work.success(&["demo", "first", "29"]);
+    assert_eq!(report["protocol"]["version"], "aether.protocol/1");
+    assert!(report["protocol"].get("planning").is_none());
     let evidence = &report["evidence"];
     assert_eq!(evidence["campaign"]["state"], "completed");
     assert!(
@@ -106,6 +109,7 @@ fn frozen_optimization_preserves_negative_results_across_processes() {
 
     let protocol = &report["protocol"];
     assert_eq!(protocol["version"], "aether.protocol/2");
+    assert!(protocol.get("planning").is_none());
     let inputs = protocol["optimization_inputs"].as_array().unwrap();
     assert_eq!(inputs.len(), 2);
     assert_eq!(inputs[0].as_array().unwrap().len(), 128);
@@ -146,6 +150,73 @@ fn frozen_optimization_preserves_negative_results_across_processes() {
         assert_eq!(comparison["baseline_is_optimal"], false);
         assert_eq!(manifest["task"]["kind"], "max_subarray");
     }
+}
+
+#[test]
+fn objective_planning_freezes_provenance_without_granting_execution() {
+    let work = Workspace::new();
+    let source = work.0.join("objective.json");
+    let path = source.to_str().unwrap();
+    let objective = "Compare sorting proposals with an independent reference.";
+    fs::write(
+        path,
+        json!({"objective": objective, "seed": 19, "items": 32}).to_string(),
+    )
+    .unwrap();
+    let denied = work.invoke(&["plan-objective", "hosted", path, "openai", "gpt-4o"]);
+    assert!(!denied.status.success());
+    assert!(String::from_utf8_lossy(&denied.stderr).contains("external-transfer and spend"));
+    assert!(!work.invoke(&["report", "hosted"]).status.success());
+
+    let drafted = work.success(&["plan-objective", "objective", path]);
+    let protocol_hash = drafted["campaign"]["protocol_hash"].as_str().unwrap();
+    assert_eq!(drafted["campaign"]["state"], "draft");
+    assert_eq!(
+        drafted,
+        work.success(&[
+            "plan-objective",
+            "objective",
+            path,
+            "mock",
+            "deterministic-v1"
+        ])
+    );
+    assert!(!work.invoke(&["run", "objective"]).status.success());
+    let frozen = fs::read(
+        work.0
+            .join("protocols")
+            .join(format!("{protocol_hash}.json")),
+    )
+    .unwrap();
+    assert_eq!(aether_runner::sha256(&frozen), protocol_hash);
+    let protocol: Value = serde_json::from_slice(&frozen).unwrap();
+    assert_eq!(protocol["version"], "aether.protocol/3");
+    assert_eq!(protocol["planning"], drafted["planning"]);
+    assert_eq!(protocol["plan"]["objective"], objective);
+    assert_eq!(
+        protocol["plan"]["algorithm"],
+        drafted["planning"]["proposals"][0]["algorithm"]
+    );
+    assert_eq!(protocol["planning"]["provenance"]["provider"], "mock");
+
+    fs::write(
+        path,
+        json!({"objective": objective, "seed": 281, "items": 32}).to_string(),
+    )
+    .unwrap();
+    assert!(
+        !work
+            .invoke(&["plan-objective", "objective", path])
+            .status
+            .success()
+    );
+    assert_eq!(fs::read_dir(work.0.join("protocols")).unwrap().count(), 1);
+
+    work.success(&["approve", "objective", protocol_hash]);
+    let completed = work.success(&["run", "objective"]);
+    assert_eq!(completed["evidence"]["campaign"]["state"], "completed");
+    assert_eq!(completed["protocol"], protocol);
+    assert_eq!(completed, work.success(&["report", "objective"]));
 }
 
 #[test]

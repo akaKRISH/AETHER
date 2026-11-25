@@ -25,7 +25,7 @@ AETHER local research platform
 Commands
   aether-lab demo <id> [seed]       Run a reviewed synthetic sorting campaign
   aether-lab plan <plan.json>       Freeze an explicit research protocol
-  aether-lab plan-objective <id> <request.json>  Draft an offline model-guided sorting protocol
+  aether-lab plan-objective <id> <request.json> [<provider> <model>]  Freeze a model-guided sorting draft
   aether-lab approve <id> <sha256>  Approve exactly the frozen protocol digest
   aether-lab run <id>               Run an approved campaign
   aether-lab report <id>            Inspect evidence and validate artifact digests
@@ -129,25 +129,10 @@ fn execute(args: &[String]) -> Result<()> {
             print_json(&lab.create(&read_json_file(&PathBuf::from(path))?)?)
         }
         [command, id, path] if command == "plan-objective" => {
-            let request: planning::PlanningRequest = read_json_file(&PathBuf::from(path))?;
-            let planning = planning::propose_with_provider(
-                "mock",
-                "deterministic-v1",
-                &request,
-                &AtomicBool::new(false),
-            )?;
-            let selected = &planning.proposals[0];
-            let mut draft = PlanRequest::example(id.clone(), selected.seed);
-            draft.title = "Objective-guided sorting study".into();
-            draft.objective = request.objective;
-            draft.items = selected.items;
-            draft.algorithm = Some(selected.algorithm);
-            let campaign = lab.create(&draft)?;
-            print_json(&json!({
-                "campaign": campaign,
-                "planning": planning,
-                "candidate_selection": "first eligible proposal from the deterministic provider",
-            }))
+            plan_objective(&lab, id, path, "mock", "deterministic-v1")
+        }
+        [command, id, path, provider, model] if command == "plan-objective" => {
+            plan_objective(&lab, id, path, provider, model)
         }
         [command, id, digest] if command == "approve" => print_json(&lab.approve(id, digest)?),
         [command, id] if command == "run" => print_json(&lab.run(id, &AtomicBool::new(false))?),
@@ -173,6 +158,29 @@ fn print_json(value: &impl serde::Serialize) -> Result<()> {
     serde_json::to_writer_pretty(&mut output, value)?;
     output.write_all(b"\n")?;
     Ok(())
+}
+
+fn plan_objective(lab: &Lab, id: &str, path: &str, provider: &str, model: &str) -> Result<()> {
+    let request: planning::PlanningRequest = read_json_file(&PathBuf::from(path))?;
+    let digest = request.digest()?;
+    let _draft = lab.lock_objective_draft(id)?;
+    let (campaign, planning) = match lab.existing_objective_draft(id, &digest, provider, model)? {
+        Some(existing) => existing,
+        None => {
+            let advice = planning::propose_with_provider(
+                provider,
+                model,
+                &request,
+                &AtomicBool::new(false),
+            )?;
+            lab.create_objective_draft(id, request, &advice)?
+        }
+    };
+    print_json(&json!({
+        "campaign": campaign,
+        "planning": planning,
+        "candidate_selection": "first eligible proposal from the selected provider",
+    }))
 }
 
 fn demo(lab: &Lab, id: &str, seed: u32) -> Result<()> {

@@ -15,6 +15,8 @@ AETHER/
 ├── crates/
 │   ├── aether-api/
 │   │   ├── src/
+│   │   │   ├── literature/
+│   │   │   └── planning/
 │   │   └── tests/
 │   ├── aether-cli/
 │   │   ├── src/
@@ -22,10 +24,12 @@ AETHER/
 │   ├── aether-core/
 │   │   └── src/
 │   ├── aether-engine/
+│   │   ├── benches/
 │   │   └── src/
 │   ├── aether-runner/
 │   │   └── src/
 │   └── aether-store/
+│       ├── benches/
 │       └── src/
 ├── docs/
 │   ├── architecture/
@@ -82,7 +86,7 @@ AETHER/
 
 ## Files by directory
 
-395 repository files including 102 archived sources. The list below links the working files and archive inventory.
+426 repository files including 102 archived sources. The list below links the working files and archive inventory.
 
 ### Root
 
@@ -102,6 +106,7 @@ AETHER/
 - [PROJECT_CONTEXT.md](../PROJECT_CONTEXT.md)
 - [PROJECT_STATUS.md](../PROJECT_STATUS.md)
 - [README.md](../README.md)
+- [RESUME.md](../RESUME.md)
 - [SECURITY.md](../SECURITY.md)
 
 ### .github
@@ -114,6 +119,7 @@ AETHER/
 
 ### benchmarks
 
+- [prometheus-policy-pilot.json](../benchmarks/prometheus-policy-pilot.json)
 - [README.md](../benchmarks/README.md)
 
 ### contracts
@@ -143,11 +149,20 @@ AETHER/
 
 ### crates/aether-api/src
 
+- [hardware.rs](../crates/aether-api/src/hardware.rs)
 - [http.rs](../crates/aether-api/src/http.rs)
 - [lab.rs](../crates/aether-api/src/lab.rs)
 - [literature.rs](../crates/aether-api/src/literature.rs)
 - [main.rs](../crates/aether-api/src/main.rs)
 - [planning.rs](../crates/aether-api/src/planning.rs)
+
+### crates/aether-api/src/literature
+
+- [discovery.rs](../crates/aether-api/src/literature/discovery.rs)
+
+### crates/aether-api/src/planning
+
+- [providers.rs](../crates/aether-api/src/planning/providers.rs)
 
 ### crates/aether-api/tests
 
@@ -181,9 +196,14 @@ AETHER/
 - [Cargo.toml](../crates/aether-engine/Cargo.toml)
 - [README.md](../crates/aether-engine/README.md)
 
+### crates/aether-engine/benches
+
+- [scheduler.rs](../crates/aether-engine/benches/scheduler.rs)
+
 ### crates/aether-engine/src
 
 - [budget.rs](../crates/aether-engine/src/budget.rs)
+- [evolution.rs](../crates/aether-engine/src/evolution.rs)
 - [lib.rs](../crates/aether-engine/src/lib.rs)
 - [scheduler.rs](../crates/aether-engine/src/scheduler.rs)
 - [simulation.rs](../crates/aether-engine/src/simulation.rs)
@@ -196,11 +216,16 @@ AETHER/
 ### crates/aether-runner/src
 
 - [lib.rs](../crates/aether-runner/src/lib.rs)
+- [optimization.rs](../crates/aether-runner/src/optimization.rs)
 
 ### crates/aether-store
 
 - [Cargo.toml](../crates/aether-store/Cargo.toml)
 - [README.md](../crates/aether-store/README.md)
+
+### crates/aether-store/benches
+
+- [evidence.rs](../crates/aether-store/benches/evidence.rs)
 
 ### crates/aether-store/src
 
@@ -265,6 +290,7 @@ AETHER/
 - [ADR-009.md](decisions/ADR-009.md)
 - [ADR-010.md](decisions/ADR-010.md)
 - [ADR-011.md](decisions/ADR-011.md)
+- [ADR-012.md](decisions/ADR-012.md)
 
 ### docs/design
 
@@ -328,6 +354,7 @@ AETHER/
 - [ERROR_HANDLING.md](engineering/ERROR_HANDLING.md)
 - [MEMORY_MANAGEMENT.md](engineering/MEMORY_MANAGEMENT.md)
 - [PERFORMANCE_ENGINEERING.md](engineering/PERFORMANCE_ENGINEERING.md)
+- [PROMETHEUS_AUDIT.md](engineering/PROMETHEUS_AUDIT.md)
 - [README.md](engineering/README.md)
 - [REPOSITORY_STRUCTURE.md](engineering/REPOSITORY_STRUCTURE.md)
 - [RUST_ENGINEERING_STANDARD.md](engineering/RUST_ENGINEERING_STANDARD.md)
@@ -356,6 +383,7 @@ AETHER/
 - [IMPLEMENTATION_COMPUTE_DISTRIBUTED.md](learning/IMPLEMENTATION_COMPUTE_DISTRIBUTED.md)
 - [IMPLEMENTATION_ECAR_STATISTICS.md](learning/IMPLEMENTATION_ECAR_STATISTICS.md)
 - [IMPLEMENTATION_OS_SECURITY.md](learning/IMPLEMENTATION_OS_SECURITY.md)
+- [IMPLEMENTATION_PROMETHEUS.md](learning/IMPLEMENTATION_PROMETHEUS.md)
 - [IMPLEMENTATION_RUST_EVALUATOR.md](learning/IMPLEMENTATION_RUST_EVALUATOR.md)
 - [IMPLEMENTATION_STORAGE_GRAPHS.md](learning/IMPLEMENTATION_STORAGE_GRAPHS.md)
 - [LESSON_01_CLASSIFICATION_AND_RUST.md](learning/LESSON_01_CLASSIFICATION_AND_RUST.md)
@@ -373,7 +401,9 @@ AETHER/
 - [DEVOPS_STRATEGY.md](operations/DEVOPS_STRATEGY.md)
 - [DISASTER_RECOVERY.md](operations/DISASTER_RECOVERY.md)
 - [LOCAL_WORKBENCH.md](operations/LOCAL_WORKBENCH.md)
+- [MODEL_PROVIDERS.md](operations/MODEL_PROVIDERS.md)
 - [OBSERVABILITY.md](operations/OBSERVABILITY.md)
+- [PROMETHEUS_GPU_PROFILE.md](operations/PROMETHEUS_GPU_PROFILE.md)
 - [RDLC.md](operations/RDLC.md)
 - [RELEASE_MANAGEMENT.md](operations/RELEASE_MANAGEMENT.md)
 - [SDLC.md](operations/SDLC.md)
@@ -401,9 +431,12 @@ AETHER/
 - [ECAR_SPECIFICATION.md](research/ECAR_SPECIFICATION.md)
 - [EVALUATION_METRICS.md](research/EVALUATION_METRICS.md)
 - [EXPERIMENTAL_METHODOLOGY.md](research/EXPERIMENTAL_METHODOLOGY.md)
+- [KNAPSACK_DEVELOPMENT_STUDY.md](research/KNAPSACK_DEVELOPMENT_STUDY.md)
+- [LITERATURE_ADAPTERS.md](research/LITERATURE_ADAPTERS.md)
 - [LITERATURE_REVIEW.md](research/LITERATURE_REVIEW.md)
 - [MATHEMATICAL_FOUNDATIONS.md](research/MATHEMATICAL_FOUNDATIONS.md)
 - [ORIGINALITY_ASSESSMENT.md](research/ORIGINALITY_ASSESSMENT.md)
+- [PROMETHEUS_POLICY_PILOT.md](research/PROMETHEUS_POLICY_PILOT.md)
 - [README.md](research/README.md)
 - [REFERENCES.md](research/REFERENCES.md)
 - [RELATED_WORK.md](research/RELATED_WORK.md)
@@ -497,6 +530,17 @@ AETHER/
 - [ecar-policy-simulation.json](../research/results/ecar-policy-simulation.json)
 - [local-sort-campaign.json](../research/results/local-sort-campaign.json)
 - [native-sort-benchmark.json](../research/results/native-sort-benchmark.json)
+- [prometheus-criterion.json](../research/results/prometheus-criterion.json)
+- [prometheus-gpu-observation.json](../research/results/prometheus-gpu-observation.json)
+- [prometheus-knapsack.json](../research/results/prometheus-knapsack.json)
+- [prometheus-loopback-performance.json](../research/results/prometheus-loopback-performance.json)
+- [prometheus-max-subarray.json](../research/results/prometheus-max-subarray.json)
+- [prometheus-native-worker.json](../research/results/prometheus-native-worker.json)
+- [prometheus-objective-bound-draft.json](../research/results/prometheus-objective-bound-draft.json)
+- [prometheus-objective-bound-report.json](../research/results/prometheus-objective-bound-report.json)
+- [prometheus-objective-draft.json](../research/results/prometheus-objective-draft.json)
+- [prometheus-objective-report.json](../research/results/prometheus-objective-report.json)
+- [prometheus-policy-pilot.json](../research/results/prometheus-policy-pilot.json)
 - [README.md](../research/results/README.md)
 
 ### scripts
@@ -509,6 +553,7 @@ AETHER/
 ### taskpacks
 
 - [example-campaign.json](../taskpacks/example-campaign.json)
+- [example-max-subarray.json](../taskpacks/example-max-subarray.json)
 - [example-planning.json](../taskpacks/example-planning.json)
 - [README.md](../taskpacks/README.md)
 - [seeded-sort-v1.json](../taskpacks/seeded-sort-v1.json)
@@ -516,10 +561,12 @@ AETHER/
 ### tests
 
 - [browser-smoke.cjs](../tests/browser-smoke.cjs)
+- [measure-loopback.cjs](../tests/measure-loopback.cjs)
 - [README.md](../tests/README.md)
 
 ### web
 
+- [biome.json](../web/biome.json)
 - [index.html](../web/index.html)
 - [package-lock.json](../web/package-lock.json)
 - [package.json](../web/package.json)

@@ -16,7 +16,11 @@ Each flag applies to the server process. OpenAlex uses the documented small keyl
 
 An incoming DOI links to an existing work with the same normalized DOI. OpenAlex IDs and arXiv roots are alternate keys. The original arXiv version remains in the first saved record. A journal DOI reported by arXiv is a related publication and gets its own record identity. A provider record that would join two distinct saved works causes the import to roll back. The catalog preserves the first observed metadata and provenance, including the original version and observation time.
 
-Lookup returns bibliographic records and known identifiers. The catalog derives landing-page links from validated identifiers. Reading papers and deciding what a citation supports are separate research steps. Literature-to-hypothesis links, full texts and live-provider checks remain open.
+Lookup returns bibliographic records and known identifiers. The catalog derives landing-page links from validated identifiers. Reading papers and deciding what a citation supports are separate research steps. Literature-to-hypothesis links and full-text retrieval remain open.
+
+## Live Windows probe
+
+An isolated release server enabled each provider and submitted only public bibliographic queries, without credentials. Crossref returned HTTP 200 with 11 normalized records from a bibliographic query. That route uses search ranking. OpenAlex returned HTTP 200 with 12 records including work `W2626778328`. arXiv returned HTTP 200 with 12 records including version `1706.03762v7`. The process saved results in its temporary catalog, and a local title search returned 20 entries, the configured page ceiling. The probe retrieved metadata. [OpenAlex work](https://openalex.org/W2626778328) · [arXiv record](https://arxiv.org/abs/1706.03762v7)
 
 ## Code walkthrough
 

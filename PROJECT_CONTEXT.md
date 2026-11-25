@@ -20,4 +20,6 @@ The native classification fixture and fresh-process replay are the foundation. T
 
 Student exercises run in the standalone [Rust practice workspace](learning/README.md). Production evaluation belongs in approved crates and is validated against the milestone criteria.
 
-The owner authorized implementation-first development across the eligible milestones. Build and validate each coherent slice, then teach and document it through the actual code. Student exercises remain available in parallel. Update this context when architecture, assumptions or phase prerequisites change, and use [project status](PROJECT_STATUS.md) for current evidence.
+The owner requires concise, maintainable code across the stack. Prefer a compact expression when it preserves clarity. Keep safety and scientific invariants explicit, preserve stable behavior during related refactors, and measure performance claims. The approved priority is correctness, security, clarity, performance, then conciseness. [Coding standards](docs/engineering/CODING_STANDARDS.md)
+
+The owner authorized implementation-first development across the eligible milestones. Build and validate each coherent slice, then teach and document it through the actual code. Student exercises remain available in parallel. Update this context when architecture, assumptions or phase prerequisites change. Use [project status](PROJECT_STATUS.md) for current evidence and [resume](RESUME.md) for the active checkpoint.

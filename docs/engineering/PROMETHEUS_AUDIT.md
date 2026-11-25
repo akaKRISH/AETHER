@@ -2,6 +2,8 @@
 
 Baseline `c017c05` was clean. On Windows x64 MSVC, Rust 1.96.1 passed formatting, strict Clippy, all 33 baseline tests, and the locked release build. Node 24.20.0 and npm 12.0.2 passed all three frontend unit tests, type checking, and the production build. The archive remains under the Rust-first v0.2 authority. [Validation record](../testing/TEST_RESULTS.md)
 
+The first five findings below were fixed and covered by integration or regression checks. Codebase Memory MCP had no AETHER index and its fast indexing worker exited with an error. The audit used targeted source inspection after that failure.
+
 ## Findings and acceptance
 
 | Severity | Affected files | Finding and remediation | Acceptance |

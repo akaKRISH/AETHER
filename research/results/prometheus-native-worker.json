@@ -1,0 +1,97 @@
+{
+  "host": {
+    "arch": "x86_64",
+    "logical_cpus": 12,
+    "os": "windows"
+  },
+  "interpretation": "Development timings only. This small measurement is insufficient to rank algorithms scientifically.",
+  "samples": [
+    {
+      "algorithm": "standard",
+      "artifact_sha256": "4931808a98860410920828d02c9a322ec39574b3937f87c4e36b4c4c9f3f8bd2",
+      "correct": 128,
+      "output_bytes": 618,
+      "seed": 11,
+      "total": 128,
+      "wall_ms": 49
+    },
+    {
+      "algorithm": "insertion",
+      "artifact_sha256": "0b82e62de6368aa5c42b7ad2eeb94e351eefc1be8db539fd5fdb949d266944dc",
+      "correct": 128,
+      "output_bytes": 619,
+      "seed": 11,
+      "total": 128,
+      "wall_ms": 48
+    },
+    {
+      "algorithm": "selection",
+      "artifact_sha256": "ff93bb5a5ccbe943bd4ca52d746385662891feb832048e56c20853045de516a9",
+      "correct": 128,
+      "output_bytes": 619,
+      "seed": 11,
+      "total": 128,
+      "wall_ms": 49
+    },
+    {
+      "algorithm": "standard",
+      "artifact_sha256": "4dc62284b01c1948d669e95f73ae77939c3469b0ba8074aa169595033d39fdaa",
+      "correct": 128,
+      "output_bytes": 595,
+      "seed": 19,
+      "total": 128,
+      "wall_ms": 50
+    },
+    {
+      "algorithm": "insertion",
+      "artifact_sha256": "c42ad69c1a4e1d3c5cd5421752cf95d21cf2dbec19778e9223a753c768b235e9",
+      "correct": 128,
+      "output_bytes": 596,
+      "seed": 19,
+      "total": 128,
+      "wall_ms": 53
+    },
+    {
+      "algorithm": "selection",
+      "artifact_sha256": "5e40cd4bd465ed4a67b2e206e8b1a531be146efcfc21d9e28a2b25b18eb8abeb",
+      "correct": 128,
+      "output_bytes": 596,
+      "seed": 19,
+      "total": 128,
+      "wall_ms": 59
+    },
+    {
+      "algorithm": "standard",
+      "artifact_sha256": "a22ca40187b9a765a22946a8f742c2e9d0675223af0f1577b41984216c2b992d",
+      "correct": 128,
+      "output_bytes": 612,
+      "seed": 281,
+      "total": 128,
+      "wall_ms": 55
+    },
+    {
+      "algorithm": "insertion",
+      "artifact_sha256": "9cfebf9de783c28b5f01595c804ba0881e4feed0a9459f1990e5da15fd1b9a3f",
+      "correct": 128,
+      "output_bytes": 613,
+      "seed": 281,
+      "total": 128,
+      "wall_ms": 52
+    },
+    {
+      "algorithm": "selection",
+      "artifact_sha256": "cbb701d1a5f6fd3cd8c81618ec9af0aa4fbbae9939729445c30314a44aae517f",
+      "correct": 128,
+      "output_bytes": 613,
+      "seed": 281,
+      "total": 128,
+      "wall_ms": 55
+    }
+  ],
+  "scope": "development timing including native worker process startup and output capture",
+  "versions": {
+    "application": "0.1.0",
+    "benchmark": "aether.native-sort/1",
+    "binary_sha256": "a45725da298e225aec92edbf82967869d4b92111d3ba4059011dbb50896f681d"
+  }
+}

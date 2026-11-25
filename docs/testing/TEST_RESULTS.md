@@ -35,3 +35,25 @@ RustSec and npm dependency review results are in the [dependency inventory](../g
 The release `aether` executable ran `init`, `run-fixture`, `verify` and `report` using the default repository with the workbench present. Both evaluation and replay reported 3/4. An earlier smoke exposed the shared state directory conflict. The corrected initializer accepts the workbench's sibling directory and has a regression test.
 
 These runs cover Windows x64 only. Live Ollama inference, live Crossref retrieval, Linux, frontend lint tooling, the deferred Python worker, and OS-level isolation qualification remain unverified. See the [continuation record](../../NEXT_ACTIONS.md) and [recorded development experiments](../research/BENCHMARK_RESULTS.md).
+
+## Prometheus checks
+
+The Windows baseline rerun at `c017c05` confirmed 33 Rust tests and three frontend tests. The later suite adds protocol compatibility and objective-planning coverage, independent maximum-subarray verification, rejected evidence, cross-process admission, current snapshot semantics, adapter contracts, bounded evolutionary search and hardware parsing.
+
+| Command or drill | Observed outcome |
+|---|---|
+| `cargo fmt --all -- --check` | Exit 0 |
+| `cargo clippy --locked --workspace --all-targets -- -D warnings` | Exit 0 |
+| `cargo test --locked --workspace` | 50 passed |
+| `cargo build --locked --release --workspace` | Exit 0 |
+| `npm --prefix web run lint`, `run check`, `test`, and `run build` | Lint and TypeScript passed, three frontend tests passed, and Vite built production assets |
+| Browser | Chromium desktop and mobile passed keyboard login, sorting and maximum subarray campaigns, verdicts, graph, planner, metadata gates, benchmarks, candidate archive, report and driver panel |
+| Release exports | The sorting, maximum-subarray and earlier objective reports matched 84,449, 81,655 and 85,870 original bytes. A fresh version 3 campaign reused the first advice, rejected execution before approval and exported a byte-identical report. |
+| Live model gate | The installed Ollama service answered preflight. The release CLI rejected its cloud-enabled configuration before any planning request. |
+| Known-advisory checks | See [current dependency audit](../governance/DEPENDENCY_INVENTORY.md). |
+
+An interrupted maximum-subarray release probe observed a live persisted attempt lease, terminated its own temporary supervisor, and tried recovery. The early request was rejected. After the lease expired, recovery marked one attempt expired, charged the reservation and preserved the journal without a verified result. The CLI recovery call took 173.39 ms after eligibility.
+
+The first NVIDIA environment-isolation attempt failed to initialize NVML. A direct probe isolated the required `ProgramFiles` addition. The next release reported the physical RTX 3050 with only `SystemRoot` and `ProgramFiles` retained. [GPU profile](../operations/PROMETHEUS_GPU_PROFILE.md)
+
+The default browser service denied unauthenticated hardware access, path-shaped assets and outbound metadata requests. A separately opted-in release service exercised each provider with public bibliographic queries and retrieved the temporary catalog entries. [Literature validation](../research/LITERATURE_ADAPTERS.md)

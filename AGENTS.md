@@ -16,12 +16,15 @@ Read [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md), [PROJECT_STATUS.md](PROJECT_STATU
 - Only trusted evaluation plus applicable independent evidence can establish VERIFIED under a frozen protocol. Preserve failures, contradictory evidence and historical verdicts. Distinguish specifications, hypothetical examples and measured results. Cite primary research and constrain originality claims.
 - Deny by default. Run reviewed benign workloads under supported isolation when workers arrive. Keep hidden labels, credentials and authority outside worker context. Constrain output and resources, validate all external input, and bind execution approval to a reviewed protocol and policy. See the [threat model](docs/security/THREAT_MODEL.md).
 - Add a runnable check for non-trivial behavior. Report exactly what ran. Use the [test plan](docs/testing/TEST_PLAN.md) and [quality gates](docs/testing/QUALITY_GATES.md).
+- Prefer the simplest correct expression, including a single line when it remains clear and idiomatic. Reuse standard-library and existing code, remove unnecessary state, allocations and wrappers, and let the standard formatter choose the layout. Keep security checks, checked arithmetic, transactions, concurrency, and scientific rules explicit. Apply this standard across source, tests, scripts, SQL and configuration. Limit refactoring to related work and measure before claiming improvement. See the [coding standards](docs/engineering/CODING_STANDARDS.md).
 
 ## Human approval and teaching
 
 Follow the owner-authorized implementation-first policy. Build, validate, reverse-engineer, teach, then innovate. Proceed through eligible milestones in dependency order and record the actual results and continuation. Explain the important decisions, tradeoffs, source code and exercises alongside each implemented component. Student submissions are optional for implementation progress.
 
 Operation Prometheus authorizes continued local engineering. See the [engineering audit](docs/engineering/PROMETHEUS_AUDIT.md) and [continuation](NEXT_ACTIONS.md). Keep real provider measurements, loopback fixtures, synthetic studies and observations from reviewed workers identified by their provenance.
+
+Record a local checkpoint for each verified slice when appropriate. Maintain [RESUME.md](RESUME.md) with the exact revision, results, blockers and next action.
 
 Retain separate approval for destructive operations, paid resources, public deployment, external transfers, broader execution permissions and major architecture changes. See [project status](PROJECT_STATUS.md) and [human approval](docs/governance/HUMAN_APPROVAL_POLICY.md).
 

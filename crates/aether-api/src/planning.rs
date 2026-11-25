@@ -67,6 +67,12 @@ impl PlanningRequest {
         }
         Ok(())
     }
+
+    pub(crate) fn digest(&self) -> Result<String, PlanningError> {
+        self.validate()?;
+        let encoded = serde_json::to_vec(self).map_err(|_| PlanningError::InvalidInput)?;
+        Ok(aether_runner::sha256(&encoded))
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -101,7 +107,7 @@ pub struct Ranking {
 #[derive(Debug, Serialize)]
 pub struct PlanningReport {
     schema: &'static str,
-    request_sha256: String,
+    pub(crate) request_sha256: String,
     wall_ms: u128,
     provenance: ModelProvenance,
     tokens: Option<TokenUsage>,
@@ -180,7 +186,7 @@ fn propose_recorded(
     request: &PlanningRequest,
     cancelled: &AtomicBool,
 ) -> Result<PlanningReport, PlanningError> {
-    request.validate()?;
+    let request_sha256 = request.digest()?;
     check_cancelled(cancelled)?;
     let started = Instant::now();
     let ranked = adapter.rank(request, cancelled)?;
@@ -211,10 +217,9 @@ fn propose_recorded(
             rationale,
         });
     }
-    let request = serde_json::to_vec(request).map_err(|_| PlanningError::InvalidInput)?;
     Ok(PlanningReport {
         schema: "aether.planning/1",
-        request_sha256: aether_runner::sha256(&request),
+        request_sha256,
         wall_ms: started.elapsed().as_millis(),
         provenance: ranked.provenance,
         tokens: ranked.tokens,
