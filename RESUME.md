@@ -61,6 +61,27 @@ Search timing includes initialization, generation, scoring, budget and lineage. 
 
 The acceptance rerun from `05aac30` passed 18 targeted tests, strict engine Clippy, formatting, the release example build, documentation validation and Git diff checks. Fresh release processes verified the saved hybrid and baseline exports. Both file hashes and the frozen Athena and ECAR pins matched. The original timing observations were retained. The ECAR holdout remains deferred. [Execution queue](EXECUTION_QUEUE.md)
 
+## DAE-05 reliability-aware ECAR development experiment
+
+The Athena pilot exposed opposing graph effects in the valuable and unreliable hubs. This experiment compares full downstream mass, a fixed half-weight prior, and evidence-updated mass while holding each experimental arm's information bonus and contradiction handling constant. Multiplying the whole score by reliability would also suppress direct utility and could starve uncertain, consequential checks. The implemented variant discounts only downstream utility. It treats usable independent receipts as support or contradiction, starting from Beta(1,1). Transport or execution failures consume budget and contribute no receipt. The posterior mean estimates the support rate of a future usable receipt. The model does not infer execution success or calibrated ground-truth correctness.
+
+One-step expected Beta variance reduction, scaled to equal claim mass at cold start, boosts verification according to the full attainable claim mass. A provisional contradiction changes priorities. A trusted rejection prunes the dependent subtree. The existing scheduler still applies eligibility, checked reserves, normalized cost and deterministic ties. The independent simulated evaluator alone issues verdicts. Hidden truth and noise are confined to the synthetic environment and outcome scoring. The approximation assumes exchangeable receipts and a topologically ordered single-parent forest. It applies the hub estimate once to its attainable descendants and does not infer reliability along each edge.
+
+Build `cargo build --locked --release -p aether-engine --example ecar_reliability --example ecar_diagnostics`. Run `target/release/examples/ecar_reliability` without arguments to emit the [raw report](research/results/dae-ecar-reliability-development.json). The [embedded grid](benchmarks/dae-ecar-reliability-development.json) crosses five development families, 24 seeds, and caps 12, 24, 48 and 84. Common draws omit arm and cap. Fresh processes matched all 2,880 outcome rows. The fixed flat, adaptive flat and ECAR rows matched all 1,440 corresponding rows from `ecar_diagnostics --development-v2 benchmarks/dae-ecar-reliability-development.json`. The raw file SHA-256 is `be989ab7242815b36c5a9dda0839e552928783aa25e69ba72b36a47cda22f46a`.
+
+| Policy | Mean true verified utility (%) | Verified / false | Mean scheduling ns per call |
+|---|---:|---:|---:|
+| Fixed flat | 9.563 | 366 / 1 | 3,852 |
+| Adaptive flat | 13.973 | 520 / 2 | 3,714 |
+| Original ECAR | 13.541 | 574 / 2 | 3,609 |
+| Full mass | 12.105 | 542 / 2 | 3,942 |
+| Fixed prior | 12.088 | 540 / 2 | 3,786 |
+| Posterior mean | 12.088 | 540 / 2 | 3,827 |
+
+Posterior weighting tied the fixed prior on utility in all 480 cases despite 55 changed action traces. It tied full mass in 478 and lost two sparse-evidence cases, for −0.018 points overall. Relative to original ECAR, it gained 3.241 points in unreliable hubs but lost 1.454 overall, 3.216 in valuable hubs, 0.951 in misleading dependencies, and 2.721 at the tightest cap. That comparison includes multiple policy changes, so it does not identify a causal reliability effect. Timings include score preparation and scheduling, exclude simulated experiment cost and reporting, and come from one fixed-order Windows run. The next development comparison should isolate the information bonus and collect more observations per claim before assessing adaptive weighting again.
+
+Twenty-three targeted tests, strict engine Clippy, formatting, the release example builds and frozen artifact checks passed. The archived pilot estimate and held-out protocol remain in place. [Execution queue](EXECUTION_QUEUE.md)
+
 ## Latest verification
 
 Baseline passed 33 Rust and three frontend tests. The final Windows run passed 50 Rust and three frontend tests, format, strict Clippy, release build, frontend lint/type/build, browser smoke, advisory checks, and evidence validation. The release re-exported three prior reports byte for byte and completed a new objective-derived campaign with advice frozen under protocol v3. The hardware CLI observed the physical NVIDIA device. Crossref, OpenAlex and arXiv public probes returned 200. The recovery drill reconciled one interrupted lease. [Tests](docs/testing/TEST_RESULTS.md) · [Measurements](docs/research/BENCHMARK_RESULTS.md)
