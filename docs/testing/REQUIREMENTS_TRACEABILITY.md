@@ -5,7 +5,8 @@
 | Requirement area | Observed evidence | Remaining gate |
 |---|---|---|
 | Local proposal provenance | Installed digest, cloud state, inference options and output measured on the physical GPU. [Inference qualification](../operations/ATHENA_INFERENCE.md) | Measured scope covers one installed quantization and one host. |
-| Frozen objective and sources | Exact-source v4 draft and API validation. [Frozen campaign snapshot](../../research/results/athena-local-draft-report.json) · [Integration tests](../../crates/aether-api/tests/platform.rs) | Execution waits for approval of the archived digest. |
+| Frozen objective and sources | Exact-source v4 protocol approved at its recorded digest. [Draft snapshot](../../research/results/athena-local-draft-report.json) · [Completed run](../../research/results/athena-local-campaign.json) | One bounded registered sorting task demonstrates this end-to-end path. |
+| Replay, challenge and trusted verdict | Pinned executable replayed the original receipt in a new process, evaluated a distinct challenge and matched the frozen verifier rule. [Campaign report](../../research/results/athena-local-campaign.json) | Repetition on new tasks requires a separate frozen protocol. |
 | Reviewed execution lifecycle | Windows admission and descendant cleanup fixture. [Containment record](../security/ATHENA_WORKER_CONTAINMENT.md) | Qualify restricted identities, filesystem, egress and OS resource ceilings separately. |
 | Matched policy experiments | Identical outcome rows across two development runs and frozen primary contrast. [Diagnostic protocol](../research/ATHENA_ECAR_PROTOCOL.md) | Reproduce an independently reviewed held-out evaluation before efficacy claims. |
 

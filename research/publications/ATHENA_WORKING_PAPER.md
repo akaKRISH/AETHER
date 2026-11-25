@@ -4,7 +4,7 @@ Local working manuscript. Evaluation is a synthetic development pilot with a sep
 
 ## Abstract
 
-An auditable research scheduler allocates bounded exploration and verification work across dependent claims. In a 1,440-outcome development simulation, incremental downstream weighting shifted utility by +0.17 points on average versus adaptive flat scheduling, with a 95% seed-block percentile interval of −0.84 to +1.19. Task-level differences included both gains and losses. Release qualification also produced a local model draft with a frozen literature reference and executable protocol.
+An auditable research scheduler allocates bounded exploration and verification work across dependent claims. In a 1,440-outcome development simulation, incremental downstream weighting shifted utility by +0.17 points on average versus adaptive flat scheduling, with a 95% seed-block percentile interval of −0.84 to +1.19. Task-level differences included both gains and losses. A separately owner-approved local-model proposal also completed a frozen 96-item sorting task with trusted reference agreement, fresh-process replay and a distinct challenge.
 
 ## Introduction
 
@@ -50,7 +50,7 @@ Scenario families are intentional fixtures. Common random numbers ensure a fair 
 
 ## Limitations
 
-The formal held-out experiment is pending. The first local model protocol uses a single installed quantization and one bounded sorting task. The model is a proposer, while the deterministic verifier supplies task evidence. The model's other-algorithm speculation is outside the frozen task. These results cannot establish broad algorithmic superiority or research novelty.
+The formal held-out experiment is pending. The live model experiment uses one installed quantization and one bounded sorting task. All three verified exact-reference fractions were 1.0 for the frozen inputs. This is a single demonstration. The model is a proposer, while the deterministic verifier supplies task evidence. The model's other-algorithm speculation is outside the frozen task. These results cannot establish broad algorithmic superiority or research novelty.
 
 ## Reproduction
 

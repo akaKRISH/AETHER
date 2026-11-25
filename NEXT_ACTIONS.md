@@ -4,8 +4,8 @@ Start with [project status](PROJECT_STATUS.md), [test results](docs/testing/TEST
 
 | Order | Work | Gate |
 |---|---|---|
-| 1 | Review and explicitly approve the frozen `athena-local-01` protocol. Run it with the hash-pinned executable and retain the complete report. | The real local proposal and selected citation are frozen. Approval and execution are pending. See [RESUME.md](RESUME.md). |
-| 2 | Get independent review of the held-out ECAR protocol, pin the implementation, and arrange independent task and label custody for an executable main study. | Development outcomes and analysis are reproducible. The frozen synthetic held-out specification is unexecuted. [Diagnostic](docs/research/ATHENA_ECAR_PROTOCOL.md) |
+| 1 | Obtain independent review and task-label custody for a formal ECAR study, then freeze the implementation, analysis and held-out inputs before its separate approval gate. | The synthetic development study is reproducible. Its public held-out specification has not been independently curated or executed. [Diagnostic](docs/research/ATHENA_ECAR_PROTOCOL.md) |
+| 2 | Keep the completed local model campaign as a bounded demonstration and improve scope only with a reviewed task and new protocol. | The pinned sorting objective completed exploration, independent replay and challenge with trusted verification. [Report](research/results/athena-local-campaign.json) |
 | 3 | Qualify OS memory and CPU ceilings, restricted identity, filesystem boundaries and egress controls. | Windows Job Objects contain the reviewed process lifecycle. Externally supplied work remains outside the registry. [Containment](docs/security/ATHENA_WORKER_CONTAINMENT.md) |
 | 4 | Compare equivalent inference backends or quantizations and measure sustained concurrent local throughput if those constraints become material. | Current measurements cover one installed GPU model, one host and sequential routes. [Inference](docs/operations/ATHENA_INFERENCE.md) · [Benchmarks](docs/research/BENCHMARK_RESULTS.md) |
 

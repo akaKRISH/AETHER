@@ -1,6 +1,6 @@
 # Athena from source to evidence
 
-Use the [practice workspace](../../learning/README.md) for rebuild exercises. Athena combines one real local model proposal, a pending approval, a synthetic policy study and measured runtime work. The [codebase tour](../../CODEBASE_TOUR.md) shows the order in which to read them.
+Use the [practice workspace](../../learning/README.md) for rebuild exercises. Athena combines a real local model proposal and approved bounded campaign with a synthetic policy study and measured runtime work. The [codebase tour](../../CODEBASE_TOUR.md) shows the order in which to read them.
 
 ```mermaid
 flowchart LR
@@ -20,7 +20,7 @@ Rust's structs give each part of the input a name and type. Open the [sorting ob
 
 Read `plan_objective` in [main.rs](../../crates/aether-api/src/main.rs). It locks the draft ID, resolves selected citations with `Lab::freeze_citations` and checks for an identical existing draft. This lets a repeated request reuse its stored proposal. The citations give the reviewer context. The adapter itself receives the objective, seed and item count. `propose_recorded` validates the response. `Lab::create_objective_draft` confirms the advice belongs to that request, picks the first reviewed method and freezes the advice and citation snapshots in `create_frozen`. [Controller](../../crates/aether-api/src/lab.rs)
 
-A digest identifies exact bytes. Changing a seed, model provenance field or selected reference changes the approval digest. See `Lab::approve` and `Lab::run` for the checks before a worker may start. The recorded Athena draft `athena-local-01` contains a real model ranking and an operator-proposed objective. The owner can adopt the objective and authorize the exact protocol by approving the digest. The trusted evaluator judges the bounded claim from execution evidence. [Frozen draft export](../../research/results/athena-local-draft-report.json) · [ADR-013](../decisions/ADR-013.md)
+A digest identifies exact bytes. Changing a seed, model provenance field or selected reference changes the approval digest. See `Lab::approve` and `Lab::run` for the checks before a worker may start. The recorded Athena draft `athena-local-01` contains a real model ranking and an operator-proposed objective. The owner approved its exact digest, after which the frozen task completed with fresh replay and distinct challenge. The trusted evaluator judged the bounded claim from recorded execution evidence. [Frozen draft](../../research/results/athena-local-draft-report.json) · [Approved result](../../research/results/athena-local-campaign.json) · [ADR-013](../decisions/ADR-013.md)
 
 **Exercise.** Write a Rust enum with three allowed candidates and deserialize a ranking in a practice workspace. Test an unknown candidate and a duplicate. Explain why a valid ranking still lacks permission to execute. In a copy of a toy protocol, change one byte and compare the SHA-256 digests.
 

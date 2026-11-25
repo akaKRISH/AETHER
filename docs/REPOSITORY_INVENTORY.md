@@ -87,7 +87,7 @@ AETHER/
 
 ## Files by directory
 
-449 repository files including 102 archived sources. The list below links the working files and archive inventory.
+450 repository files including 102 archived sources. The list below links the working files and archive inventory.
 
 ### Root
 
@@ -544,6 +544,7 @@ AETHER/
 
 - [athena-ecar-pilot.json](../research/results/athena-ecar-pilot.json)
 - [athena-ecar-summary.json](../research/results/athena-ecar-summary.json)
+- [athena-local-campaign.json](../research/results/athena-local-campaign.json)
 - [athena-local-draft-report.json](../research/results/athena-local-draft-report.json)
 - [athena-local-draft.json](../research/results/athena-local-draft.json)
 - [athena-loopback-after.json](../research/results/athena-loopback-after.json)

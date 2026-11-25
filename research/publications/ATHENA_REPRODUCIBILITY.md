@@ -41,21 +41,21 @@ print("All 1,440 outcome rows agree")
 
 Outcome rows should agree exactly. Host wall time and measured scheduler time can vary between processes. The retained replay at `artifacts/athena/ecar-repeat.json` matched every recorded outcome row. Running the summary script on the recorded first run reproduced the checked-in summary as JSON, including the timing values copied from that run. These checks concern the synthetic diagnostic and its analysis. [Diagnostic runner](../../crates/aether-engine/examples/ecar_diagnostics.rs) · [Summary script](../../scripts/athena_ecar_summary.py)
 
-## Pending frozen campaign
+## Approved local campaign
 
-The local database and exported report record `athena-local-01` in `draft` under `aether.protocol/4` with zero attempts and zero verifications. The frozen plan selects insertion sort for 96 generated signed integers, uses seed 19, requires a fresh replay, and caps execution at five attempts and 12,000 ms. Model provenance, inference settings, selected candidate, and the Quicksort citation from Crossref are in the draft. The model produced the ranking and hypothesis. The trusted evaluator determines the outcome of the selected implementation.
+On 25 November 2026, the owner approved `athena-local-01` at the exact digest below. The preflight matched the stored protocol and the objective task pack, selected registered insertion sort, and confirmed the original executable bytes before approval. The frozen plan uses seed 19 and 96 generated signed integers, requires replay, and caps execution at five attempts and 12,000 ms. The existing draft preserves the model provenance, inference settings and Crossref citation.
 
 | Pin | Exact value |
 |---|---|
 | Campaign ID | `athena-local-01` |
-| Protocol SHA-256 required for approval | `3906c69297b1d1582c6f85cb35f44876e5f0d38c7c588e6ea877bfa31bb53dc9` |
+| Approved protocol SHA-256 | `3906c69297b1d1582c6f85cb35f44876e5f0d38c7c588e6ea877bfa31bb53dc9` |
 | Evaluator executable SHA-256 | `e79057c75e9a04ec9a48a951c0662669d609518fa52b9d57046ff9b0f044daa2` |
 | Policy SHA-256 | `a5d303db49b5b2ee4b8c1537a0df74705990fb4cc25c52c0e67809a888ce9754` |
 | Ollama model manifest SHA-256 | `e0b8c85c75aad2573ff49bec177ebb1013772fba665a53d64c04266439a2222d` |
 
-The retained local executable is `artifacts/athena/aether-lab-e79057c75e9a04ec9a48a951c0662669d609518fa52b9d57046ff9b0f044daa2.exe`. The local state directory is `.aether/lab`. Its exact frozen protocol is under `protocols/3906c69297b1d1582c6f85cb35f44876e5f0d38c7c588e6ea877bfa31bb53dc9.json`. The executable and file hashes match the recorded pins. The source tree does not include the ignored binary or local state. [Pending approval checkpoint](../../RESUME.md#exact-next-action) · [Frozen report](../results/athena-local-draft-report.json)
+The run completed three of five attempts: original input, independent fresh-process replay and distinct challenge. Each attempt succeeded, and each trusted exact-reference fraction was 1.0. Replay retained the original input digest. Challenge input used seed 2236246020 and a different digest. The pinned evaluator verified the frozen claim. The proposed follow-up claim remains unresolved. The campaign used 140 ms of its 12,000 ms wall budget.
 
-After the owner explicitly approves this exact protocol digest, use the retained executable with the original state directory for `approve athena-local-01 <protocol-sha256>`, then `run athena-local-01` and `report athena-local-01`. Stop if either pinned file is missing or its hash differs. Save any subsequent report under a new filename so the original draft remains available.
+The complete report file SHA-256 is `7b1d9d9de5784b830d864cee0930ecc8f30c6dcc2cb28c5c697d4cba775e6ad2`. A second export from the same database and pinned executable matched the saved report byte for byte. [Campaign report](../results/athena-local-campaign.json) · [Approval and continuation record](../../RESUME.md)
 
 ## Recorded artifacts
 
@@ -66,6 +66,7 @@ After the owner explicitly approves this exact protocol digest, use the retained
 | [Sorting objective](../../taskpacks/athena-sorting-objective.json) | `91374ae9b9d4bf3fc21a91176698943bcebf54f954b29063af626eb33fa06aac` | Original inputs to the local planner |
 | [Model draft output](../results/athena-local-draft.json) | `daa49390eaddc4f2d8aec0bfc2356c39870a92941ea7da0deff943640ac3a3e2` | Ranked methods, provider provenance and inference usage |
 | [Frozen draft export](../results/athena-local-draft-report.json) | `022d822875389e7db8b6dda151e96729e83e873d7496140133263d2d2967c04d` | Frozen protocol, cited metadata and creation event |
+| [Approved campaign report](../results/athena-local-campaign.json) | `7b1d9d9de5784b830d864cee0930ecc8f30c6dcc2cb28c5c697d4cba775e6ad2` | Original, replay and challenge receipts, trusted verdict, three attempts and budget settlement |
 | [Initial Ollama calibration](../results/athena-ollama-inference.json) | `ffc3132d95ae1e1dcc6bb2b506f49037bebc3e1d2f3a3bb3e07ba608db910cb1` | Ten requests with prompt, stream timing, model residency, RAM and device samples |
 | [Ollama context calibration](../results/athena-ollama-contexts.json) | `212854b509f22ff9d74a63d0166c39b0389bd11e55b8ab49912fcdcc1a7b7e66` | Ten requests across the requested 2,048- and 4,096-token contexts and raw resource samples |
 | [Loopback baseline](../results/athena-loopback-before.json) | `eaeaadb8d24756c65e9abb05b55f1b96def9a81fe4c2a8b5448ecfe597e53d18` | Windows release binary digest, four route distributions and peak service working set |

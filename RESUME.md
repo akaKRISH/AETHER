@@ -16,28 +16,17 @@ Baseline passed 33 Rust and three frontend tests. The final Windows run passed 5
 
 Athena passed 53 Rust tests and three frontend tests, Windows release and Chromium desktop/mobile checks. The four prior campaign exports and the new draft matched byte for byte. The Job Object descendant test and separate interrupted-lease release drill passed. Two fresh diagnostic processes matched all 1,440 outcome rows. [Test results](docs/testing/TEST_RESULTS.md#athena-windows-checks) · [Reproducibility](research/publications/ATHENA_REPRODUCIBILITY.md)
 
+## Athena campaign result
+
+On 25 November 2026, the owner approved protocol SHA-256 `3906c69297b1d1582c6f85cb35f44876e5f0d38c7c588e6ea877bfa31bb53dc9`. Before approval, the pinned protocol matched the objective task pack, chose the registered insertion sorter, used seed 19 and 96 items, and preserved five attempts and a 12,000 ms cap. The pinned executable SHA-256 remained `e79057c75e9a04ec9a48a951c0662669d609518fa52b9d57046ff9b0f044daa2`.
+
+The approved run completed three successful attempts within its budget: exploration, fresh-process replay and challenge. Trusted exact-reference fractions were 1.0 on both 96-item seeds, 19 and 2236246020. The replay matched the exploration input digest, while the challenge input digest differed. The frozen claim was verified by the pinned evaluator and protocol rule. The additional follow-up claim remains proposed.
+
+The report is `research/results/athena-local-campaign.json`, SHA-256 `7b1d9d9de5784b830d864cee0930ecc8f30c6dcc2cb28c5c697d4cba775e6ad2`. A separate report export matched it byte for byte. The attempt budget recorded three of five and 140 of 12,000 ms. Model inference happened during planning and used its separately recorded provider counters.
+
 ## Exact next action
 
-Await explicit approval for `athena-local-01` at SHA-256 `3906c69297b1d1582c6f85cb35f44876e5f0d38c7c588e6ea877bfa31bb53dc9`. Use the retained exact binary at `artifacts/athena/aether-lab-e79057c75e9a04ec9a48a951c0662669d609518fa52b9d57046ff9b0f044daa2.exe` for approval and execution. The current state is draft. [Frozen report](research/results/athena-local-draft-report.json)
-
-After the owner approves this hash, verify the frozen file and executable against the pins. Run from the repository root and keep the original draft evidence. The latest release binary has different bytes and the newly tested Job Object implementation.
-
-```powershell
-$env:AETHER_DATA_DIR = (Resolve-Path '.aether/lab').Path
-$protocol = '3906c69297b1d1582c6f85cb35f44876e5f0d38c7c588e6ea877bfa31bb53dc9'
-$evaluator = 'e79057c75e9a04ec9a48a951c0662669d609518fa52b9d57046ff9b0f044daa2'
-$binary = (Resolve-Path "artifacts/athena/aether-lab-$evaluator.exe").Path
-if ((Get-FileHash "$env:AETHER_DATA_DIR/protocols/$protocol.json").Hash -ne $protocol -or
-    (Get-FileHash $binary).Hash -ne $evaluator) { throw 'Frozen campaign pin mismatch' }
-& $binary approve athena-local-01 $protocol
-if ($LASTEXITCODE) { throw 'Approval failed' }
-& $binary run athena-local-01
-if ($LASTEXITCODE) { throw 'Execution failed' }
-& $binary report athena-local-01 > research/results/athena-local-campaign.json
-if ($LASTEXITCODE) { throw 'Report export failed' }
-```
-
-Review exact reference agreement and the new replay and challenge attempts. Compare a second report export against the saved bytes and record the owner decision with the observed result.
+The live local-model workflow now has one completed, bounded sorting campaign. For any efficacy claim beyond that task, seek independent review and custody for the held-out task set, seal its labels, pin the policy and analysis, and obtain approval for the formal run. The current public synthetic specification is not an independently held-out data set. Keep the frozen campaign report unchanged. [Held-out gate](docs/research/ATHENA_ECAR_PROTOCOL.md#held-out-gate)
 
 ## Remaining dependencies
 
