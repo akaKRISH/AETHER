@@ -32,8 +32,14 @@ Validation passed 11 Rust tests, 13 CLI regression tests against the release exa
 
 Actual held-out execution remains pending. Appoint an independent custodian, commit the private version 2 input, and obtain owner and reviewer approval of the manifest digest before any release. Validation for this remediation used development and public synthetic fixtures.
 
+## ATH-04 Windows worker hardening
+
+The Windows Job Object now limits each reviewed worker and its job to one second of user-mode CPU, 64 MiB of aggregate committed memory, and one active process. Admission waits for the limits and attachment to succeed. The runner starts only the running platform executable with a typed built-in task, clears inherited environment variables and reaps on cancellation or wall timeout. [Controls and limits](docs/security/ATHENA_WORKER_CONTAINMENT.md)
+
+Targeted Windows validation passed 14 runner and 22 API tests. The seven Windows protection tests also passed in the optimized build. Fixtures verified CPU quota termination, rejected large allocation and child launch, termination on job close, timeout and live cancellation, and a synthetic secret absent from the worker environment. Formatting and strict runner Clippy passed. The frozen Athena evaluator, campaign protocol and ECAR specification retained their recorded SHA-256 values.
+
 ## Remaining dependencies
 
 The desktop Ollama process still reports cloud enabled. An owned process with the existing local model verified cloud disablement and completed calibration on the RTX 3050 at two confirmed context lengths. [Raw measurements](research/results/athena-ollama-contexts.json)
 
-The approved-task Windows profile has process lifecycle containment. OS-enforced CPU and memory ceilings, filesystem and network boundaries, and restricted identities require separate qualification. Formal held-out testing requires independent review and task custody. See [next actions](NEXT_ACTIONS.md).
+The reviewed Windows profile enforces resource and process limits under the desktop identity. A qualified backend for OS filesystem denial, network denial and restricted identity remains open. Formal held-out testing still requires independent review and task custody. See [next actions](NEXT_ACTIONS.md).

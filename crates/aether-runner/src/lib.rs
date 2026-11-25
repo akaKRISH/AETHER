@@ -1,4 +1,4 @@
-#![forbid(unsafe_code)]
+#![deny(unsafe_code)]
 
 //! Process supervision for the built-in, reviewed native tasks.
 
@@ -37,7 +37,7 @@ pub enum SortAlgorithm {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Task {
-    Classification,
+    Classification {},
     Sort {
         seed: u32,
         items: u16,
@@ -106,6 +106,8 @@ pub enum Error {
     Cancelled,
     #[error("reviewed task timed out")]
     Timeout,
+    #[error("worker executable must be the running platform image")]
+    UnreviewedExecutable,
     #[error("worker failed ({0})")]
     Worker(String),
     #[error("worker receipt failed identity or protocol validation")]
@@ -125,7 +127,7 @@ pub fn sha256(bytes: &[u8]) -> String {
 impl Task {
     pub fn validate(&self) -> Result<(), Error> {
         match *self {
-            Self::Classification => Ok(()),
+            Self::Classification {} => Ok(()),
             Self::Sort { items, .. }
             | Self::Search { items, .. }
             | Self::MaxSubarray { items, .. }
@@ -158,7 +160,7 @@ pub fn execute_worker(request: &str) -> Result<Vec<u8>, Error> {
     }
     job.task.validate()?;
     let output = match job.task {
-        Task::Classification => {
+        Task::Classification {} => {
             let (_, predictions) = aether_core::fixture();
             Output::Classification {
                 predictions: predictions.to_vec(),
@@ -232,7 +234,7 @@ pub fn execute_worker(request: &str) -> Result<Vec<u8>, Error> {
 pub fn evaluate(task: &Task, output: &Output) -> Result<(usize, usize), Error> {
     task.validate()?;
     match (task, output) {
-        (Task::Classification, Output::Classification { predictions }) => {
+        (Task::Classification {}, Output::Classification { predictions }) => {
             let (labels, _) = aether_core::fixture();
             let accuracy =
                 aether_core::evaluate(labels, predictions).map_err(|_| Error::Evidence)?;
@@ -304,6 +306,9 @@ pub fn supervise(
     if timeout.is_zero() || timeout > Duration::from_secs(30) {
         return Err(Error::Limits);
     }
+    if platform_exe != std::env::current_exe()? {
+        return Err(Error::UnreviewedExecutable);
+    }
 
     let request = serde_json::to_string(&Job {
         version: WORKER_VERSION.into(),
@@ -330,18 +335,46 @@ fn supervise_child(
     request: String,
     directory: &Path,
 ) -> Result<Measurement, Error> {
+    let mut command = worker_command(platform_exe, directory);
+    command.arg(WORKER_FLAG).arg(request);
+    let (pid, artifact, elapsed) = collect_worker(&mut command, timeout, cancelled)?;
+    let receipt: Receipt = serde_json::from_slice(&artifact)?;
+    if receipt.version != WORKER_VERSION || &receipt.task != task {
+        return Err(Error::Protocol);
+    }
+    let wall_ms = u64::try_from(elapsed.as_nanos().div_ceil(1_000_000)).unwrap_or(u64::MAX);
+    Ok(Measurement {
+        output: receipt.output,
+        wall_ms,
+        output_bytes: artifact.len() as u64,
+        artifact_sha256: sha256(&artifact),
+        worker_pid: pid,
+        artifact,
+    })
+}
+
+fn worker_command(platform_exe: &Path, directory: &Path) -> Command {
     let mut command = Command::new(platform_exe);
     command
-        .arg(WORKER_FLAG)
-        .arg(request)
         .env_clear()
         .current_dir(directory)
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::null());
+    command
+}
+
+fn collect_worker(
+    command: &mut Command,
+    timeout: Duration,
+    cancelled: &AtomicBool,
+) -> Result<(u32, Vec<u8>, Duration), Error> {
+    if cancelled.load(Ordering::Acquire) {
+        return Err(Error::Cancelled);
+    }
     let started = Instant::now();
     #[cfg(windows)]
-    let (mut child, containment) = windows_worker::spawn(&mut command)?;
+    let (mut child, containment) = windows_worker::spawn(command)?;
     #[cfg(not(windows))]
     let mut child = command.spawn()?;
     let pid = child.id();
@@ -352,6 +385,12 @@ fn supervise_child(
         Ok::<_, io::Error>(bytes)
     });
     let outcome = loop {
+        if cancelled.load(Ordering::Acquire) {
+            break Err(Error::Cancelled);
+        }
+        if started.elapsed() >= timeout {
+            break Err(Error::Timeout);
+        }
         match child.try_wait() {
             Ok(Some(status)) => {
                 break if status.success() {
@@ -362,12 +401,6 @@ fn supervise_child(
             }
             Ok(None) => {}
             Err(error) => break Err(error.into()),
-        }
-        if cancelled.load(Ordering::Acquire) {
-            break Err(Error::Cancelled);
-        }
-        if started.elapsed() >= timeout {
-            break Err(Error::Timeout);
         }
         thread::sleep(Duration::from_millis(2));
     };
@@ -383,20 +416,7 @@ fn supervise_child(
     if artifact.len() as u64 > MAX_OUTPUT {
         return Err(Error::Limits);
     }
-    let receipt: Receipt = serde_json::from_slice(&artifact)?;
-    if receipt.version != WORKER_VERSION || &receipt.task != task {
-        return Err(Error::Protocol);
-    }
-    let wall_ms =
-        u64::try_from(started.elapsed().as_nanos().div_ceil(1_000_000)).unwrap_or(u64::MAX);
-    Ok(Measurement {
-        output: receipt.output,
-        wall_ms,
-        output_bytes: artifact.len() as u64,
-        artifact_sha256: sha256(&artifact),
-        worker_pid: pid,
-        artifact,
-    })
+    Ok((pid, artifact, started.elapsed()))
 }
 
 #[cfg(test)]
@@ -444,13 +464,43 @@ mod tests {
     }
 
     #[test]
+    fn worker_task_rejects_filesystem_and_network_parameters() {
+        let classification =
+            r#"{"version":"aether.native-worker/1","task":{"kind":"classification"}}"#;
+        assert!(execute_worker(classification).is_ok());
+        assert_eq!(
+            serde_json::to_string(&Task::Classification {}).unwrap(),
+            r#"{"kind":"classification"}"#
+        );
+        for request in [
+            r#"{"version":"aether.native-worker/1","task":{"kind":"classification","path":"canary.txt"}}"#,
+            r#"{"version":"aether.native-worker/1","task":{"kind":"classification","url":"http://127.0.0.1/"}}"#,
+        ] {
+            assert!(matches!(execute_worker(request), Err(Error::Json(_))));
+        }
+    }
+
+    #[test]
+    fn another_executable_is_denied_before_launch() {
+        assert!(matches!(
+            supervise(
+                Path::new("another-executable"),
+                &Task::Classification {},
+                Duration::from_secs(1),
+                &AtomicBool::new(false)
+            ),
+            Err(Error::UnreviewedExecutable)
+        ));
+    }
+
+    #[test]
     fn expired_admission_never_launches_the_worker() {
         let path = Path::new("missing-aether-executable");
         let cancelled = AtomicBool::new(true);
         assert!(matches!(
             supervise(
                 path,
-                &Task::Classification,
+                &Task::Classification {},
                 Duration::from_secs(1),
                 &cancelled
             ),
