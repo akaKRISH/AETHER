@@ -26,7 +26,7 @@ The report is `research/results/athena-local-campaign.json`, SHA-256 `7b1d9d9de5
 
 ## Exact next action
 
-The live local-model workflow now has one completed, bounded sorting campaign. For any efficacy claim beyond that task, seek independent review and custody for the held-out task set, seal its labels, pin the policy and analysis, and obtain approval for the formal run. The current public synthetic specification is not an independently held-out data set. Keep the frozen campaign report unchanged. [Held-out gate](docs/research/ATHENA_ECAR_PROTOCOL.md#held-out-gate)
+ATH-02 is **BLOCKED** at the research review gate. The development runner rejects the frozen held-out phase. Different seeds and streams share random draw keys, and the summary can accept incomplete case grids. The public specification exposes the simulation inputs. Before any held-out run, fix key separation and case validation, freeze the approved execution path, and record independent custody for a blinded confirmatory study. The pilot remains +0.17 utility points with its reported 95% interval of −0.84 to +1.19. [Review and exact execution instructions](docs/research/ATH_02_INDEPENDENT_ECAR_REVIEW.md)
 
 ## Remaining dependencies
 
