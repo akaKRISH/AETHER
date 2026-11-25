@@ -2,7 +2,7 @@
 
 ## Checkpoint and phase
 
-The incoming baseline was `d3586bf` (`prometheus-windows-verified`) on `main`. Recovery commit `41d3919` and foundation `c017c05` remain in history. The current validated Windows checkpoint has local tag `athena-windows-local`.
+The incoming baseline was `d3586bf` (`prometheus-windows-verified`) on `main`. Recovery commit `41d3919` and foundation `c017c05` remain in history. The original Windows baseline is tagged `athena-windows-local`; the latest accepted checkpoint is `athena-engineering-verified`.
 
 ## Preserved implementation
 
@@ -24,7 +24,7 @@ The approved run completed three successful attempts within its budget: explorat
 
 The report is `research/results/athena-local-campaign.json`, SHA-256 `7b1d9d9de5784b830d864cee0930ecc8f30c6dcc2cb28c5c697d4cba775e6ad2`. A separate report export matched it byte for byte. The attempt budget recorded three of five and 140 of 12,000 ms. Model inference happened during planning and used its separately recorded provider counters.
 
-## Exact next action
+## ATH-02B research remediation checkpoint
 
 ATH-02B implements the corrected version 2 synthetic protocol, SHA-256 `7e7f31346feb5b004a9f261d8c590d4e2c421e3a69fc023fe259353b0a1cc756`. It separates draw keys while sharing draws across matched arms and caps. Held-out execution requires an approved manifest digest that binds the protocol, executable, config and analysis. The analyzer rejects incomplete, duplicate, unexpected and unmatched cases before aggregation. The original protocol and archived pilot retain their bytes. The historical estimate remains +0.17 utility points with its reported 95% interval of −0.84 to +1.19. [Amendment and execution instructions](docs/research/ATH_02B_ECAR_PROTOCOL.md) · [Original review](docs/research/ATH_02_INDEPENDENT_ECAR_REVIEW.md)
 
@@ -53,4 +53,12 @@ Two fresh development ECAR runs matched all 1,440 rows in the archived pilot. Fr
 ### Athena release summary
 
 Implemented capabilities include deterministic synthetic ECAR replay and matched analysis, a model-guided local sorting proposal with approved replay and challenge, and a reviewed Windows worker profile. Recorded measurements remain scoped to this host: warm local inference median 224–232 ms, sampled peak device-wide VRAM 3,775 MiB; the approved 96-item campaign used 140/12,000 ms and verified all three attempts. The synthetic ECAR development estimate remains +0.17 utility points (95% interval −0.84 to +1.19). Job Objects enforce one-second user-mode CPU, 64 MiB aggregate committed memory, one process and kill-on-close; the worker still runs as the desktop user without OS filesystem or network denial. Independent held-out custody and approval remain outstanding. The missing Playwright module blocks the browser gate, so `athena-engineering-verified` was not tagged.
-The documentation validator exited 1 because `jsonschema[format]` is unavailable and its negative timestamp case was accepted. It otherwise scanned 57 JSON files, 267 Markdown files, 1,245 relative destinations, 21 SVG views and 41 mapped requirements. No dependency was downloaded; this gate remains open alongside browser smoke.
+At `e0396b5`, the documentation validator exited 1 because `jsonschema[format]` is unavailable and its negative timestamp case was accepted. It otherwise scanned 57 JSON files, 267 Markdown files, 1,245 relative destinations, 21 SVG views and 41 mapped requirements. No dependency was downloaded; this gate remained open alongside browser smoke.
+
+## ATH-05B final acceptance repair
+
+Starting from `e0396b5`, pinned `playwright@1.65.1` in the web package and added the browser smoke script. Its expected Chromium revision 1255 was already installed in `E:\AI_Models\ms-playwright`, so no browser download was needed. Desktop and 390-pixel mobile smoke passed, covering authentication, sorting and optimization campaigns, evidence, reports, planning, metadata gates, benchmark, GPU panel and responsive layout.
+
+The timestamp false acceptance came from using `FormatChecker` without jsonschema's format extras; no `date-time` checker was registered. `requirements-validation.txt` now locks `jsonschema[format]` and its transitive dependencies. `tests/test_doc_formats.py` verifies a registered checker, valid timestamp acceptance and malformed timestamp rejection. All three tests passed, and the full documentation validator passed with 13 schemas, 57 JSON files, 268 Markdown files, 1,250 relative destinations and 5 negative schema cases.
+
+`npm ci`, frontend lint, type-check, three frontend tests, build and browser smoke passed. Unchanged Rust gates and measurements from ATH-05 were reused. Frozen hashes for the pinned executable, both ECAR configs, archived pilot and summary, Athena drafts and report, measurement records and version 2 protocol still match. No held-out study ran. The worker remains limited to reviewed built-in tasks under Job Object resource limits; filesystem, network and restricted-identity isolation are not provided. All ATH-05B acceptance gates passed; the local checkpoint is tagged `athena-engineering-verified`.

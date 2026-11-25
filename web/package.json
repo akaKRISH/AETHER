@@ -9,9 +9,10 @@
     "build": "tsc --noEmit && vite build",
     "check": "tsc --noEmit",
     "test": "node --test",
+    "test:browser": "node ../tests/browser-smoke.cjs",
     "preview": "vite preview --host 127.0.0.1",
     "lint": "biome lint --error-on-warnings"
   },
   "dependencies": { "react": "^19.3.1", "react-dom": "^19.3.1" },
-  "devDependencies": { "@biomejs/biome": "2.6.9", "@types/react": "^19.2.0", "@types/react-dom": "^19.2.0", "typescript": "~5.9.3", "vite": "~7.3.8" }
+  "devDependencies": { "@biomejs/biome": "2.6.9", "@types/react": "^19.2.0", "@types/react-dom": "^19.2.0", "playwright": "1.65.1", "typescript": "~5.9.3", "vite": "~7.3.8" }
 }

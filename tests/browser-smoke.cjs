@@ -5,9 +5,9 @@ const { mkdir, mkdtemp, rm } = require('node:fs/promises')
 const { join, resolve } = require('node:path')
 const { tmpdir } = require('node:os')
 const { randomBytes } = require('node:crypto')
-const { chromium } = require(process.env.AETHER_PLAYWRIGHT_PATH || 'playwright')
-
 const root = resolve(__dirname, '..')
+const playwright = process.env.AETHER_PLAYWRIGHT_PATH || join(root, 'web', 'node_modules', 'playwright')
+const { chromium } = require(playwright)
 const executable = join(root, 'target', 'release', process.platform === 'win32' ? 'aether-lab.exe' : 'aether-lab')
 
 function address(server) {

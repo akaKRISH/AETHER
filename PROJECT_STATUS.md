@@ -12,6 +12,8 @@
 - ATH-05 reran the Windows Rust workspace gates successfully: 64 tests passed, 9 remained ignored, strict Clippy, formatting and release build passed; all frontend lint, type, test and production-build gates passed. Ten additional optimized Windows containment tests passed. Fresh ECAR replays reproduced all 1,440 archived development outcomes, and the release service returned loopback health and the built web index. The browser smoke could not start because `playwright` is unavailable, so the desktop/mobile integration gate remains open and no verified release tag was created. Worker limits are qualified for reviewed built-in tasks only; filesystem, network and restricted-identity isolation remain unavailable. Held-out ECAR execution remains deferred pending independent custody and approval. [ATH-05 results](docs/testing/TEST_RESULTS.md#ath-05-final-athena-integration-check) · [Worker limits](docs/security/ATHENA_WORKER_CONTAINMENT.md) · [Continuation](RESUME.md)
 - Documentation validation also exited 1: `jsonschema[format]` is unavailable and the negative timestamp case was accepted. No dependency was installed; see the exact counts and result in [ATH-05 validation](docs/testing/TEST_RESULTS.md#ath-05-final-athena-integration-check).
 
+- ATH-05B pinned project-local Playwright 1.65.1 and Python validation dependencies. Chromium revision 1255 was already installed and reused. The timestamp format extra restored the event schema's `date-time` enforcement; three focused tests and full documentation validation passed. Desktop/mobile browser smoke and all frontend gates passed after clean `npm ci`. Frozen Athena artifact hashes remain unchanged. [Setup](docs/testing/VALIDATION_SETUP.md) · [ATH-05B results](docs/testing/TEST_RESULTS.md#ath-05b-final-acceptance-repair)
+
 ## Prometheus
 
 - Independently rebuilt and tested the clean `c017c05` baseline. Fixed workspace worker admission, conflicting protocol publication, SQLite read contention, mixed-time journal snapshots and repeated SSE page queries. Preserved the earlier sorting export byte for byte. [Engineering audit](docs/engineering/PROMETHEUS_AUDIT.md)
@@ -40,7 +42,7 @@
 
 ADR-009 (Rust Edition 2024 trusted architecture) remains the accepted direction. Exercises remain available in parallel. Start with the tested code in the [rebuild curriculum](docs/learning/REBUILD_AETHER_FROM_SCRATCH.md) or the existing [Lesson 1](docs/learning/LESSON_01_CLASSIFICATION_AND_RUST.md).
 
-The Windows integration checkpoint is `athena-windows-local`. See [RESUME.md](RESUME.md) for the recorded approval, campaign result and remaining dependencies.
+The latest validated Windows integration checkpoint is `athena-engineering-verified`. See [RESUME.md](RESUME.md) for the recorded approval, campaign result and remaining dependencies.
 
 Level 4 integration benefits from repeat live-model evaluations on additional reviewed tasks. Level 5 requires an adequately powered and independently reviewed evaluation of a frozen protocol. Strong OS isolation and remote execution remain separate qualification tracks. [Security review](docs/security/SECURITY_REVIEW.md) · [Continuation](NEXT_ACTIONS.md) · [Originality assessment](docs/research/ORIGINALITY_ASSESSMENT.md)
 

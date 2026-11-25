@@ -99,4 +99,17 @@ The release compatibility check read the original campaign state. The browser sm
 | ECAR replay | Two fresh development processes and archived output matched all 1,440 rows; summary generation exited 0 |
 | Frozen artifacts | Recorded SHA-256 values matched for configurations, archived development outputs and summary, objective, drafts, campaign, local measurement records, pinned executable and v2 protocol. Frozen pilot inputs and archive had no changes since `athena-windows-local`. |
 
-The browser smoke was not rerun with an unpinned or newly downloaded dependency. The verification tag was not created because the required browser gate did not pass. No held-out ECAR execution occurred. [Worker limits](../security/ATHENA_WORKER_CONTAINMENT.md) · [Checkpoint and release summary](../../RESUME.md#ath-05-final-athena-integration-check)
+At `e0396b5`, the browser smoke was blocked by missing Playwright and no verification tag was created. No held-out ECAR execution occurred. [Worker limits](../security/ATHENA_WORKER_CONTAINMENT.md) · [Checkpoint and release summary](../../RESUME.md#ath-05-final-athena-integration-check)
+
+## ATH-05B final acceptance repair
+
+| Check | Actual result |
+|---|---|
+| Clean frontend install | `npm --prefix web ci --no-audit --no-fund` passed; Playwright 1.65.1 and matching Chromium revision 1255 were used. The browser binary was reused from the existing cache. |
+| Frontend lint, type check, test and build | All passed after clean install; three frontend tests passed. |
+| Desktop/mobile browser smoke | Passed. Covered authenticated UI, sorting and optimization campaigns, evidence, report, planning, literature gates, benchmark, GPU panel and mobile overflow. |
+| Focused event timestamp regression | Three `unittest` cases passed: checker present, valid RFC 3339 accepted, malformed timestamp rejected. |
+| Documentation validation | Passed: 13 JSON Schema metaschemas, 57 JSON files, 268 Markdown files, 1,250 relative destinations, 21 SVGs, 41 mapped requirements and 5 negative cases. |
+| Frozen artifacts | Expected hashes still match, including the original pinned executable, development/held-out configs, archived pilot and summary, Athena draft/report, local measurements and amended protocol. |
+
+Cause: the prior global `jsonschema` installation lacked `jsonschema[format]`, so its `FormatChecker` did not register `date-time`. Exact project-local dependency pins are in `requirements-validation.txt` and `web/package-lock.json`; reproducible commands are in [validation setup](VALIDATION_SETUP.md). Rust gates and measurements unchanged by this repair are reused from ATH-05. No held-out ECAR run occurred. [Resume](../../RESUME.md#ath-05b-final-acceptance-repair)
