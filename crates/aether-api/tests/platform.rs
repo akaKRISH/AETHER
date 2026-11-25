@@ -54,6 +54,53 @@ impl Drop for Workspace {
 }
 
 #[test]
+fn discovery_persists_replayable_content_addressed_evidence() {
+    let work = Workspace::new();
+    let args = ["discover", "19", "8"];
+    assert!(!work.invoke(&["discover", "19", "7"]).status.success());
+    let result = work.success(&args);
+    assert_eq!(result, work.success(&args));
+    assert_eq!(result["report"]["scope"], "aether.knapsack-discovery/1");
+    assert_eq!(result["report"]["stop"], "budget_exhausted");
+    assert_eq!(
+        result["report"]["search"]["archive"]
+            .as_array()
+            .unwrap()
+            .len(),
+        8
+    );
+    assert_eq!(work.success(&["list"]), json!([]));
+
+    let digest = result["artifact_sha256"].as_str().unwrap();
+    let db = work.0.join("laboratory.sqlite3");
+    let store = aether_store::Store::open(&db).unwrap();
+    let bytes = store.artifact(digest).unwrap().unwrap();
+    assert_eq!(aether_store::artifact_sha256(&bytes), digest);
+    assert_eq!(
+        serde_json::from_slice::<Value>(&bytes).unwrap(),
+        result["report"]
+    );
+
+    let db = rusqlite::Connection::open(&db).unwrap();
+    assert!(
+        db.execute(
+            "UPDATE blob SET content = ? WHERE sha256 = ?",
+            rusqlite::params![b"{}", digest],
+        )
+        .is_err()
+    );
+    let other = serde_json::to_vec(&aether_engine::discover(281, 8).unwrap()).unwrap();
+    let other_digest = aether_store::artifact_sha256(&other);
+    db.execute(
+        "INSERT INTO blob VALUES (?, ?)",
+        rusqlite::params![other_digest, b"{}"],
+    )
+    .unwrap();
+    assert!(store.artifact(&other_digest).is_err());
+    assert!(!work.invoke(&["discover", "281", "8"]).status.success());
+}
+
+#[test]
 fn reviewed_campaign_persists_independent_replay_and_verified_report() {
     let work = Workspace::new();
     let report = work.success(&["demo", "first", "29"]);

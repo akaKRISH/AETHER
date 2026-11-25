@@ -304,6 +304,18 @@ impl Store {
         validate_hash(sha256)?;
         read_blob(&self.conn, sha256)
     }
+
+    /// Store a local discovery report without attaching it to a campaign claim.
+    pub fn record_discovery_artifact(&mut self, bytes: &[u8]) -> Result<String> {
+        if bytes.is_empty() || bytes.len() > MAX_ATTEMPT_ARTIFACT_BYTES {
+            return Err(StoreError::Invalid(
+                "discovery artifact size outside limits",
+            ));
+        }
+        let digest = artifact_sha256(bytes);
+        self.write(|tx| insert_blob(tx, &digest, bytes))?;
+        Ok(digest)
+    }
 }
 
 fn artifact_metadata(completion: &AttemptCompletion) -> Result<Vec<Artifact>> {

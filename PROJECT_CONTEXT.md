@@ -19,6 +19,8 @@ The [Rust v0.2 design package](docs/archive/v0.2/AETHER/README.md) and [Project 
 
 The native classification fixture and fresh-process replay are the foundation. The local workbench adds reviewed sorting and maximum-subarray campaigns, evidence storage, ECAR, and optional model proposals. Prometheus brings individually configured model and literature adapters into the local architecture. Model suggestions have no worker, credential or verdict permissions. Remote compute, hosted access, an external worker SDK and held-out studies have additional gates. Use only reviewed, lawful, benign computational tasks. Keep protected information outside tracked data and outputs.
 
+DAE-01 adds standalone local discovery using the reviewed knapsack fixture. Its lineage report uses the existing evidence store. Campaign promotion remains governed by the frozen protocol. [Discovery checkpoint](RESUME.md#dae-01-constrained-discovery)
+
 Student exercises run in the standalone [Rust practice workspace](learning/README.md). Production evaluation belongs in approved crates and is validated against the milestone criteria.
 
 The owner requires concise, maintainable code across the stack. Prefer a compact expression when it preserves clarity. Keep safety and scientific invariants explicit, preserve stable behavior during related refactors, and measure performance claims. The approved priority is correctness, security, clarity, performance, then conciseness. [Coding standards](docs/engineering/CODING_STANDARDS.md)

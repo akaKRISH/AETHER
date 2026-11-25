@@ -2,6 +2,10 @@
 
 25 November 2026 · **Operation Athena.** Rust-first implementation and testing continue under the owner's existing approval boundaries.
 
+## Discovery
+
+DAE-01 adds a bounded native search over the reviewed knapsack fixture and retains its independently checked result and lineage in the local evidence store. [Results](RESUME.md#dae-01-constrained-discovery) · [Execution queue](EXECUTION_QUEUE.md)
+
 ## Athena
 
 - Qualified the locally installed Qwen 3.5 4B Q4_K_M model in a dedicated Ollama 0.40.17 process with cloud disabled. On the RTX 3050, the follow-up measured 224–232 ms median warm time to first text and 3,775 MiB sampled peak device-wide VRAM across two confirmed context lengths. [Inference record](docs/operations/ATHENA_INFERENCE.md)

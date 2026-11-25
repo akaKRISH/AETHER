@@ -9,6 +9,7 @@
 | Replay, challenge and trusted verdict | Pinned executable replayed the original receipt in a new process, evaluated a distinct challenge and matched the frozen verifier rule. [Campaign report](../../research/results/athena-local-campaign.json) | Repetition on new tasks requires a separate frozen protocol. |
 | Reviewed execution lifecycle | Windows admission and descendant cleanup fixture. [Containment record](../security/ATHENA_WORKER_CONTAINMENT.md) | Qualify restricted identities, filesystem, egress and OS resource ceilings separately. |
 | Matched policy experiments | Identical outcome rows across two development runs and frozen primary contrast. [Diagnostic protocol](../research/ATHENA_ECAR_PROTOCOL.md) | Reproduce an independently reviewed held-out evaluation before efficacy claims. |
+| Constrained discovery | Tested mask validation, budget and stagnation stops, deterministic lineage, independent scoring and stored artifact integrity. [DAE-01 checks](../../RESUME.md#dae-01-constrained-discovery) | Scope covers the reviewed 12-item fixture. |
 
 The mapping carries forward 12 product IDs, 14 technical IDs, 10 security IDs and 5 Phase 1 criteria. The original test IDs refer to the planned checks. The implementation evidence below specifies the local checks that actually ran.
 

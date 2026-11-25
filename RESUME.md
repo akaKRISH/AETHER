@@ -10,6 +10,14 @@ The incoming baseline was `d3586bf` (`prometheus-windows-verified`) on `main`. R
 - Model and literature adapters are in `crates/aether-api/src/planning` and `crates/aether-api/src/literature`. Four bounded knapsack arms and Criterion harnesses are in `crates/aether-engine` and `crates/aether-store`.
 - The new browser controls, test harnesses, research dumps and delivery docs are in `web`, `tests`, `research/results`, and `docs`. The original sorting report SHA-256 remained `55ef0a797a07c7ce2e01538c3dd67e7e030621e14cd8b2bb19949cd8e1159b08`.
 
+## DAE-01 constrained discovery
+
+Run `cargo run --locked -p aether-api --bin aether-lab -- discover 19 96`. `discover` runs one seeded search over the reviewed 12-item knapsack fixture. It uses a checked 12-bit selection, one-bit mutations, eight distinct feasible parents ranked by value and weight, and periodic random proposals. Each proposal costs one of 8–96 slots, including duplicate and infeasible proposals. The engine reserves one slot to independently re-score the incumbent. It stops at the cap or after 24 consecutive proposals without an improved incumbent. Ties prefer lower weight, then the smaller mask. Exhaustive enumeration supplies the optimum for grading and has a fixed 12-item bound outside the proposal and check slots.
+
+The JSON response contains the fixture, proposal lineage, termination reason, verification observation, regret and the SHA-256 of the report bytes. The local SQLite evidence store retains those bytes, retrievable through authenticated `GET /v1/artifacts/{sha256}`. The independent scoring path runs in the same process. The report is exploratory evidence and does not create a campaign or trusted claim verdict. To practice, trace a parent and child by slot, XOR their masks and check that exactly one bit changed.
+
+Windows package tests passed 42/42 across engine, store and API. This includes the discovery budget, stagnation, lineage, repeatability, fresh CLI process and evidence integrity checks. Targeted strict Clippy, workspace formatting and documentation validation passed. The legacy `evolve 19 48` JSON matched the pre-change output. Frozen artifact SHA-256 checks matched, and the held-out study remains deferred. See the [execution queue](EXECUTION_QUEUE.md) for the next gate.
+
 ## Latest verification
 
 Baseline passed 33 Rust and three frontend tests. The final Windows run passed 50 Rust and three frontend tests, format, strict Clippy, release build, frontend lint/type/build, browser smoke, advisory checks, and evidence validation. The release re-exported three prior reports byte for byte and completed a new objective-derived campaign with advice frozen under protocol v3. The hardware CLI observed the physical NVIDIA device. Crossref, OpenAlex and arXiv public probes returned 200. The recovery drill reconciled one interrupted lease. [Tests](docs/testing/TEST_RESULTS.md) · [Measurements](docs/research/BENCHMARK_RESULTS.md)

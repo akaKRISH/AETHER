@@ -33,6 +33,7 @@ Commands
   aether-lab benchmark [study.json] Execute the matched synthetic A–E simulation
   aether-lab benchmark-native       Measure bounded native sorting variants
   aether-lab evolve <seed> <evaluation-slots>  Compare four bounded knapsack search policies
+  aether-lab discover <seed> <evaluation-slots>  Store and report one bounded knapsack search
   aether-lab hardware               Read local NVIDIA driver telemetry, when available
   aether-lab propose <request.json> Produce deterministic reviewed-task proposals
   aether-lab propose-local <request.json> <model>  Use an existing local Ollama model
@@ -125,6 +126,11 @@ fn execute(args: &[String]) -> Result<()> {
         .map_or_else(|| PathBuf::from(".aether/lab"), PathBuf::from);
     let lab = Lab::open(root)?;
     match args {
+        [command, seed, evaluations] if command == "discover" => {
+            let report = aether_engine::discover(seed.parse()?, evaluations.parse()?)?;
+            let digest = lab.record_discovery(&report)?;
+            print_json(&json!({"artifact_sha256": digest, "report": report}))
+        }
         [command, id] if command == "demo" => demo(&lab, id, 19),
         [command, id, seed] if command == "demo" => demo(&lab, id, seed.parse()?),
         [command, path] if command == "plan" => {

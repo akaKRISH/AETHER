@@ -626,6 +626,13 @@ impl Lab {
         storage(self.store()?.artifact(hash))?.ok_or(Error::Missing)
     }
 
+    pub fn record_discovery(&self, report: &aether_engine::DiscoveryReport) -> Result<String> {
+        storage(
+            self.store()?
+                .record_discovery_artifact(&serde_json::to_vec(report)?),
+        )
+    }
+
     pub fn report(&self, id: &str) -> Result<Value> {
         let store = self.store()?;
         let campaign = self.get(&store, id)?;
