@@ -15,6 +15,7 @@
 - Built the native fixture CLI and pure classification evaluator, SQLite evidence and budget store, exact ECAR scheduler, reviewed worker, authenticated loopback API and React workbench. Added local model and citation interfaces, synthetic comparison and native timing commands, and a [codebase tour](CODEBASE_TOUR.md).
 - The Windows native workspace passed formatting, strict Clippy, 33 tests and the release build. The native fixture reported 3/4 and independently replayed it. The release sorting campaign completed with three attempts, one replay pass, one verified claim and one proposed follow-up claim. A temporary restore produced the byte-identical release report. [Test results](docs/testing/TEST_RESULTS.md) · [Benchmarks](docs/research/BENCHMARK_RESULTS.md)
 - The web interface passed three frontend tests, type checking, production build and an authenticated browser campaign on desktop and mobile. The API integration also exercised event-stream resume and repeated draft cancellation. A Windows Ctrl-C drill closed an open idle stream and exited cleanly. [Test results](docs/testing/TEST_RESULTS.md)
+- The Windows PowerShell launcher built and served the workbench. Release drills confirmed active-worker cancellation and abrupt supervisor recovery, with cancelled or expired attempts charged and no verified result from either interruption. [Test results](docs/testing/TEST_RESULTS.md)
 
 ## Decisions and next actions
 
