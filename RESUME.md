@@ -34,6 +34,33 @@ The optimized Windows run recorded 1,728 evaluations, 108 passing checks (8.2 µ
 
 Fourteen engine and benchmark tests and the existing CLI persistence regression passed. Strict engine Clippy and formatting passed. The legacy `evolve 19 48` report matched its recorded digest and the frozen ECAR study remains deferred. [Execution queue](EXECUTION_QUEUE.md)
 
+## DAE-04 adaptive hybrid discovery
+
+The DAE-02/03 archive shows where evolution spent its budget. It evaluated 210 infeasible masks out of 576, including 129 of 216 initial or immigrant proposals. Greedy evaluated 576 feasible masks and reached its final best value at slot two in 21 of 36 trials, compared with two for evolution. Evolution retained more distinct masks. This diagnosed a useful tradeoff between directed construction and diversity on this grid, and motivated the ablations below.
+
+Build the release `discovery_benchmark` example and run `hybrid-run <new-report.json>`, then `hybrid-verify <new-report.json>` in a fresh process. The [raw export](research/results/dae-hybrid-development.json) has evidence SHA-256 `62cfbfa4c0a80911cd3d5d1b9a698bcdd122a0dcd5dc2e65d5107cd910e4584a` and file SHA-256 `bc3654d2eb279884cca74f9a5d7f4fafde60e10930bc6cd06338eec256736ced`. The original report verified with its recorded evidence digest. Its baseline records are identical in the hybrid export, excluding timing observations.
+
+The experiment uses the original 18 fixtures plus a density-friendly case and a density trap, with budgets of 8 and 24 scored candidates. Initialization consumes a slot. Variants seed with density greedy, constrain flips using remaining capacity, repair by removing low-density items, swap selected and unselected items, or generate a local neighbor by dropping one incumbent item and refilling without it. Fixed hybrid cycles through feasible flip, swap, and local refill. Adaptive hybrid uses the same operators and repairs. It samples unused or underused operators periodically and otherwise compares observed incumbent value gains per use. The oracle runs once per instance after all paired searches and checks.
+
+| Arm | Optimal / 40 | Mean value gap | Feasible / 640 | Mean unique masks | Median search µs |
+|---|---:|---:|---:|---:|---:|
+| Random | 0 | 78.92 | 195 | 15.88 | 13.40 |
+| Greedy | 25 | 1.48 | 640 | 6.22 | 11.45 |
+| Evolution | 2 | 55.33 | 398 | 14.75 | 9.95 |
+| Seeded | 21 | 3.27 | 392 | 14.38 | 14.45 |
+| Seeded feasible flip | 20 | 3.48 | 523 | 13.32 | 10.30 |
+| Seeded repair | 23 | 3.10 | 640 | 11.43 | 14.30 |
+| Seeded swap | 20 | 2.83 | 427 | 14.53 | 12.45 |
+| Seeded local | 28 | 1.35 | 523 | 10.97 | 11.90 |
+| Fixed hybrid | 26 | 2.17 | 640 | 13.47 | 11.40 |
+| Adaptive hybrid | 28 | 1.82 | 640 | 13.20 | 10.55 |
+
+Seeded improved, tied or worsened against evolution in 32/8/0 pairs. Against seeded, feasible flip was 2/36/2, repair 4/35/1, swap 4/34/2, and local 15/24/1. Adaptive was 3/37/0 against fixed and 7/24/9 against greedy. Greedy solved the friendly case and missed the trap optimum by four points at both caps. Seeded local and both hybrids solved the trap at both caps. Feasible flips improved feasibility but slightly increased mean gap versus seeded. Repair made all scored candidates feasible, with fewer unique masks.
+
+Search timing includes initialization, generation, scoring, budget and lineage. Traces count 12,012 density comparisons, 3,248 seed item visits, 1,387 constraint probes, 18,790 repair visits with 1,175 removals across 589 candidates, 8,422 local visits and 800 adaptive comparisons. Raw overweight masks and weights remain attached to their repaired candidates. The run scored 6,400 candidates, performed 400 passing incumbent checks (28.9 µs total) and ran 20 oracles (0.884 ms total). Evidence encoding took 30.398 ms and serialization with buffered flush took 11.245 ms. Candidate evaluations were matched. Operator work was counted separately and elapsed cost was measured in one Windows run with rotated arm order. The two caps share prefixes and the constructed trap demonstrates a specific mechanism, so the results remain exploratory.
+
+The acceptance rerun from `05aac30` passed 18 targeted tests, strict engine Clippy, formatting, the release example build, documentation validation and Git diff checks. Fresh release processes verified the saved hybrid and baseline exports. Both file hashes and the frozen Athena and ECAR pins matched. The original timing observations were retained. The ECAR holdout remains deferred. [Execution queue](EXECUTION_QUEUE.md)
+
 ## Latest verification
 
 Baseline passed 33 Rust and three frontend tests. The final Windows run passed 50 Rust and three frontend tests, format, strict Clippy, release build, frontend lint/type/build, browser smoke, advisory checks, and evidence validation. The release re-exported three prior reports byte for byte and completed a new objective-derived campaign with advice frozen under protocol v3. The hardware CLI observed the physical NVIDIA device. Crossref, OpenAlex and arXiv public probes returned 200. The recovery drill reconciled one interrupted lease. [Tests](docs/testing/TEST_RESULTS.md) · [Measurements](docs/research/BENCHMARK_RESULTS.md)

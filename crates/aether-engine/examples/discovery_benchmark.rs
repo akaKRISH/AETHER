@@ -3,7 +3,9 @@ use std::fs::File;
 use std::io::{self, Read, Write};
 use std::time::Instant;
 
-use aether_engine::evolution::comparison::{CAPS, Case, Oracle, SearchArm, Trial, Verification};
+use aether_engine::evolution::comparison::{
+    CAPS, Case, HybridArm, HybridTrace, Oracle, SearchArm, Trial, Verification,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -11,11 +13,20 @@ use sha2::{Digest, Sha256};
 const SCOPE: &str = "aether.knapsack-matched-development/1";
 const MAX_REPORT_BYTES: u64 = 4 * 1024 * 1024;
 
+#[derive(Clone, Copy, Serialize)]
+#[serde(untagged)]
+enum Arm {
+    Baseline(SearchArm),
+    Hybrid(HybridArm),
+}
+
 #[derive(Serialize)]
 struct Record {
-    arm: SearchArm,
+    arm: Arm,
     evaluation_budget: u16,
     trial: Trial,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    operations: Option<HybridTrace>,
     verification: Verification,
     optimality_gap: u16,
 }
@@ -52,22 +63,46 @@ fn timed<T>(work: impl FnOnce() -> T) -> (T, u64) {
     (result, start.elapsed().as_nanos() as u64)
 }
 
-fn generate() -> Result<Export, Box<dyn Error>> {
+fn generate(hybrid: bool) -> Result<Export, Box<dyn Error>> {
     let mut phases_by_instance = Vec::new();
     let mut instances = Vec::new();
-    for case in Case::development_grid() {
+    let mut arms: Vec<_> = SearchArm::ALL.into_iter().map(Arm::Baseline).collect();
+    let cases: Vec<_> = if hybrid {
+        arms.extend(HybridArm::ALL.into_iter().map(Arm::Hybrid));
+        Case::hybrid_grid().collect()
+    } else {
+        Case::development_grid().collect()
+    };
+    for (instance_index, case) in cases.into_iter().enumerate() {
         let mut search_ns = Vec::new();
         let mut verify_ns = Vec::new();
         let mut trials = Vec::new();
-        for cap in CAPS {
-            for arm in SearchArm::ALL {
-                let (trial, nanos) = timed(|| case.search(arm, cap));
+        for (cap_index, cap) in CAPS.into_iter().enumerate() {
+            let offset = if hybrid {
+                (instance_index + cap_index) % arms.len()
+            } else {
+                0
+            };
+            let mut results = Vec::with_capacity(arms.len());
+            for k in 0..arms.len() {
+                let index = (k + offset) % arms.len();
+                let arm = arms[index];
+                let (result, nanos) = timed(|| match arm {
+                    Arm::Baseline(arm) => case.search(arm, cap).map(|trial| (trial, None)),
+                    Arm::Hybrid(arm) => case
+                        .search_hybrid(arm, cap)
+                        .map(|(trial, operations)| (trial, Some(operations))),
+                });
+                results.push((index, (cap, arm, result?, nanos)));
+            }
+            results.sort_unstable_by_key(|row| row.0);
+            for (_, (cap, arm, (trial, operations), nanos)) in results {
                 search_ns.push(nanos);
-                trials.push((cap, arm, trial?));
+                trials.push((cap, arm, trial, operations));
             }
         }
         let mut checks = Vec::new();
-        for (_, _, trial) in &trials {
+        for (_, _, trial, _) in &trials {
             let (check, nanos) = timed(|| case.verify(trial));
             verify_ns.push(nanos);
             checks.push(check?);
@@ -77,19 +112,22 @@ fn generate() -> Result<Export, Box<dyn Error>> {
         let records = trials
             .into_iter()
             .zip(checks)
-            .map(|((evaluation_budget, arm, trial), verification)| {
-                let optimality_gap = oracle
-                    .optimal_value
-                    .checked_sub(trial.best_value())
-                    .ok_or("candidate value exceeds oracle")?;
-                Ok::<_, Box<dyn Error>>(Record {
-                    arm,
-                    evaluation_budget,
-                    trial,
-                    verification,
-                    optimality_gap,
-                })
-            })
+            .map(
+                |((evaluation_budget, arm, trial, operations), verification)| {
+                    let optimality_gap = oracle
+                        .optimal_value
+                        .checked_sub(trial.best_value())
+                        .ok_or("candidate value exceeds oracle")?;
+                    Ok::<_, Box<dyn Error>>(Record {
+                        arm,
+                        evaluation_budget,
+                        trial,
+                        operations,
+                        verification,
+                        optimality_gap,
+                    })
+                },
+            )
             .collect::<Result<_, _>>()?;
         instances.push(Instance {
             case,
@@ -109,7 +147,12 @@ fn generate() -> Result<Export, Box<dyn Error>> {
     });
     let (evidence, bytes) = encoded?;
     Ok(Export {
-        scope: SCOPE.into(),
+        scope: if hybrid {
+            "aether.knapsack-hybrid-development/1"
+        } else {
+            SCOPE
+        }
+        .into(),
         evidence,
         evidence_sha256: format!("{:x}", Sha256::digest(&bytes)),
         phases_by_instance,
@@ -119,7 +162,7 @@ fn generate() -> Result<Export, Box<dyn Error>> {
 }
 
 fn verify(saved: &Export, replay: &Export) -> Result<(), Box<dyn Error>> {
-    if saved.scope != SCOPE || saved.evidence != replay.evidence {
+    if saved.scope != replay.scope || saved.evidence != replay.evidence {
         return Err(
             "export differs from the expected paired grid or deterministic outcomes".into(),
         );
@@ -130,10 +173,14 @@ fn verify(saved: &Export, replay: &Export) -> Result<(), Box<dyn Error>> {
         return Err("export evidence digest or byte count differs".into());
     }
     if saved.phases_by_instance.len() != replay.phases_by_instance.len()
-        || saved.phases_by_instance.iter().any(|row| {
-            row.search_ns.len() != CAPS.len() * SearchArm::ALL.len()
-                || row.verify_ns.len() != row.search_ns.len()
-        })
+        || saved
+            .phases_by_instance
+            .iter()
+            .zip(&replay.phases_by_instance)
+            .any(|(row, expected)| {
+                row.search_ns.len() != expected.search_ns.len()
+                    || row.verify_ns.len() != expected.verify_ns.len()
+            })
     {
         return Err("export timing groups do not match the paired grid".into());
     }
@@ -158,8 +205,8 @@ fn verify(saved: &Export, replay: &Export) -> Result<(), Box<dyn Error>> {
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
     match args.as_slice() {
-        [command, path] if command == "run" => {
-            let report = generate()?;
+        [command, path] if matches!(command.as_str(), "run" | "hybrid-run") => {
+            let report = generate(command == "hybrid-run")?;
             let (written, write_ns) = timed(|| {
                 let file = File::options().write(true).create_new(true).open(path)?;
                 let mut output = io::BufWriter::new(file);
@@ -173,7 +220,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 written?
             );
         }
-        [command, path] if command == "verify" => {
+        [command, path] if matches!(command.as_str(), "verify" | "hybrid-verify") => {
             let mut bytes = Vec::new();
             File::open(path)?
                 .take(MAX_REPORT_BYTES + 1)
@@ -182,14 +229,19 @@ fn main() -> Result<(), Box<dyn Error>> {
                 return Err("export exceeds size limit".into());
             }
             let saved: Export = serde_json::from_slice(&bytes)?;
-            let replay = generate()?;
+            let replay = generate(command == "hybrid-verify")?;
             verify(&saved, &replay)?;
             println!(
                 "Verified matched development evidence SHA-256 {}",
                 saved.evidence_sha256
             );
         }
-        _ => return Err("usage: discovery_benchmark <run|verify> <report.json>".into()),
+        _ => {
+            return Err(
+                "usage: discovery_benchmark <run|verify|hybrid-run|hybrid-verify> <report.json>"
+                    .into(),
+            );
+        }
     }
     Ok(())
 }
@@ -199,10 +251,42 @@ mod tests {
     use super::*;
 
     #[test]
+    fn hybrid_grid_replays_without_changing_prior_baseline_rows() {
+        let old = generate(false).unwrap();
+        let new = generate(true).unwrap();
+        let mut saved = generate(true).unwrap();
+        verify(&saved, &new).unwrap();
+        assert!(verify(&saved, &old).is_err());
+        for (original, extended) in old
+            .evidence
+            .as_array()
+            .unwrap()
+            .iter()
+            .zip(new.evidence.as_array().unwrap())
+        {
+            assert_eq!(original["case"], extended["case"]);
+            assert_eq!(original["oracle"], extended["oracle"]);
+            let records = extended["records"].as_array().unwrap();
+            let baselines: Vec<_> = records
+                .iter()
+                .filter(|row| row.get("operations").is_none())
+                .cloned()
+                .collect();
+            assert_eq!(original["records"], Value::Array(baselines));
+        }
+        saved.evidence[0]["records"][3]["operations"]["operations"]
+            .as_array_mut()
+            .unwrap()
+            .pop();
+        assert!(verify(&saved, &new).is_err());
+    }
+
+    #[test]
     fn complete_grid_replays_and_mismatched_exports_are_rejected() {
-        let replay = generate().unwrap();
+        let replay = generate(false).unwrap();
         let mut saved: Export =
-            serde_json::from_slice(&serde_json::to_vec(&generate().unwrap()).unwrap()).unwrap();
+            serde_json::from_slice(&serde_json::to_vec(&generate(false).unwrap()).unwrap())
+                .unwrap();
         verify(&saved, &replay).unwrap();
         let records = saved.evidence[0]["records"].as_array_mut().unwrap();
         let record = records.pop().unwrap();

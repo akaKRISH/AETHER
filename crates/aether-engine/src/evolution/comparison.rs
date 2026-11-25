@@ -1,6 +1,9 @@
 //! Fixed development grid for a paired knapsack proposal comparison.
 use super::*;
 
+mod hybrid;
+pub use hybrid::{HybridArm, HybridTrace};
+
 pub const SIZES: [u8; 3] = [8, 12, 16];
 pub const SEEDS: [u32; 3] = [19, 281, 617];
 pub const CAPS: [u16; 2] = [8, 24];
@@ -35,6 +38,8 @@ pub struct Case {
     difficulty: Difficulty,
     items: Vec<Item>,
     capacity: u16,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    fixture: Option<&'static str>,
 }
 
 #[derive(Debug, PartialEq, Eq, Serialize)]
@@ -71,6 +76,9 @@ enum Stream {
     Parent,
     Mutation,
     GreedyStart,
+    SwapOut,
+    SwapIn,
+    LocalDrop,
 }
 
 fn draw_for(seed: u32, size: u8, stream: Stream, index: u16) -> u64 {
@@ -116,6 +124,7 @@ impl Case {
             difficulty,
             items,
             capacity,
+            fixture: None,
         }
     }
 
@@ -133,16 +142,11 @@ impl Case {
         let mut archive = Vec::with_capacity(usize::from(evaluations));
         let mut feasible_evaluations = 0;
         let mut evaluations_to_best_value = 1;
-        let mut density = Vec::new();
-        if arm == SearchArm::Greedy {
-            density.extend(0..self.items.len());
-            density.sort_unstable_by(|&a, &b| {
-                let (a_item, b_item) = (self.items[a], self.items[b]);
-                (b_item.value * a_item.weight)
-                    .cmp(&(a_item.value * b_item.weight))
-                    .then(a.cmp(&b))
-            });
-        }
+        let density = if arm == SearchArm::Greedy {
+            self.density_order(|| {})
+        } else {
+            Vec::new()
+        };
         let draw = |stream, slot| draw_for(self.seed, self.size, stream, slot);
         for slot in 1..=evaluations {
             let id = slot.to_string();
@@ -201,6 +205,18 @@ impl Case {
             unique_genotypes: pool.unique.len(),
             archive,
         })
+    }
+
+    fn density_order(&self, mut comparison: impl FnMut()) -> Vec<usize> {
+        let mut density: Vec<_> = (0..self.items.len()).collect();
+        density.sort_unstable_by(|&a, &b| {
+            comparison();
+            let (a_item, b_item) = (self.items[a], self.items[b]);
+            (b_item.value * a_item.weight)
+                .cmp(&(a_item.value * b_item.weight))
+                .then(a.cmp(&b))
+        });
+        density
     }
 
     fn greedy(&self, density: &[usize], start: Option<usize>) -> KnapsackSelection {
