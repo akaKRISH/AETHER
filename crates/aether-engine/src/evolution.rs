@@ -9,6 +9,8 @@ use crate::{
     ScheduleTrace, ScoreWeights, schedule_with_trace,
 };
 
+pub mod comparison;
+
 const ITEM_COUNT: usize = 12;
 const GENOTYPES: u16 = 1 << ITEM_COUNT;
 const STAGNATION_SLOTS: u16 = 24;
@@ -77,10 +79,20 @@ impl TryFrom<u16> for KnapsackSelection {
     type Error = EvolutionError;
 
     fn try_from(mask: u16) -> Result<Self, Self::Error> {
-        if mask >= GENOTYPES {
+        Self::for_items(mask, ITEM_COUNT)
+    }
+}
+
+impl KnapsackSelection {
+    fn for_items(mask: u16, count: usize) -> Result<Self, EvolutionError> {
+        if u32::from(mask) >= 1 << count {
             return Err(EvolutionError::InvalidCandidate);
         }
         Ok(Self(mask))
+    }
+
+    fn flip(self, bit: usize) -> Self {
+        Self(self.0 ^ (1 << bit))
     }
 }
 
@@ -107,6 +119,48 @@ enum Disposition {
     Infeasible,
     Duplicate,
     Feasible,
+}
+
+#[derive(Default)]
+struct CandidatePool {
+    unique: BTreeSet<KnapsackSelection>,
+    parents: Vec<Candidate>,
+    best: Option<Candidate>,
+}
+
+impl CandidatePool {
+    fn parent(&self, proposals: u16, index: impl FnOnce(usize) -> usize) -> Option<Candidate> {
+        (proposals > 2 && !proposals.is_multiple_of(4))
+            .then(|| self.parents.get(index(self.parents.len().max(1))).copied())
+            .flatten()
+    }
+
+    fn record(&mut self, candidate: Candidate, parent: Option<Candidate>) -> Observation {
+        let fresh = self.unique.insert(candidate.genotype);
+        let improves_incumbent =
+            candidate.fitness.feasible && self.best.is_none_or(|old| candidate.rank() > old.rank());
+        if improves_incumbent {
+            self.best = Some(candidate);
+        }
+        let disposition = if !fresh {
+            Disposition::Duplicate
+        } else if !candidate.fitness.feasible {
+            Disposition::Infeasible
+        } else {
+            // Keep a small, distinct feasible parent pool. Random proposals replenish it.
+            self.parents.push(candidate);
+            self.parents
+                .sort_unstable_by_key(|parent| Reverse(parent.rank()));
+            self.parents.truncate(8);
+            Disposition::Feasible
+        };
+        Observation::Proposal {
+            candidate,
+            parent_slot: parent.map(|candidate| candidate.slot),
+            disposition,
+            improves_incumbent,
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Serialize)]
@@ -259,9 +313,7 @@ fn search(
     let mut budget = Budget::new(cap, EVALUATION).map_err(EvolutionError::Budget)?;
     let mut archive = Vec::with_capacity(usize::from(evaluations));
     let mut ecar_decisions = Vec::new();
-    let mut unique = BTreeSet::new();
-    let mut pool: Vec<Candidate> = Vec::new();
-    let mut best: Option<Candidate> = None;
+    let mut pool = CandidatePool::default();
     let mut last_verified_candidate_slot = None;
     let mut last_verification_slot = 0;
     let mut proposals: u16 = 0;
@@ -270,11 +322,14 @@ fn search(
 
     for slot in 1..=evaluations {
         let final_slot = slot == evaluations
-            || stagnation_slots
-                .is_some_and(|limit| best.is_some_and(|candidate| slot - candidate.slot > limit));
+            || stagnation_slots.is_some_and(|limit| {
+                pool.best
+                    .is_some_and(|candidate| slot - candidate.slot > limit)
+            });
         let action = if mode == Mode::EcarGuided {
-            let changed_candidate =
-                best.is_some_and(|candidate| Some(candidate.slot) != last_verified_candidate_slot);
+            let changed_candidate = pool
+                .best
+                .is_some_and(|candidate| Some(candidate.slot) != last_verified_candidate_slot);
             let elapsed = slot - last_verification_slot;
             let trace = schedule_with_trace(
                 &budget,
@@ -318,7 +373,7 @@ fn search(
             .try_reserve(&slot_id, action, EVALUATION)
             .map_err(EvolutionError::Budget)?;
         let observation = if action.is_verification() {
-            let candidate = best.ok_or(EvolutionError::InvalidTransition)?;
+            let candidate = pool.best.ok_or(EvolutionError::InvalidTransition)?;
             let checked = check(items, capacity, candidate.genotype);
             verified = checked == candidate.fitness && checked.feasible;
             last_verified_candidate_slot = Some(candidate.slot);
@@ -330,51 +385,28 @@ fn search(
                 passed: verified,
             }
         } else {
-            let parent = if mode != Mode::Random && proposals > 2 && !proposals.is_multiple_of(4) {
-                pool.get(draw(&mut random) as usize % pool.len().max(1))
-                    .copied()
+            let parent = if mode != Mode::Random {
+                pool.parent(proposals, |len| draw(&mut random) as usize % len)
             } else {
                 None
             };
             let genotype = match (proposals, parent) {
-                (0, _) => 0,
-                (_, Some(parent)) => {
-                    parent.genotype.0 ^ (1 << (draw(&mut random) as usize % ITEM_COUNT))
+                (0, _) => KnapsackSelection(0),
+                (_, Some(parent)) => parent
+                    .genotype
+                    .flip(draw(&mut random) as usize % ITEM_COUNT),
+                (_, None) => {
+                    KnapsackSelection::try_from((draw(&mut random) % u32::from(GENOTYPES)) as u16)?
                 }
-                (_, None) => (draw(&mut random) % u32::from(GENOTYPES)) as u16,
             };
-            let genotype = KnapsackSelection::try_from(genotype)?;
             let fitness = score(items, capacity, genotype);
             let candidate = Candidate {
                 slot,
                 genotype,
                 fitness,
             };
-            let fresh = unique.insert(genotype);
-            let improves_incumbent =
-                fitness.feasible && best.is_none_or(|old| candidate.rank() > old.rank());
-            if improves_incumbent {
-                best = Some(candidate);
-            }
-            let disposition = if !fresh {
-                Disposition::Duplicate
-            } else if !fitness.feasible {
-                Disposition::Infeasible
-            } else {
-                // ponytail: retain eight distinct feasible parents with periodic
-                // random immigration. Revisit diversity if the search space grows.
-                pool.push(candidate);
-                pool.sort_unstable_by_key(|parent| Reverse(parent.rank()));
-                pool.truncate(8);
-                Disposition::Feasible
-            };
             proposals += 1;
-            Observation::Proposal {
-                candidate,
-                parent_slot: parent.map(|candidate| candidate.slot),
-                disposition,
-                improves_incumbent,
-            }
+            pool.record(candidate, parent)
         };
         budget
             .settle(&slot_id, EVALUATION)
@@ -385,7 +417,7 @@ fn search(
         }
     }
 
-    let best = best.ok_or(EvolutionError::InvalidTransition)?;
+    let best = pool.best.ok_or(EvolutionError::InvalidTransition)?;
     Ok(Arm {
         mode,
         best,
@@ -393,7 +425,7 @@ fn search(
         value_regret: reference
             .checked_sub(best.fitness.value)
             .ok_or(EvolutionError::InvalidTransition)?,
-        unique_genotypes: unique.len(),
+        unique_genotypes: pool.unique.len(),
         proposal_count: proposals,
         verification_count: last_verification_slot - proposals,
         archive,

@@ -18,6 +18,22 @@ The JSON response contains the fixture, proposal lineage, termination reason, ve
 
 Windows package tests passed 42/42 across engine, store and API. This includes the discovery budget, stagnation, lineage, repeatability, fresh CLI process and evidence integrity checks. Targeted strict Clippy, workspace formatting and documentation validation passed. The legacy `evolve 19 48` JSON matched the pre-change output. Frozen artifact SHA-256 checks matched, and the held-out study remains deferred. See the [execution queue](EXECUTION_QUEUE.md) for the next gate.
 
+## DAE-02/03 paired development benchmark
+
+Build with `cargo build --locked --release -p aether-engine --example discovery_benchmark`. Run `target/release/examples/discovery_benchmark run <new-report.json>`, then run `target/release/examples/discovery_benchmark verify <new-report.json>` as a separate process. The saved [raw export](research/results/dae-knapsack-development.json) replayed with evidence SHA-256 `2061ac45dff9e4d9ef240ca07b8e3a733497d08e5a6deff84e7bdf47d1e697db`. Full export SHA-256 is `94c955c6774b5fc218883fad3eb701987ba63e341844afdff3153f898c88fc5d`.
+
+The grid paired three seeds, item counts 8, 12 and 16, two weight/value and capacity profiles, and budgets of 8 and 24 candidate evaluations. Each arm scored the empty baseline, charged repeats and infeasible proposals, and received one separate incumbent check. Each instance had one exhaustive oracle run after all six searches. Uniform random and evolutionary immigration share the same mask draw by evaluation slot, including across caps. Item draws, parent selection, mutation and greedy start use distinct domains. Greedy uses density order and cycles through seed-offset start items. ECAR remains a separate scheduling question because this grid holds verification fixed.
+
+| Arm | Exact objective / 36 | Mean value gap | Median best value | Feasible evaluations / 576 | Mean unique masks | Median evaluations to best value | Median search time |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Random | 0 | 85.92 | 136 | 188 | 15.94 | 3.5 | 13.10 µs |
+| Greedy | 23 | 1.42 | 173 | 576 | 6.19 | 2 | 11.05 µs |
+| Evolution | 1 | 60.83 | 141 | 366 | 15.00 | 8 | 11.60 µs |
+
+The optimized Windows run recorded 1,728 evaluations, 108 passing checks (8.2 µs total), 18 oracles (1.224 ms total), 5.707 ms evidence encoding and 3.327 ms serialization and buffered file flush. Search timing includes proposal construction, scoring, budget and lineage bookkeeping. Runtime is a single fixed-order host observation, and the two budgets share outcome prefixes. The fresh verifier checks the exact grid, all deterministic outcomes and lineage, content hash and timing shape. Elapsed timings are host observations. Greedy uses knowledge of the task structure, so this result describes the selected synthetic grid.
+
+Fourteen engine and benchmark tests and the existing CLI persistence regression passed. Strict engine Clippy and formatting passed. The legacy `evolve 19 48` report matched its recorded digest and the frozen ECAR study remains deferred. [Execution queue](EXECUTION_QUEUE.md)
+
 ## Latest verification
 
 Baseline passed 33 Rust and three frontend tests. The final Windows run passed 50 Rust and three frontend tests, format, strict Clippy, release build, frontend lint/type/build, browser smoke, advisory checks, and evidence validation. The release re-exported three prior reports byte for byte and completed a new objective-derived campaign with advice frozen under protocol v3. The hardware CLI observed the physical NVIDIA device. Crossref, OpenAlex and arXiv public probes returned 200. The recovery drill reconciled one interrupted lease. [Tests](docs/testing/TEST_RESULTS.md) · [Measurements](docs/research/BENCHMARK_RESULTS.md)
