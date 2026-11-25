@@ -1,0 +1,16 @@
+stateDiagram-v2
+    [*] --> QUEUED: reserve capacity
+    QUEUED --> LEASED: current fence assigned
+    QUEUED --> CANCELLED: stop before launch
+    LEASED --> RUNNING: supervised startup
+    LEASED --> FAILED: launch error
+    LEASED --> EXPIRED: lease expiry
+    LEASED --> CANCELLED: cancel before startup
+    RUNNING --> SUCCEEDED: accept outcome and settle
+    RUNNING --> FAILED: typed failure and settlement
+    RUNNING --> CANCELLED: teardown and settlement
+    RUNNING --> EXPIRED: fence and reconcile
+    SUCCEEDED --> [*]
+    FAILED --> [*]
+    CANCELLED --> [*]
+    EXPIRED --> [*]

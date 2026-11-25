@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant Engine
+    participant Store
+    participant Supervisor
+    Engine->>Store: Recheck current caps and reserve estimate
+    Store-->>Engine: Commit reservation and queued attempt
+    Engine->>Store: Lease attempt with fence
+    Engine->>Supervisor: Start reviewed work and meter usage
+    Supervisor-->>Engine: Observed usage and bounded outcome
+    Engine->>Store: Validate fence, settle once and append events
+    alt Duplicate completion or stale fence
+        Store-->>Engine: Return prior outcome or deny stale publication
+    else Observed overrun
+        Store-->>Engine: Record deviation and close admission
+    end

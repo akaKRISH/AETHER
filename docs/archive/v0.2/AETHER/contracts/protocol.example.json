@@ -1,0 +1,14 @@
+{
+  "schema_version": "0.1.0",
+  "task_id": "digits-classification-dev-v1",
+  "objective": "Compare candidate classification accuracy against frozen baseline",
+  "seeds": [11, 23, 37],
+  "dataset_sha256": "REPLACE_WITH_ACTUAL_HASH",
+  "evaluator_sha256": "REPLACE_WITH_ACTUAL_HASH",
+  "policy_version": "local-reviewed-v1",
+  "budget": {"wall_seconds": 1800, "attempts": 20, "model_tokens": 60000, "paid_cost_usd": 0},
+  "worker_limits": {"cpu_threads": 2, "memory_mib": 2048, "timeout_seconds": 300, "output_mib": 200},
+  "metric_rules": [{"metric": "accuracy", "operator": "gte_baseline_minus", "tolerance": 0.01}],
+  "required_replays": 1,
+  "network_allowed": false
+}

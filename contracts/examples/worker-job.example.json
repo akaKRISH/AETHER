@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "attempt_id": "attempt-0001",
+  "task_id": "digits-classification-dev-v1",
+  "input_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "seed": 11,
+  "timeout_ms": 300000
+}

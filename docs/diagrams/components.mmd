@@ -1,0 +1,14 @@
+flowchart TB
+    user["Native CLI caller"] --> usecase["Engine use cases"]
+    usecase --> approval["Protocol and approval"]
+    usecase --> ranking["Pure action ranking"]
+    usecase --> admission["Budget and policy admission"]
+    usecase --> supervision["Runner port"]
+    usecase --> verdict["Trusted evaluator and evidence rules"]
+    usecase --> persistence["Ledger and artifact ports"]
+    usecase --> reporting["Report assembly"]
+    approval --> persistence
+    ranking --> admission
+    supervision --> verdict
+    verdict --> persistence
+    persistence --> reporting

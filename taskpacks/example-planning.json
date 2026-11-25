@@ -1,0 +1,5 @@
+{
+  "objective": "Compare reviewed sorting candidates using the same generated inputs and reference evaluator.",
+  "seed": 19,
+  "items": 128
+}

@@ -1,0 +1,29 @@
+# Local application and study state
+/.aether/
+/artifacts/
+/taskpacks/heldout/
+/research/heldout/
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-wal
+*.sqlite3-shm
+
+# Local tooling and environment
+/target/
+/learning/target/
+/node_modules/
+/web/node_modules/
+/web/dist/
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.DS_Store
+Thumbs.db

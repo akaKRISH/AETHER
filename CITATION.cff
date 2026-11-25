@@ -1,0 +1,7 @@
+cff-version: 1.2.0
+message: "Identify this artifact as the AETHER Genesis design if citing the local document set."
+title: "AETHER — Autonomous Research and Engineering Laboratory"
+type: software
+authors:
+  - name: "AETHER Project"
+abstract: "Pre-implementation design for a human-governed computational research laboratory and the proposed ECAR study."

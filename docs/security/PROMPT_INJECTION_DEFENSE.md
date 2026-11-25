@@ -1,0 +1,5 @@
+# Prompt injection defense
+
+Research sources may contain imperatives or strings shaped like tool calls. Carry retrieved text as typed input with origin and content identifiers. Treat proposals as untrusted data even if a model presents them as instructions from an owner. Parse against a declared proposal schema and validate action class, allowed parameters, task identity, data scope and budget in the controller. A schema match conveys shape information. Execution requires a matching policy decision and a current approval.
+
+Keep model inputs free of credentials and protected evaluator data. Keep free-form rationale out of interpreter or command arguments and request only reviewed structured operations. Preserve provenance for a denied request without logging arbitrary raw text into the audit event. Test with harmless embedded requests for synthetic off-limits operations, including an unknown tool or a request to read a dummy protected label. Check zero dispatch and zero authority change. [Permission model](PERMISSION_MODEL.md)

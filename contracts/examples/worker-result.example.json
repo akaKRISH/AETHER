@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "attempt_id": "attempt-0001",
+  "status": "completed",
+  "artifacts": [
+    {
+      "path": "predictions.json",
+      "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    }
+  ]
+}

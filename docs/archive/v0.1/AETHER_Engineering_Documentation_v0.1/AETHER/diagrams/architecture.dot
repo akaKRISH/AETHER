@@ -1,0 +1,18 @@
+digraph A {
+ graph [rankdir=TB, bgcolor="white", nodesep=.24, ranksep=.29, pad=.12];
+ node [shape=box,style="rounded,filled",fontname="DejaVu Sans",fontsize=10,color="#334155",fillcolor="#eaf0f8",margin=".12,.07"];
+ edge [color="#64748b",arrowsize=.55];
+ user [label="Researcher / CLI"];
+ ctrl [label="Trusted controller / policy"];
+ prot [label="Protocol approval"];
+ sched [label="ECAR scheduler + budget"];
+ model [label="Model adapter\nUntrusted proposals",fillcolor="#fef3c7"];
+ sup [label="Runner supervisor"];
+ sand [label="Restricted candidate sandbox",fillcolor="#fef3c7"];
+ ingest [label="Validated artifact ingestion"];
+ eval [label="Trusted evaluator / replay",fillcolor="#d1fae5"];
+ ledger [label="Claim ledger + artifact store",fillcolor="#d1fae5"];
+ report [label="Report export"];
+ user->ctrl; ctrl->prot; ctrl->sched; sched->model [dir=both]; sched->sup; sup->sand; sand->ingest; ingest->eval; eval->ledger; prot->ledger; sched->ledger; ledger->report;
+ {rank=same; prot;sched;model;}
+}

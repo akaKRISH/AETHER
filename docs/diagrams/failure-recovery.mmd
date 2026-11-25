@@ -1,0 +1,11 @@
+flowchart TD
+    Incident["Restart, timeout or cancellation"] --> Admission["Recheck approval and block stale dispatch"]
+    Admission --> Find["Find durable attempt and reservation"]
+    Find --> Terminal{"Terminal outcome already committed?"}
+    Terminal -->|Yes| Read["Return durable outcome"]
+    Terminal -->|No| Reconcile["Reconcile lease and stop stale executor"]
+    Reconcile --> Stage["Quarantine incomplete output"]
+    Stage --> Settle["Settle usage once and record failure"]
+    Settle --> Retry{"Eligible transient failure and caps available?"}
+    Retry -->|Yes| Fresh["Fresh attempt and reservation"]
+    Retry -->|No| Close["Return reason and halt or continue policy"]

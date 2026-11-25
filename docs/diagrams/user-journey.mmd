@@ -1,0 +1,10 @@
+flowchart LR
+    Goal["Choose a bounded research task"] --> Preview["Review protocol, evaluator and budget"]
+    Preview --> Gate{"Approve scope?"}
+    Gate -->|No| Revise["Revise proposal"]
+    Revise --> Preview
+    Gate -->|Yes| Run["Run or observe monitored attempts"]
+    Run -->|Cancel| Finish["Inspect terminal status"]
+    Run --> Evidence["Inspect metrics, evidence and replay"]
+    Evidence --> Finish
+    Finish --> Report["Review report and caveats"]

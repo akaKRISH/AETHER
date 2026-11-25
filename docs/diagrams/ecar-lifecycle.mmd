@@ -1,0 +1,15 @@
+flowchart TD
+    freeze["Freeze protocol, approval and caps"] --> snap["Read evidence and remaining resources"]
+    snap --> eligible["Filter dependencies, policy and reserve"]
+    eligible --> feasible{"Useful feasible action?"}
+    feasible -->|no| finish["STOP with explicit reason"]
+    feasible -->|yes| rank["Rank finite scores and break ties deterministically"]
+    rank --> kind{"Selected research action"}
+    kind --> explore["EXPLORE hypothesis"]
+    kind --> replay["REPLAY evidence independently"]
+    kind --> challenge["CHALLENGE material claim"]
+    explore --> reserve["Recheck and reserve before dispatch"]
+    replay --> reserve
+    challenge --> reserve
+    reserve --> run["Run, evaluate and settle"]
+    run --> snap

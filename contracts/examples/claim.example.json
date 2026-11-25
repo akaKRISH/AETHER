@@ -1,0 +1,12 @@
+{
+  "schema_version": "0.1.0",
+  "claim_id": "claim-0001",
+  "campaign_id": "campaign-0001",
+  "metric": "accuracy",
+  "operator": "gte",
+  "threshold": 0.75,
+  "required_evidence": [
+    "synthetic-evaluation",
+    "synthetic-replay"
+  ]
+}

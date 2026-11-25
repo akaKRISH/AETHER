@@ -1,0 +1,20 @@
+erDiagram
+    PROJECT ||--o{ PROTOCOL : defines
+    PROTOCOL ||--o{ CAMPAIGN : pins
+    CAMPAIGN ||--|| BUDGET : limits
+    CAMPAIGN ||--o{ RUN : contains
+    RUN ||--o{ ATTEMPT : executes
+    ATTEMPT ||--o| RESERVATION : admits
+    BUDGET ||--o{ RESERVATION : authorizes
+    ATTEMPT ||--o{ METRIC : yields
+    ATTEMPT ||--o{ ATTEMPT_ARTIFACT : associates
+    ARTIFACT ||--o{ ATTEMPT_ARTIFACT : identifies
+    CAMPAIGN ||--o{ CLAIM : contains
+    CLAIM ||--o{ EVIDENCE_EDGE : attaches
+    ARTIFACT o|--o{ EVIDENCE_EDGE : contributes
+    METRIC o|--o{ EVIDENCE_EDGE : contributes
+    CLAIM ||--o{ CLAIM_DEPENDENCY : requires
+    CLAIM ||--o{ CLAIM_DEPENDENCY : supplies
+    CLAIM ||--o{ VERIFICATION : receives
+    ATTEMPT o|--o{ VERIFICATION : replays
+    CAMPAIGN ||--o{ EVENT : records

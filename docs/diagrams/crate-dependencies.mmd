@@ -1,0 +1,14 @@
+flowchart TD
+    cli["aether-cli"] --> core["aether-core"]
+    cli --> engine["aether-engine"]
+    cli --> store["aether-store"]
+    cli --> runner["aether-runner"]
+    api["R2 aether-api"] -.-> engine
+    api -.-> core
+    api -.-> store
+    api -.-> runner
+    store --> engine
+    runner --> engine
+    engine --> core
+    store --> core
+    runner --> core

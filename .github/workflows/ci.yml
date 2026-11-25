@@ -1,0 +1,38 @@
+name: Local platform checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup toolchain install 1.96.1 --profile minimal --component rustfmt --component clippy
+      - run: cargo +1.96.1 fmt --all -- --check
+      - run: cargo +1.96.1 clippy --locked --workspace --all-targets -- -D warnings
+      - run: cargo +1.96.1 test --locked --workspace
+      - run: cargo +1.96.1 build --locked --release --workspace
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build

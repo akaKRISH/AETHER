@@ -1,0 +1,14 @@
+flowchart TB
+    Manifest["Frozen protocol and artifact manifest"] --> Integrity{"Identity, bounds and hashes valid?"}
+    Integrity -->|No| Unknown["INCONCLUSIVE or integrity failure"]
+    Integrity -->|Yes| Evaluate["Evaluate predicates on protected inputs"]
+    Evaluate --> Rule{"Predicate and mandatory checks"}
+    Rule -->|Contradicted| Reject["REJECTED"]
+    Rule -->|Evidence incomplete| Unknown
+    Rule -->|Preliminary pass| Support["SUPPORTED"]
+    Support --> Replay["Independent replay and challenge as required"]
+    Replay --> Outcome{"Rule and dependencies satisfied?"}
+    Outcome -->|Yes| Verified["VERIFIED"]
+    Outcome -->|Valid contradiction| Reject
+    Outcome -->|Missing or invalid evidence| Unknown
+    Verified --> Revoke["Append revocation if evidence later invalidates"]

@@ -1,0 +1,10 @@
+stateDiagram-v2
+  [*] --> PROPOSED
+  PROPOSED --> SUPPORTED: evidence passes initial check
+  PROPOSED --> REJECTED: predicate disproved
+  PROPOSED --> INCONCLUSIVE: insufficient evidence
+  SUPPORTED --> VERIFIED: mandatory links and replay pass
+  SUPPORTED --> REJECTED: valid contradictory evaluation
+  SUPPORTED --> INCONCLUSIVE: replay unavailable or invalid
+  VERIFIED --> REVOKED: evidence invalidated
+  REVOKED --> [*]

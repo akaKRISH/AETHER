@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant Controller
+    participant Supervisor
+    participant Worker
+    participant Evaluator
+    Controller->>Supervisor: Approved task, attempt and persisted fence
+    Supervisor->>Worker: Immutable job.json and read-only inputs
+    Worker-->>Supervisor: result.json and declared artifact bytes
+    alt Valid output within limits and current lease
+        Supervisor->>Evaluator: Validated artifacts with digests
+        Evaluator-->>Controller: Typed measurements and rule outcome
+    else Invalid, stale, or incomplete result
+        Supervisor-->>Controller: Typed failure and observed usage
+    end

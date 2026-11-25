@@ -1,0 +1,12 @@
+stateDiagram-v2
+    [*] --> PROPOSED
+    PROPOSED --> SUPPORTED: trusted preliminary support
+    PROPOSED --> REJECTED: valid contrary result
+    PROPOSED --> INCONCLUSIVE: required evidence unavailable
+    SUPPORTED --> VERIFIED: all frozen requirements pass
+    SUPPORTED --> REJECTED: verified contrary evidence
+    SUPPORTED --> INCONCLUSIVE: required replay unavailable
+    VERIFIED --> REVOKED: append invalidation event
+    REJECTED --> [*]
+    INCONCLUSIVE --> [*]
+    REVOKED --> [*]

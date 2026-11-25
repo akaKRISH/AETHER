@@ -1,0 +1,17 @@
+sequenceDiagram
+    actor Owner
+    participant Engine
+    participant Store
+    participant Runner
+    participant Worker
+    participant Evaluator
+    Owner->>Engine: Approve frozen protocol
+    Engine->>Store: Recheck and reserve for queued attempt
+    Store-->>Engine: Commit reservation and attempt
+    Engine->>Store: Commit lease and fence
+    Engine->>Runner: Dispatch reviewed attempt under lease
+    Runner->>Worker: Start with approved manifest
+    Worker-->>Runner: Predictions and bounded result envelope
+    Runner->>Evaluator: Validated bytes and identity
+    Evaluator-->>Engine: Trusted metrics and outcome
+    Engine->>Store: Fence, commit outcome and settle

@@ -1,0 +1,5 @@
+# AI agent safety
+
+AETHER accepts only bounded computational research tasks whose objective, candidate interface, evaluator and resource envelope can be reviewed. The fixture is a fixed classification task. Later configurations may propose model-driven candidates for allowlisted benign task packs. The proposer has no authority to execute, expand its tools, change budgets, change policy or determine verification. ECAR selects among eligible actions under the same authorization checks used for manual requests.
+
+Reject campaigns that enable uncontrolled execution, offensive cyber activity, biological misuse, violent activity, unsupervised external transfer, arbitrary code generation and execution, or model self-modification. An ordinary candidate artifact includes outputs such as predicted labels. Models cannot install programs or invoke an arbitrary shell. Time, spend and attempt caps apply to exploration and verification alike. Stop on exhaustion, revocation, a policy error, or an unknown execution state. Preserve policy denials and insufficiency as auditable research outcomes. [Human approval policy](../governance/HUMAN_APPROVAL_POLICY.md)

@@ -1,0 +1,24 @@
+[package]
+name = "aether-api"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "aether-lab"
+path = "src/main.rs"
+
+[dependencies]
+aether-core.workspace = true
+aether-engine.workspace = true
+aether-runner.workspace = true
+aether-store.workspace = true
+axum.workspace = true
+futures-util.workspace = true
+rusqlite.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+ureq.workspace = true

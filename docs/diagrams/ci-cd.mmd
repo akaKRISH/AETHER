@@ -1,0 +1,8 @@
+flowchart LR
+    Edit["Versioned change"] --> Docs["Docs, contracts and integrity"]
+    Docs --> Native["Native build, lint and tests"]
+    Native --> Denial["Worker denial and failure tests where supported"]
+    Denial --> Review["Dependency, license and provenance review"]
+    Review --> Approval{"Owner release approval?"}
+    Approval -->|Yes| Package["Version and package approved artifacts"]
+    Approval -->|No| Hold["Record issues and hold release"]

@@ -1,0 +1,34 @@
+{
+  "schema_version": "0.2.0",
+  "task_id": "digits-classification-dev-v1",
+  "objective": "Compare classification accuracy using a frozen evaluator",
+  "seeds": [
+    11,
+    23,
+    37
+  ],
+  "dataset_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "evaluator_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "policy_version": "local-reviewed-v1",
+  "budget": {
+    "wall_ms": 1800000,
+    "attempts": 20,
+    "model_tokens": 60000,
+    "paid_cost_micro_usd": 0
+  },
+  "worker_limits": {
+    "cpu_threads": 2,
+    "memory_bytes": 2147483648,
+    "timeout_ms": 300000,
+    "output_bytes": 209715200
+  },
+  "metric_rules": [
+    {
+      "metric": "accuracy",
+      "operator": "gte_baseline_minus",
+      "tolerance": 0.01
+    }
+  ],
+  "required_replays": 1,
+  "network_allowed": false
+}

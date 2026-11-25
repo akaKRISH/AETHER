@@ -1,0 +1,4 @@
+* text=auto eol=lf
+
+# Archive hashes cover literal source bytes. Disable Git line-ending conversion.
+/docs/archive/** -text

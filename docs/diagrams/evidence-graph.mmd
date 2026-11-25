@@ -1,0 +1,9 @@
+flowchart LR
+    artifact["Prediction artifact"] -->|DERIVED_FROM| attempt["Candidate attempt"]
+    metric["Accuracy metric"] -->|EVALUATED_BY| evaluator["Trusted evaluator revision"]
+    metric -->|DERIVED_FROM| artifact
+    claimb["Claim B"] -->|DEPENDS_ON| claima["Claim A"]
+    metric -->|SUPPORTS| claima
+    replay["Independent replay metric"] -->|REPRODUCES| metric
+    contrary["Valid challenge evidence"] -->|CONTRADICTS| claimb
+    invalidation["Invalidation event"] -->|INVALIDATES| claima

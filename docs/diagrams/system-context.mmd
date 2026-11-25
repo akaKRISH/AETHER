@@ -1,0 +1,7 @@
+flowchart LR
+    owner["Researcher / owner"] -->|approves task and budget| controller["AETHER laboratory"]
+    controller -->|evidence and reports| owner
+    data["Approved public dataset"] -->|versioned inputs| controller
+    controller -.->|optional redacted proposal request| model["Approved model adapter"]
+    model -.->|untrusted proposals| controller
+    controller -.->|owner-reviewed export| reviewer["Independent reviewer"]

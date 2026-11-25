@@ -1,0 +1,9 @@
+flowchart TB
+    Registry["Reviewed registry and approved policy"] --> Supervisor["Supervisor"]
+    Supervisor -->|Configure and check| Boundary["Supported isolated runtime"]
+    Boundary --> Worker["Restricted worker process tree"]
+    Limits["Resource and time limits"] --> Boundary
+    Input["Declared read-only inputs"] --> Worker
+    Worker --> Scratch["Private quota-limited output area"]
+    Scratch --> Validator["Validate type, identity, paths and hashes"]
+    Validator --> Evaluator["Trusted evaluator outside isolation"]

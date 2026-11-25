@@ -1,0 +1,14 @@
+# Literature review and search record
+
+On 2026-11-24, the Phase Zero design review searched the web for the works named in the Genesis brief and the v0.2 references. It also searched combinations of **claim provenance**, **verification-aware agents**, **budgeted experiment selection**, **evidence graphs**, **scientific rediscovery**, **verification under correlated errors** and named variants of these terms. Primary sources were organization documentation, author repositories, journals, proceedings and preprints. Inclusion favored research-agent systems, runnable or executable benchmark designs, resource-aware policies, evidence/provenance standards and directly reusable Rust tooling. General product roundups, news reports, and sources without enough method detail were excluded from engineering conclusions.
+
+This targeted review establishes credible precedents and identifies close comparisons. It has no exhaustiveness guarantee, formal screening counts or independent full-text reviewer. Method claims are scoped to reviewed material and experimental outcomes belong to their source teams. The [comparison matrix](COMPETITOR_ANALYSIS.md) records dates, evidence and interpretations. The [near-method review](RELATED_WORK.md) covers the most consequential overlap. Reviews of model usage, unpublished systems, licenses and exact environmental requirements need revision pinning before reproduction.
+
+## Protocol for a systematic follow-up
+
+1. Record query, databases, search date, date range, item IDs and decisions before screening. Cover arXiv, OpenReview, major ML and systems proceedings, and a citation index. Search both nomenclature and underlying concepts. Follow forward and backward citations from CAVEAT, DCP, The Agentic Scientist, FIRE-Bench and Autonomous Science Bench.
+2. Deduplicate by DOI, arXiv root and documented release versions. Preserve preprint-versus-proceedings distinctions. State exclusion reasons such as non-executable evidence, scope mismatch or no method disclosure. Obtain an independent second screen for the closest studies.
+3. Extract action choice, budget types, graph semantics, confirmation criteria, evaluator isolation, independence measures, experiments released, measured effects and scope. Record when evidence comes from one case study, empirical aggregate, theorem with assumptions, or provider documentation.
+4. Test the narrow ECAR contrast against the nearest reproducible method when operationally equivalent. Where scopes differ, define a reduced matched baseline and explain what was adapted. If dependency-aware budget allocation with independent execution evidence is already established in the same setting, reframe around replication, reliability and measured limits.
+
+The archive's survey is a useful seed for reading verification gaps, with counts applying to its screened corpus. It cannot establish absence of earlier work. [Ding et al., arXiv:2608.05179](https://arxiv.org/abs/2608.05179).

@@ -1,0 +1,16 @@
+sequenceDiagram
+  actor U as Researcher
+  participant C as Controller
+  participant B as Budget and ledger
+  participant W as Supervisor
+  participant X as Sandbox
+  participant E as Evaluator
+  U->>C: Approve protocol hash
+  C->>B: Reserve and queue atomically
+  C->>W: Lease attempt and policy
+  W->>X: Execute approved candidate
+  X-->>W: Declared outputs only
+  W->>E: Validated artifacts
+  E-->>C: Trusted metrics and verdict
+  C->>B: Commit outcome and settle budget
+  C-->>U: Evidence report or next approved action

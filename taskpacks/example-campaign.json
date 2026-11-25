@@ -1,0 +1,10 @@
+{
+  "id": "workbench-seeded-sort",
+  "title": "Seeded sorting campaign",
+  "objective": "Check exact sorting against an independent reference, replay the original, and verify a different seed.",
+  "seed": 19,
+  "items": 128,
+  "algorithm": "insertion",
+  "attempts": 5,
+  "wall_ms": 12000
+}

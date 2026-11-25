@@ -1,0 +1,24 @@
+{
+  "id": "seeded-sort-v1",
+  "title": "Seeded sorting",
+  "classification": "local-development",
+  "inputs": {
+    "generator": "lcg-32-v1",
+    "maximum_items": 128,
+    "challenge_seed_xor": "0x854a6817"
+  },
+  "algorithms": [
+    "standard",
+    "insertion",
+    "selection"
+  ],
+  "verification": {
+    "oracle": "sort_unstable reference",
+    "replay": "fresh process with identical original inputs",
+    "challenge": "same candidate on the frozen challenge seed"
+  },
+  "limitations": [
+    "synthetic data only",
+    "exact agreement on the frozen seeds does not prove all-input correctness"
+  ]
+}

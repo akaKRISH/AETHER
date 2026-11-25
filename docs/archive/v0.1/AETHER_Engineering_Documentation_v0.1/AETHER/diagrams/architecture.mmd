@@ -1,0 +1,14 @@
+flowchart TD
+  U[Researcher CLI or Web] --> C[Trusted controller]
+  C --> P[Protocol and approval]
+  C --> S[ECAR scheduler and budget]
+  S --> M[Model adapter: untrusted proposals]
+  S --> W[Runner supervisor]
+  W --> X[Restricted candidate sandbox]
+  X --> A[Validated artifact ingestion]
+  A --> E[Trusted evaluator and replay]
+  E --> L[Claim ledger and artifact store]
+  P --> L
+  S --> L
+  L --> R[Report builder]
+  R --> U

@@ -1,0 +1,13 @@
+erDiagram
+  PROJECT ||--o{ PROTOCOL : defines
+  PROTOCOL ||--o{ CAMPAIGN : governs
+  CAMPAIGN ||--|| BUDGET : limits
+  CAMPAIGN ||--o{ RUN : executes
+  CAMPAIGN ||--o{ CLAIM : asserts
+  CAMPAIGN ||--o{ EVENT : records
+  RUN ||--o{ METRIC : produces
+  RUN ||--o{ RUN_ARTIFACT : references
+  ARTIFACT ||--o{ RUN_ARTIFACT : stores
+  CLAIM ||--o{ EVIDENCE_EDGE : requires
+  CLAIM ||--o{ VERIFICATION : receives
+  RUN ||--o{ VERIFICATION : replays

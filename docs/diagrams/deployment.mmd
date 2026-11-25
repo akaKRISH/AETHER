@@ -1,0 +1,15 @@
+flowchart LR
+    subgraph Native["Phase 1 native Windows or Linux"]
+        CLI["CLI and deterministic core"] --> Manifest["Local fixture manifests"]
+    end
+    subgraph Local["Wider R0 and R1 local deployment"]
+        Control["Rust control plane"] --> DB["Local SQLite journal"]
+        Control --> Blob["Local immutable blobs"]
+        Control --> Supervisor["Qualified Linux supervisor"]
+        Supervisor --> Worker["Reviewed isolated worker"]
+    end
+    subgraph Future["Approved R2 extensions"]
+        UI["Web UI"] --> API["Scoped Rust API"]
+        API --> Control
+        Control -.-> Remote["Optional remote supervisor"]
+    end

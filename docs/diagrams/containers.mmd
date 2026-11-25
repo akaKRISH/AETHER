@@ -1,0 +1,15 @@
+flowchart LR
+    subgraph trusted["Trusted local environment"]
+      cli["Native Rust CLI"] --> engine["Rust controller"]
+      engine --> ledger["SQLite and journal"]
+      engine --> objects["Content-addressed artifacts"]
+      engine --> evaluator["Trusted evaluator"]
+      hidden["Protected evaluation inputs"] --> evaluator
+      engine --> supervisor["Reviewed execution supervisor"]
+    end
+    subgraph isolated["Qualified worker boundary"]
+      worker["Reviewed Rust or Python task"]
+    end
+    supervisor -->|frozen job and public inputs| worker
+    worker -->|bounded outputs| supervisor
+    supervisor -->|validated artifact| evaluator

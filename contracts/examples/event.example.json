@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1.0",
+  "event_id": "evt-0001",
+  "campaign_id": "campaign-0001",
+  "sequence": 1,
+  "type": "protocol.approved",
+  "timestamp": "2026-11-24T00:00:00Z",
+  "actor": "synthetic-owner",
+  "correlation_id": "req-0001",
+  "payload": {
+    "protocol_revision": 1,
+    "config_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "policy_version": "local-reviewed-v1"
+  }
+}

@@ -1,0 +1,5 @@
+# Secrets management
+
+The native fixture needs no secret. A later explicitly approved provider is accessed through a trusted controller adapter that resolves credentials from a dedicated local or deployment secret store. Use separate credentials for each environment and scope them to the specific provider action. Record named references or configuration identifiers in audit metadata and keep token values out of manifests, errors, prompts, logs and reports.
+
+Build the worker subprocess environment from an explicit allowlist. Exclude controller secrets, parent environment inheritance, home-directory mounts, host agent sockets and hidden labels. Emit safe structured failure codes when provider credentials are absent or invalid. Treat HTTP headers, value-bearing URLs and raw vendor errors as sensitive surfaces. Validate redaction using synthetic marker values before any enabled connector ships. Rotate and revoke compromised credentials, audit provider usage and quarantine affected logs before resuming. [Security architecture](SECURITY_ARCHITECTURE.md)

@@ -1,0 +1,13 @@
+# Statistical analysis plan
+
+**Status** — Proposed analysis. There are no pilot observations, sample-size findings or empirical effect estimates.
+
+The primary estimand is mean paired improvement D − B in verified campaign utility across the intended three task families, with task as the independent sampling unit and seeds as within-task replications. Assign equal task weight for the balanced provisional design. For each task t, average D − B over matched seeds first. Then average task means. Pairing removes differences attributable to stable task difficulty or seed conditions.
+
+Define a practically relevant absolute utility difference and its justification before inspecting held-out outcomes. Use the six development tasks to estimate feasible attempts, failure fraction, between-task effect variance and seed variance. Simulate task-cluster pairs or bootstrap pilot pairs under conservative variance scenarios to plan precision or power for the stated effect. The provisional 12 tasks and three seeds are a planning ceiling candidate. If constraints make the planned inference uninformative, document a feasibility study with wider intervals and qualify claims before any held-out runs.
+
+Report a nominal 95% task-cluster bootstrap interval by resampling entire task blocks and retaining all paired seeds. If the freeze specifies a stratified design with enough tasks, resample within families and preserve the published weights. Declare resampling algorithm, seed, iteration count and interval method before main execution. Small numbers of clusters limit coverage. Also show task-level paired estimates and a preregistered sensitivity analysis, for example a task-level paired randomization procedure when exchangeability is justified by design. Report the assumptions of each procedure and interpret the magnitude and uncertainty together.
+
+An incomplete or invalid launched campaign gets zero primary utility. A block prevented from launching by a declared external outage is tracked separately. Retain all logs, use only preregistered exclusion/retry rules, and include sensitivity with exclusions removed or visibly bounded. When applying an approved retry, retain original lineage and usage according to the same rule in every arm.
+
+Publish cell-level outcomes, per family effects, denominators, uncertainty, protocol deviations and actual usage. Secondary metrics and contrasts are exploratory. Report absolute differences, avoid percentage growth with zero baseline, and describe whether the interval is consistent with materially helpful, harmful or inconclusive effects. Null and negative effects remain in the record.

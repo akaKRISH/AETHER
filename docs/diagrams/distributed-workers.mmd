@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant Owner
+    participant Control as Trusted controller
+    participant Remote as Authorized worker supervisor
+    participant Task as Isolated reviewed task
+    Owner->>Control: Explicitly approve remote profile and data scope
+    Control->>Remote: Scoped job with attempt, expiry and input digest
+    Remote->>Remote: Validate job identity, scope and digest
+    Remote->>Task: Execute reviewed task under quotas
+    Task-->>Remote: Bounded artifacts
+    Remote-->>Control: Return attempt outcome and resource evidence
+    Control->>Control: Verify current fence, hashes and trusted evaluation

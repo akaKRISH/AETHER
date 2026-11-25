@@ -1,0 +1,13 @@
+stateDiagram-v2
+    [*] --> DRAFT
+    DRAFT --> APPROVED: current owner approval
+    APPROVED --> RUNNING: begin approved campaign
+    RUNNING --> PAUSED: admission paused
+    PAUSED --> RUNNING: revalidate approval and budget
+    RUNNING --> COMPLETED: objective or normal stop
+    RUNNING --> FAILED: terminal fault
+    RUNNING --> CANCELLED: settle active attempts
+    PAUSED --> CANCELLED: stop and reconcile
+    COMPLETED --> [*]
+    FAILED --> [*]
+    CANCELLED --> [*]

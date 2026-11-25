@@ -1,0 +1,16 @@
+flowchart TB
+    Owner["Owner approval"] --> Controller
+    Proposal["Retrieved or proposed content"] --> Intake["Structured validation"]
+    Intake --> Controller
+    subgraph Trusted["Trusted Rust and private data"]
+        Controller["Controller and policy"] --> Runner["Runner supervisor"]
+        Controller --> Ledger["Ledger and budget"]
+        Ingest["Bounded output validation"] --> Evaluator["Trusted evaluator"]
+        Labels["Held-out labels"] --> Evaluator
+        Evaluator --> Controller
+    end
+    subgraph Isolated["Reviewed workload isolation boundary"]
+        Worker["Worker executable"]
+    end
+    Runner -->|Pinned job and read-only inputs| Worker
+    Worker -->|Bounded predictions and artifacts| Ingest
