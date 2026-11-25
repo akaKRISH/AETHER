@@ -26,7 +26,11 @@ The report is `research/results/athena-local-campaign.json`, SHA-256 `7b1d9d9de5
 
 ## Exact next action
 
-ATH-02 is **BLOCKED** at the research review gate. The development runner rejects the frozen held-out phase. Different seeds and streams share random draw keys, and the summary can accept incomplete case grids. The public specification exposes the simulation inputs. Before any held-out run, fix key separation and case validation, freeze the approved execution path, and record independent custody for a blinded confirmatory study. The pilot remains +0.17 utility points with its reported 95% interval of −0.84 to +1.19. [Review and exact execution instructions](docs/research/ATH_02_INDEPENDENT_ECAR_REVIEW.md)
+ATH-02B implements the corrected version 2 synthetic protocol, SHA-256 `7e7f31346feb5b004a9f261d8c590d4e2c421e3a69fc023fe259353b0a1cc756`. It separates draw keys while sharing draws across matched arms and caps. Held-out execution requires an approved manifest digest that binds the protocol, executable, config and analysis. The analyzer rejects incomplete, duplicate, unexpected and unmatched cases before aggregation. The original protocol and archived pilot retain their bytes. The historical estimate remains +0.17 utility points with its reported 95% interval of −0.84 to +1.19. [Amendment and execution instructions](docs/research/ATH_02B_ECAR_PROTOCOL.md) · [Original review](docs/research/ATH_02_INDEPENDENT_ECAR_REVIEW.md)
+
+Validation passed 11 Rust tests, 13 CLI regression tests against the release example, strict Clippy, formatting and documentation checks. The archival route reproduced all 1,440 development rows and the saved statistical summary.
+
+Actual held-out execution remains pending. Appoint an independent custodian, commit the private version 2 input, and obtain owner and reviewer approval of the manifest digest before any release. Validation for this remediation used development and public synthetic fixtures.
 
 ## Remaining dependencies
 
