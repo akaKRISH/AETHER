@@ -3,6 +3,8 @@
 //! Process supervision for the built-in, reviewed native tasks.
 
 mod optimization;
+#[cfg(windows)]
+mod windows_worker;
 
 pub use optimization::{Interval, OptimizationComparison, optimization_input};
 use serde::{Deserialize, Serialize};
@@ -15,6 +17,8 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
 use thiserror::Error;
+#[cfg(windows)]
+pub use windows_worker::wait_for_admission;
 
 pub const WORKER_FLAG: &str = "__aether-builtin-worker-v1";
 pub const WORKER_VERSION: &str = "aether.native-worker/1";
@@ -335,12 +339,10 @@ fn supervise_child(
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::null());
-    #[cfg(windows)]
-    {
-        use std::os::windows::process::CommandExt;
-        command.creation_flags(0x0800_0000);
-    }
     let started = Instant::now();
+    #[cfg(windows)]
+    let (mut child, containment) = windows_worker::spawn(&mut command)?;
+    #[cfg(not(windows))]
     let mut child = command.spawn()?;
     let pid = child.id();
     let output = child.stdout.take().ok_or(Error::Protocol)?;
@@ -369,6 +371,8 @@ fn supervise_child(
         }
         thread::sleep(Duration::from_millis(2));
     };
+    #[cfg(windows)]
+    drop(containment);
     if outcome.is_err() {
         // A process can exit between try_wait and kill.
         let _ = child.kill();

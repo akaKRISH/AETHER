@@ -220,6 +220,45 @@ fn objective_planning_freezes_provenance_without_granting_execution() {
 }
 
 #[test]
+fn cited_objective_binds_an_exact_local_record_before_approval() {
+    let work = Workspace::new();
+    let request = work.0.join("objective.json");
+    let catalog = work.0.join("citations.json");
+    fs::write(
+        &request,
+        json!({
+            "objective":"Test a selected sorting method",
+            "seed":19,"items":16,"citations":["10.9999/athena-test"]
+        })
+        .to_string(),
+    )
+    .unwrap();
+    let args = ["plan-objective", "cited", request.to_str().unwrap()];
+    assert!(!work.invoke(&args).status.success());
+    assert_eq!(fs::read_dir(work.0.join("protocols")).unwrap().count(), 0);
+    fs::write(
+        &catalog,
+        json!([{"doi":"10.9999/athena-test","title":"Synthetic catalog test record"}]).to_string(),
+    )
+    .unwrap();
+    work.success(&["import-citations", catalog.to_str().unwrap()]);
+    let draft = work.success(&args);
+    assert_eq!(draft["campaign"]["state"], "draft");
+    assert!(!work.invoke(&["run", "cited"]).status.success());
+    assert_eq!(draft, work.success(&args));
+    let report = work.success(&["report", "cited"]);
+    assert_eq!(report["protocol"]["version"], "aether.protocol/4");
+    assert_eq!(
+        report["protocol"]["sources"][0]["id"],
+        "10.9999/athena-test"
+    );
+    assert_eq!(
+        report["protocol"]["sources"][0]["provenance"]["source"],
+        "manual"
+    );
+}
+
+#[test]
 fn optimization_rejects_duplicate_inputs_and_preserves_the_first_frozen_protocol() {
     let work = Workspace::new();
     let plan_path = work.0.join("optimization.json");

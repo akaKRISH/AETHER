@@ -1,0 +1,131 @@
+{
+  "cases": 1440,
+  "host_wall_us": 113636,
+  "host_scheduler_ns": 39962300,
+  "arms": {
+    "FixedFlat": {
+      "verified": 400,
+      "false_verified": 0,
+      "rejected": 287,
+      "total_claims": 2880,
+      "unresolved_high_impact": 991,
+      "replays": 962,
+      "replay_passes": 687,
+      "failed_attempts": 309,
+      "mean_utility_percent": 13.184035746404783,
+      "false_verification_rate": 0.0,
+      "coverage": 0.23854166666666668,
+      "used_simulated_ms": 14798,
+      "budget_utilization": 0.790491452991453,
+      "simulated_ms_per_true_verified": 36.995
+    },
+    "AdaptiveFlat": {
+      "verified": 549,
+      "false_verified": 3,
+      "rejected": 339,
+      "total_claims": 2880,
+      "unresolved_high_impact": 907,
+      "replays": 1109,
+      "replay_passes": 794,
+      "failed_attempts": 314,
+      "mean_utility_percent": 18.419309941085693,
+      "false_verification_rate": 0.00546448087431694,
+      "coverage": 0.30833333333333335,
+      "used_simulated_ms": 15675,
+      "budget_utilization": 0.8373397435897436,
+      "simulated_ms_per_true_verified": 28.708791208791208
+    },
+    "FixedGraph": {
+      "verified": 387,
+      "false_verified": 1,
+      "rejected": 294,
+      "total_claims": 2880,
+      "unresolved_high_impact": 974,
+      "replays": 988,
+      "replay_passes": 696,
+      "failed_attempts": 310,
+      "mean_utility_percent": 12.500429341199299,
+      "false_verification_rate": 0.002583979328165375,
+      "coverage": 0.23645833333333333,
+      "used_simulated_ms": 14846,
+      "budget_utilization": 0.7930555555555555,
+      "simulated_ms_per_true_verified": 38.461139896373055
+    },
+    "Ecar": {
+      "verified": 582,
+      "false_verified": 3,
+      "rejected": 386,
+      "total_claims": 2880,
+      "unresolved_high_impact": 877,
+      "replays": 1221,
+      "replay_passes": 854,
+      "failed_attempts": 307,
+      "mean_utility_percent": 18.5924450405222,
+      "false_verification_rate": 0.005154639175257732,
+      "coverage": 0.33611111111111114,
+      "used_simulated_ms": 15787,
+      "budget_utilization": 0.8433226495726496,
+      "simulated_ms_per_true_verified": 27.265975820379964
+    }
+  },
+  "primary_ecar_vs_adaptive_flat": {
+    "mean_points": 0.1731350994365088,
+    "seed_block_sd": 2.574552757977257,
+    "bootstrap_95": [
+      -0.8396777462782639,
+      1.1883735598863583
+    ],
+    "pilot_seed_blocks": 24,
+    "sample_size_at_5_points": 30,
+    "by_family": {
+      "costly_noisy_checks": 1.6975308641975309,
+      "deep_chain": -2.20856102003643,
+      "flat": 0.0,
+      "unreliable_hub": -3.935185185185185,
+      "valuable_hub": 5.311890838206628
+    },
+    "wins": 62,
+    "ties": 238,
+    "losses": 60
+  },
+  "secondary_fixed_graph_vs_fixed_flat": {
+    "mean_points": -0.6836064052054849,
+    "seed_block_sd": 1.7832749604427924,
+    "bootstrap_95": [
+      -1.3938390298758432,
+      0.06484410784094422
+    ],
+    "pilot_seed_blocks": 24,
+    "sample_size_at_5_points": 30,
+    "by_family": {
+      "costly_noisy_checks": -0.06613756613756612,
+      "deep_chain": -1.9808743169398908,
+      "flat": 0.0,
+      "unreliable_hub": -5.1234567901234565,
+      "valuable_hub": 3.7524366471734893
+    },
+    "wins": 28,
+    "ties": 290,
+    "losses": 42
+  },
+  "secondary_adaptive_flat_vs_fixed_flat": {
+    "mean_points": 5.235274194680908,
+    "seed_block_sd": 1.907050401452528,
+    "bootstrap_95": [
+      4.516024861355401,
+      5.984269155845638
+    ],
+    "pilot_seed_blocks": 24,
+    "sample_size_at_5_points": 30,
+    "by_family": {
+      "costly_noisy_checks": 0.3747795414462081,
+      "deep_chain": 3.6429872495446265,
+      "flat": 14.257369614512472,
+      "unreliable_hub": 0.030864197530864185,
+      "valuable_hub": 7.87037037037037
+    },
+    "wins": 117,
+    "ties": 243,
+    "losses": 0
+  }
+}

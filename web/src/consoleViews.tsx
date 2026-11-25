@@ -1,12 +1,25 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { getRecord, getReport, isRow, message, proposeResearch, rows, runEvolution, runStudy, type Row, type Snapshot, type StudyReport } from './api'
+import { getFrozenProtocol, getRecord, getReport, isRow, message, proposeResearch, rows, runEvolution, runStudy, type Row, type Snapshot, type StudyReport } from './api'
 import { Empty, Fields, Panel, RecordTable, errorText, externalLink, keyedRows, readableRecord, text } from './components'
 
 export function Hypotheses({ token, snapshot }: { token: string; snapshot: Snapshot }) {
   const [proposals, setProposals] = useState<Row[]>([])
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [protocol, setProtocol] = useState<Row>()
+  const [protocolError, setProtocolError] = useState('')
+  const campaignId = snapshot.campaign.id
+  useEffect(() => {
+    const controller = new AbortController()
+    getFrozenProtocol(token, campaignId, controller.signal).then(
+      (value) => { if (!controller.signal.aborted) setProtocol(value) },
+      (reason) => { if (!controller.signal.aborted) setProtocolError(message(reason)) },
+    )
+    return () => controller.abort()
+  }, [token, campaignId])
+  const advice = isRow(protocol?.planning) ? protocol.planning : undefined
+  const sources = rows(protocol?.sources)
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -28,6 +41,20 @@ export function Hypotheses({ token, snapshot }: { token: string; snapshot: Snaps
     }
   }
   return <>
+    {errorText(protocolError)}
+    {advice && <Panel title="Frozen model proposal">
+      {typeof advice.hypothesis === 'string' && <p className="panel-note">{advice.hypothesis}</p>}
+      <Fields data={readableRecord(advice.provenance)} />
+      <RecordTable label="Frozen candidate ranking" data={rows(advice.proposals)}
+        columns={['algorithm', 'items', 'seed', 'rationale']} />
+    </Panel>}
+    {sources.length > 0 && <Panel title="Frozen literature sources">
+      <RecordTable label="Sources bound to the proposal" data={sources}
+        columns={[{ key: 'title', label: 'Citation', render: (title, row) => {
+          const url = externalLink(row.url)
+          return url ? <a href={url} target="_blank" rel="noopener noreferrer">{text(title)}</a> : text(title)
+        } }, 'id', 'year', 'provenance']} />
+    </Panel>}
     <Panel title="Recorded hypotheses">
       <RecordTable label="Recorded hypotheses" data={snapshot.hypotheses} columns={['id', 'statement']} />
     </Panel>

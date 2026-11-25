@@ -86,6 +86,7 @@ pub async fn serve(lab: Lab, port: u16, token: String, assets: PathBuf) -> std::
         .route("/v1/campaigns/{id}/events", get(events))
         .route("/v1/campaigns/{id}/stream", get(live))
         .route("/v1/campaigns/{id}/report", get(report))
+        .route("/v1/campaigns/{id}/protocol", get(protocol))
         .route("/v1/artifacts/{sha256}", get(artifact))
         .route("/v1/benchmarks", post(benchmarks))
         .route("/v1/evolution", post(evolution))
@@ -358,6 +359,10 @@ async fn live(
 
 async fn report(State(app): State<App>, Path(id): Path<String>) -> ApiResult<Json<Value>> {
     blocking(move || app.lab.report(&id)).await.map(Json)
+}
+
+async fn protocol(State(app): State<App>, Path(id): Path<String>) -> ApiResult<Json<Value>> {
+    blocking(move || app.lab.protocol(&id)).await.map(Json)
 }
 
 async fn artifact(State(app): State<App>, Path(hash): Path<String>) -> ApiResult<Response> {

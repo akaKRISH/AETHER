@@ -9,7 +9,9 @@ const { readFileSync } = require('node:fs')
 const { performance } = require('node:perf_hooks')
 
 const root = resolve(__dirname, '..')
-const exe = join(root, 'target', 'release', process.platform === 'win32' ? 'aether-lab.exe' : 'aether-lab')
+const exe = process.argv[2]
+  ? resolve(process.argv[2])
+  : join(root, 'target', 'release', platform() === 'win32' ? 'aether-lab.exe' : 'aether-lab')
 const rounds = 50
 
 function windowsPeakWorkingSet(pid) {
@@ -67,7 +69,8 @@ async function main() {
     service = spawn(exe, ['serve', '0'], { cwd: root, env, windowsHide: true, stdio: ['ignore', 'ignore', 'pipe'] })
     const origin = await startAddress(service)
     const cases = []
-    for (const path of ['/health', '/v1/campaigns/latency-sample', '/v1/campaigns/latency-sample/events?after=0']) {
+    for (const path of ['/health', '/v1/campaigns/latency-sample', '/v1/campaigns/latency-sample/events?after=0',
+      '/v1/campaigns/latency-sample/report']) {
       cases.push(await measure(origin, token, path))
     }
     console.log(JSON.stringify({

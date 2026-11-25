@@ -50,6 +50,29 @@ pub struct PlanningRequest {
     pub items: u16,
 }
 
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ObjectiveRequest {
+    objective: String,
+    seed: u32,
+    items: u16,
+    #[serde(default)]
+    citations: Vec<String>,
+}
+
+impl ObjectiveRequest {
+    pub fn into_parts(self) -> (PlanningRequest, Vec<String>) {
+        (
+            PlanningRequest {
+                objective: self.objective,
+                seed: self.seed,
+                items: self.items,
+            },
+            self.citations,
+        )
+    }
+}
+
 impl PlanningRequest {
     fn validate(&self) -> Result<(), PlanningError> {
         if self.objective.trim().is_empty()
@@ -102,6 +125,19 @@ pub struct Ranking {
     algorithms: Vec<SortAlgorithm>,
     provenance: ModelProvenance,
     tokens: Option<TokenUsage>,
+    hypothesis: Option<String>,
+    inference: Option<LocalInference>,
+}
+
+#[derive(Debug, Serialize)]
+struct LocalInference {
+    quantization: Option<String>,
+    prompt_sha256: String,
+    seed: u32,
+    context_tokens: u16,
+    max_output_tokens: u64,
+    temperature: u8,
+    thinking: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -112,6 +148,10 @@ pub struct PlanningReport {
     provenance: ModelProvenance,
     tokens: Option<TokenUsage>,
     pub(crate) proposals: Vec<Proposal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    hypothesis: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    inference: Option<LocalInference>,
 }
 
 /// Adapters supply the order of reviewed algorithms. The controller supplies
@@ -160,6 +200,8 @@ impl ModelAdapter for MockModel {
                 input_tokens: 0,
                 output_tokens: 0,
             }),
+            hypothesis: None,
+            inference: None,
         })
     }
 }
@@ -224,6 +266,8 @@ fn propose_recorded(
         provenance: ranked.provenance,
         tokens: ranked.tokens,
         proposals,
+        hypothesis: ranked.hypothesis,
+        inference: ranked.inference,
     })
 }
 
@@ -234,17 +278,24 @@ fn check_cancelled(cancelled: &AtomicBool) -> Result<(), PlanningError> {
     Ok(())
 }
 
-fn ranking_from_json(value: &str) -> Result<Vec<SortAlgorithm>, PlanningError> {
-    if value.len() > 512 {
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Rank {
+    algorithms: Vec<SortAlgorithm>,
+    hypothesis: Option<String>,
+}
+
+fn ranking_from_json(value: &str) -> Result<Rank, PlanningError> {
+    if value.len() > 1024 {
         return Err(PlanningError::InvalidResponse);
     }
-    #[derive(Deserialize)]
-    #[serde(deny_unknown_fields)]
-    struct Rank {
-        algorithms: Vec<SortAlgorithm>,
+    let result: Rank = serde_json::from_str(value).map_err(|_| PlanningError::InvalidResponse)?;
+    if result.hypothesis.as_ref().is_some_and(|text| {
+        text.trim().is_empty() || text.len() > 240 || text.chars().any(char::is_control)
+    }) {
+        return Err(PlanningError::InvalidResponse);
     }
-    let response: Rank = serde_json::from_str(value).map_err(|_| PlanningError::InvalidResponse)?;
-    Ok(response.algorithms)
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -283,6 +334,15 @@ mod tests {
     fn model_output_cannot_supply_execution_parameters() {
         assert!(ranking_from_json(r#"{"algorithms":["insertion"],"shell":"run"}"#).is_err());
         assert!(ranking_from_json(r#"{"algorithms":["download"]}"#).is_err());
+        assert!(ranking_from_json(r#"{"algorithms":["standard"],"hypothesis":"\n"}"#).is_err());
+        let rank = ranking_from_json(
+            r#"{"algorithms":["standard"],"hypothesis":"The output will match the reference."}"#,
+        )
+        .unwrap();
+        assert_eq!(
+            rank.hypothesis.as_deref(),
+            Some("The output will match the reference.")
+        );
         assert!(OllamaModel::new("name:cloud").is_err());
         assert!(OllamaModel::new("other.example/remote:model").is_err());
     }

@@ -24,6 +24,8 @@ Follow the owner-authorized implementation-first policy. Build, validate, revers
 
 Operation Prometheus authorizes continued local engineering. See the [engineering audit](docs/engineering/PROMETHEUS_AUDIT.md) and [continuation](NEXT_ACTIONS.md). Keep real provider measurements, loopback fixtures, synthetic studies and observations from reviewed workers identified by their provenance.
 
+Operation Athena adds qualified local inference and a cited model draft. Use [RESUME.md](RESUME.md) for the exact frozen campaign gate. Keep model advice, local benchmarks and verified task evidence distinct.
+
 Record a local checkpoint for each verified slice when appropriate. Maintain [RESUME.md](RESUME.md) with the exact revision, results, blockers and next action.
 
 Retain separate approval for destructive operations, paid resources, public deployment, external transfers, broader execution permissions and major architecture changes. See [project status](PROJECT_STATUS.md) and [human approval](docs/governance/HUMAN_APPROVAL_POLICY.md).

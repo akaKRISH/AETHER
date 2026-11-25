@@ -1,0 +1,13 @@
+{
+  "phase": "development",
+  "first_seed": 201,
+  "seed_count": 24,
+  "caps": [24, 48, 84],
+  "scenarios": [
+    {"id":"flat","parents":[null,null,null,null,null,null,null,null],"weights":[3,9,4,8,2,10,7,6],"truth":[90,75,80,85,60,95,60,75],"replay_cost":4,"challenge_cost":5,"noise":10,"failure":5},
+    {"id":"valuable_hub","parents":[null,0,0,0,0,null,null,null],"weights":[2,10,9,11,9,7,5,4],"truth":[95,90,85,90,80,70,75,70],"replay_cost":4,"challenge_cost":5,"noise":10,"failure":5},
+    {"id":"deep_chain","parents":[null,0,1,2,3,4,null,null],"weights":[2,3,4,5,6,25,9,7],"truth":[95,95,90,90,85,90,80,85],"replay_cost":3,"challenge_cost":5,"noise":12,"failure":6},
+    {"id":"unreliable_hub","parents":[null,0,0,0,0,null,null,null],"weights":[2,11,12,13,14,14,12,12],"truth":[18,90,90,85,90,95,90,90],"replay_cost":5,"challenge_cost":7,"noise":15,"failure":8},
+    {"id":"costly_noisy_checks","parents":[null,null,0,0,1,1,4,4],"weights":[6,5,8,8,7,7,10,12],"truth":[85,70,90,90,75,80,95,80],"replay_cost":6,"challenge_cost":8,"noise":25,"failure":20}
+  ]
+}

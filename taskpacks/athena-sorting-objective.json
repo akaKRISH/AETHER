@@ -1,0 +1,6 @@
+{
+  "objective": "Choose a reviewed sorting method for 96 generated signed integers. Test exact agreement with a trusted reference on the original input and a distinct challenge input, and reproduce the original result in a fresh process.",
+  "seed": 19,
+  "items": 96,
+  "citations": ["10.1093/comjnl/5.1.10"]
+}

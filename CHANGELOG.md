@@ -1,5 +1,12 @@
 # Changelog
 
+## Operation Athena
+
+- Qualified an installed local Ollama model on the RTX 3050 and recorded measured context, latency, memory and throughput.
+- Froze cited model advice in a version 4 protocol and added authenticated inspection of the original proposal in the browser.
+- Added Windows process-tree termination for reviewed workers and reused the existing database connection during report export.
+- Recorded a matched ECAR development diagnostic, its negative results and a frozen specification for a separately reviewed held-out study. [Working paper](research/publications/ATHENA_WORKING_PAPER.md)
+
 ## Operation Prometheus
 
 - Added maximum-subarray optimization with stored counterexamples, an exhaustive verifier and distinct frozen challenge input. Kept the original sorting protocol readable.

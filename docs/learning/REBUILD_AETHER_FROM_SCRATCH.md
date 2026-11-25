@@ -22,6 +22,9 @@ The goal is to reconstruct the ideas in a new practice program and explain every
 | 7. API and UI | Protected read endpoint plus one browser table and a draft-only planner | Valid token reads snapshot, absent token gets 401, and typed planner output cannot launch anything | [API and agents](IMPLEMENTATION_API_AGENTS.md) |
 | 8. Study and compute | Run a matched synthetic comparison, then record one separately labelled end-to-end timing exercise | Preserve all paired attempts and prove which quantities are modeled and which you measured | [ECAR and statistics](IMPLEMENTATION_ECAR_STATISTICS.md) and [Compute](IMPLEMENTATION_COMPUTE_DISTRIBUTED.md) |
 | 9. Prometheus | Rebuild bounded optimization, candidate lineage, optional model/catalog adapters, and performance measurements | Verify a result with an independent oracle, preserve a failed candidate and trace a structured provider response to a draft | [Prometheus practice](IMPLEMENTATION_PROMETHEUS.md) |
+| 10. Athena provenance | Connect a reviewed model response and selected metadata to a draft | Explain what the authority digest binds, reject an invalid proposal and inspect recorded model identity, parameters and token usage before approval | [Athena practice](IMPLEMENTATION_ATHENA.md) |
+| 11. Athena systems | Trace child admission and job cleanup, then reconstruct inference and loopback measurements | Identify the two sides of the admission pipe, compute warm throughput and route p95, and state what each resource measurement includes | [Athena practice](IMPLEMENTATION_ATHENA.md) |
+| 12. Athena research | Rebuild a two-arm diagnostic with keyed draws and a paired analysis | Keep outcomes matched across policy arms, resample whole seed blocks and report unfavorable cases and uncertainty | [Athena practice](IMPLEMENTATION_ATHENA.md) · [Diagnostic protocol](../research/ATHENA_ECAR_PROTOCOL.md) |
 
 ## First practice run
 
@@ -46,3 +49,5 @@ Locate the worker receipt digest and protocol digest in the report. Describe why
 ## Capstone inspection
 
 Draw your trust boundaries from memory. Identify which thread or process has authority to write the ledger, name the reservation and completion transactions, and explain the three ways a result can remain unusable as evidence. Demonstrate a benign malformed-input or stale-lease test in your practice project. Then propose one change that preserves the existing dependency direction and one experiment that could falsify your own performance hypothesis. Course progress and implementation milestones proceed independently.
+
+Use the [Athena draft export](../../research/results/athena-local-draft-report.json) for a final read-only review. Identify the human objective, selected metadata, model hypothesis and exact protocol digest. Explain which additional observations would be required before that draft can support an experimental claim.

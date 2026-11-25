@@ -1,5 +1,14 @@
 # Dependency inventory
 
+## Athena lock review
+
+| Lock | SHA-256 | Observed advisory result |
+|---|---|---|
+| Cargo | `dcf4a1b6e5b1c79339131558f825b6dd725a28798bece976383d8fba2e314d4e` | RustSec 0.23.0 checked 202 lock entries against 1,568 advisories. Exit 0, zero findings and no warnings. |
+| npm | `33b523e51e635e441b6a5e1b03f32592d26128563159ccd93cdf5369cc3fdccb` | npm's lock-only audit checked 82 entries. Exit 0 and zero findings. |
+
+The Windows-only runtime addition is pinned `win32job` 2.0.3 (MIT or Apache-2.0), plus its Windows bindings and supporting dependencies. The diagnostic example reuses the workspace's existing `serde_json` as a development dependency. The RustSec check used the official Windows release archive with SHA-256 `aafeb61206730029601a72e669a12231f8674427e6248d02f6cb382cb36d56b4`. [Cargo lock](../../Cargo.lock) · [RustSec snapshot](https://github.com/RustSec/advisory-db/commit/b9b8a3c2cb1f2a3c76ab17a551193568c9f8b7a4) · [Containment decision](../security/ATHENA_WORKER_CONTAINMENT.md)
+
 ## Prometheus lock updates
 
 | Lock | SHA-256 | Latest advisory result |

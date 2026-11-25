@@ -22,10 +22,11 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use thiserror::Error;
 
+use crate::literature::{FrozenCitation, LiteratureError};
 use crate::planning::{PlanningReport, PlanningRequest};
 
 const ACTION_LIMIT_MS: u64 = 2_000;
-const MAX_PROTOCOL_BYTES: usize = 4096;
+const MAX_PROTOCOL_BYTES: usize = 12_288;
 const OBJECTIVE_PROTOCOL: &str = "aether.protocol/3";
 const SORT_POLICY: &str = "aether-reviewed-sort-ecar/v1";
 const OPTIMIZATION_POLICY: &str = "aether-reviewed-max-subarray-ecar/v1";
@@ -124,11 +125,15 @@ impl PlanRequest {
         }
     }
 
-    fn protocol_version(&self, has_planning: bool) -> &'static str {
-        match (has_planning, self.optimization.is_some()) {
-            (true, _) => OBJECTIVE_PROTOCOL,
-            (_, true) => "aether.protocol/2",
-            _ => "aether.protocol/1",
+    fn protocol_version(&self, has_planning: bool, has_sources: bool) -> &'static str {
+        if has_sources {
+            "aether.protocol/4"
+        } else if has_planning {
+            OBJECTIVE_PROTOCOL
+        } else if self.optimization.is_some() {
+            "aether.protocol/2"
+        } else {
+            "aether.protocol/1"
         }
     }
 
@@ -186,6 +191,8 @@ struct FrozenPlan {
     optimization_inputs: Option<[Vec<i16>; 2]>,
     #[serde(skip_serializing_if = "Option::is_none")]
     planning: Option<Value>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    sources: Vec<FrozenCitation>,
 }
 
 pub fn valid_id(id: &str) -> bool {
@@ -359,7 +366,30 @@ impl Lab {
     }
 
     pub fn create(&self, plan: &PlanRequest) -> Result<Campaign> {
-        self.create_frozen(plan, None)
+        self.create_frozen(plan, None, Vec::new())
+    }
+
+    pub fn freeze_citations(&self, ids: &[String]) -> Result<Vec<FrozenCitation>> {
+        if ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        if ids.len() > 4 {
+            return Err(Error::Input("select up to four citations".into()));
+        }
+        let catalog = self.catalog()?;
+        let mut references = ids
+            .iter()
+            .map(|id| match catalog.freeze(id) {
+                Ok(record) => Ok(record),
+                Err(LiteratureError::InvalidCitation | LiteratureError::MissingCitation) => Err(
+                    Error::Input("a selected citation ID is invalid or absent".into()),
+                ),
+                Err(error) => Err(Error::Storage(error.to_string())),
+            })
+            .collect::<Result<Vec<_>>>()?;
+        references.sort_unstable_by(|left, right| left.id.cmp(&right.id));
+        references.dedup_by(|left, right| left.id == right.id);
+        Ok(references)
     }
 
     pub fn lock_objective_draft(&self, id: &str) -> Result<File> {
@@ -379,6 +409,7 @@ impl Lab {
         request_digest: &str,
         provider: &str,
         model: &str,
+        sources: &[FrozenCitation],
     ) -> Result<Option<(Campaign, Value)>> {
         let store = self.store()?;
         let Some(campaign) = storage(store.campaign(id))? else {
@@ -387,7 +418,8 @@ impl Lab {
         let frozen: FrozenPlan =
             serde_json::from_slice(&self.protocol_bytes(&campaign.spec.protocol_hash)?)?;
         if let Some(planning) = frozen.planning
-            && frozen.version == OBJECTIVE_PROTOCOL
+            && frozen.version == frozen.plan.protocol_version(true, !sources.is_empty())
+            && frozen.sources == sources
             && planning["request_sha256"] == request_digest
             && planning["provenance"]["provider"] == provider
             && planning["provenance"]["requested_model"] == model
@@ -404,6 +436,7 @@ impl Lab {
         id: &str,
         request: PlanningRequest,
         advice: &PlanningReport,
+        sources: Vec<FrozenCitation>,
     ) -> Result<(Campaign, Value)> {
         let digest = request
             .digest()
@@ -427,20 +460,28 @@ impl Lab {
         plan.items = selected.items;
         plan.algorithm = Some(selected.algorithm);
         let frozen_advice = serde_json::to_value(advice)?;
-        let campaign = self.create_frozen(&plan, Some(frozen_advice.clone()))?;
+        let campaign = self.create_frozen(&plan, Some(frozen_advice.clone()), sources)?;
         Ok((campaign, frozen_advice))
     }
 
-    fn create_frozen(&self, plan: &PlanRequest, planning: Option<Value>) -> Result<Campaign> {
+    fn create_frozen(
+        &self,
+        plan: &PlanRequest,
+        planning: Option<Value>,
+        sources: Vec<FrozenCitation>,
+    ) -> Result<Campaign> {
         plan.validate()?;
         let optimization_inputs = plan.optimization_inputs()?;
         let frozen = FrozenPlan {
-            version: plan.protocol_version(planning.is_some()).into(),
+            version: plan
+                .protocol_version(planning.is_some(), !sources.is_empty())
+                .into(),
             evaluator_hash: self.evaluator_hash.clone(),
             policy_hash: sha256(plan.policy().as_bytes()),
             plan: plan.clone(),
             optimization_inputs,
             planning,
+            sources,
         };
         let bytes = serde_json::to_vec(&frozen)?;
         if bytes.len() > MAX_PROTOCOL_BYTES {
@@ -561,6 +602,14 @@ impl Lab {
         Ok(serde_json::to_value(storage(store.snapshot(id))?)?)
     }
 
+    pub fn protocol(&self, id: &str) -> Result<Value> {
+        let store = self.store()?;
+        let campaign = self.get(&store, id)?;
+        Ok(serde_json::from_slice(
+            &self.protocol_bytes(&campaign.spec.protocol_hash)?,
+        )?)
+    }
+
     pub fn events(&self, id: &str, after: u64) -> Result<Vec<Value>> {
         let store = self.store()?;
         self.get(&store, id)?;
@@ -574,11 +623,7 @@ impl Lab {
         if !valid_digest(hash) {
             return Err(Error::Input("invalid artifact SHA-256".into()));
         }
-        let bytes = storage(self.store()?.artifact(hash))?.ok_or(Error::Missing)?;
-        if sha256(&bytes) != hash {
-            return Err(Error::Integrity("stored artifact bytes changed".into()));
-        }
-        Ok(bytes)
+        storage(self.store()?.artifact(hash))?.ok_or(Error::Missing)
     }
 
     pub fn report(&self, id: &str) -> Result<Value> {
@@ -605,7 +650,7 @@ impl Lab {
                 ],
             )
         };
-        let data = self.snapshot(id)?;
+        let data = serde_json::to_value(storage(store.snapshot(id))?)?;
         let mut digests = BTreeSet::new();
         let refs = data
             .get("artifacts")
@@ -626,7 +671,10 @@ impl Lab {
         let mut blobs = BTreeMap::new();
         let mut total = 0usize;
         for hash in digests {
-            let bytes = self.artifact(hash)?;
+            if !valid_digest(hash) {
+                return Err(Error::Input("invalid artifact SHA-256".into()));
+            }
+            let bytes = storage(store.artifact(hash))?.ok_or(Error::Missing)?;
             total = total.saturating_add(bytes.len());
             if total > 4_194_304 {
                 return Err(Error::Integrity(
@@ -683,7 +731,9 @@ impl Lab {
             serde_json::from_slice(&self.protocol_bytes(&campaign.spec.protocol_hash)?)?;
         let plan = &frozen.plan;
         plan.validate()?;
-        if frozen.version != plan.protocol_version(frozen.planning.is_some())
+        if frozen.version
+            != plan.protocol_version(frozen.planning.is_some(), !frozen.sources.is_empty())
+            || (!frozen.sources.is_empty() && frozen.planning.is_none())
             || (frozen.planning.is_some() && plan.optimization.is_some())
             || frozen.evaluator_hash != campaign.spec.evaluator_hash
             || frozen.policy_hash != campaign.spec.policy_hash
@@ -699,7 +749,7 @@ impl Lab {
             return Err(Error::Integrity("stored protocol campaign mismatch".into()));
         }
         storage(store.transition_campaign(id, CampaignState::Running))?;
-        match self.run_approved(&mut store, &campaign, plan, cancelled) {
+        match self.run_approved(&mut store, &campaign, &frozen, cancelled) {
             Ok(state) => storage(store.transition_campaign(id, state))?,
             Err(error) => {
                 storage(store.record_decision(id, json!({"failure": error.to_string()})))?;
@@ -714,9 +764,10 @@ impl Lab {
         &self,
         store: &mut Store,
         campaign: &Campaign,
-        plan: &PlanRequest,
+        frozen: &FrozenPlan,
         cancelled: &AtomicBool,
     ) -> Result<CampaignState> {
+        let plan = &frozen.plan;
         let id = &plan.id;
         let main_claim = format!("{id}-correct");
         let hypothesis = format!("{id}-hypothesis");
@@ -744,11 +795,18 @@ impl Lab {
                 "The largest-single-item baseline attains the exact maximum sum on both frozen inputs.",
             ),
         };
-        storage(store.add_hypothesis(&NewHypothesis {
-            id: hypothesis.clone(),
-            campaign_id: id.clone(),
-            statement: statement.clone(),
-        }))?;
+        storage(
+            store.add_hypothesis(&NewHypothesis {
+                id: hypothesis.clone(),
+                campaign_id: id.clone(),
+                statement: frozen
+                    .planning
+                    .as_ref()
+                    .and_then(|advice| advice["hypothesis"].as_str())
+                    .unwrap_or(&statement)
+                    .to_owned(),
+            }),
+        )?;
         storage(store.add_claim(&NewClaim {
             id: main_claim.clone(),
             campaign_id: id.clone(),

@@ -13,6 +13,7 @@ In the table, `{id}` is the campaign ID. Send JSON bodies with `Content-Type: ap
 | POST /v1/campaigns | Send a [sorting](../../taskpacks/example-campaign.json) or [maximum-subarray](../../taskpacks/example-max-subarray.json) plan. Returns the frozen draft and protocol hash with 201. |
 | GET /v1/campaigns | Bounded list. Optional `after` campaign ID and `limit` of 1–512, with a default of 128. |
 | GET /v1/campaigns/{id} | Campaign snapshot with budget, claims, dependency graph, attempts and evidence |
+| GET /v1/campaigns/{id}/protocol | Digest-checked frozen protocol, including model advice and citation snapshots when the protocol contains them. |
 | POST /v1/campaigns/{id}/approve | `{"protocol_hash":"<sha256>"}` approves the exact frozen document. Returns 409 if the digest or state conflicts. |
 | POST /v1/campaigns/{id}/start | Returns 202 for an approved campaign and reserves the local supervisor slot. A conflicting state or busy slot returns 409. |
 | POST /v1/campaigns/{id}/cancel | Requests cancellation and returns 202 |
@@ -29,6 +30,8 @@ In the table, `{id}` is the campaign ID. Send JSON bodies with `Content-Type: ap
 | POST /v1/literature/lookup | Send `query`, optional `provider` (`crossref`, `openalex`, `arxiv`) and optional `save` (default false). Each provider requires its own explicit opt-in. HTTP 429 includes `Retry-After`. [Provider configuration](../research/LITERATURE_ADAPTERS.md) |
 
 Application error bodies contain `code` and `error`. Typical statuses are 400 for invalid input, 401 for missing or incorrect credentials, 404 for missing resources, 409 for state or integrity conflicts, and 503 for internal operation failures. Router and JSON extractor rejections can also occur before an application handler runs. The loopback API uses one owner token across the local workspace. [HTTP implementation](../../crates/aether-api/src/http.rs) · [API tests](../../crates/aether-api/tests/platform.rs)
+
+The objective CLI accepts up to four local citation IDs. Protocol `aether.protocol/4` embeds the resolved snapshots and any structured model hypothesis in the approved bytes. The hypothesis is advisory. The controller constructs the claim checked by the reviewed task. Earlier protocol versions preserve their export shape. [ADR-013](../decisions/ADR-013.md)
 
 ## Planned remote contract
 

@@ -1,5 +1,24 @@
 # Development benchmark results
 
+## Athena development evidence
+
+Two fresh release invocations reproduced all 1,440 synthetic outcomes. Graph weighting relative to adaptive flat scheduling averaged +0.17 normalized points (95% seed-block bootstrap interval −0.84 to +1.19). Valuable hubs improved and unreliable hubs lost utility. A formal held-out run remains pending. [Protocol and complete arm results](ATHENA_ECAR_PROTOCOL.md) · [Raw data](../../research/results/athena-ecar-pilot.json)
+
+The local RTX 3050 ran Qwen 3.5 4B Q4_K_M at confirmed 2,048 and 4,096 resident context lengths. Cold first text was 16.02 s and 16.49 s respectively. Warm medians were 232 ms and 224 ms. The model drafted a reviewed sorting proposal recorded separately from these infrastructure benchmarks. [GPU results](../operations/ATHENA_INFERENCE.md) · [Frozen draft](../../research/results/athena-local-draft-report.json)
+
+The release report now shares the store connection across the campaign snapshot and digest-checked artifact reads. Each Windows loopback sample includes the full body. Both binaries served a fresh 36,973-byte fixture report. Each route had ten warmups and 50 sequential measured requests.
+
+| Route | Before p50 | Before p95 | After p50 | After p95 |
+|---|---:|---:|---:|---:|
+| Health | 14.66 ms | 17.81 ms | 15.39 ms | 16.32 ms |
+| Campaign snapshot | 14.43 ms | 24.07 ms | 15.64 ms | 16.58 ms |
+| Events | 15.22 ms | 18.50 ms | 15.52 ms | 16.99 ms |
+| Campaign report | 28.48 ms | 39.62 ms | 15.54 ms | 17.24 ms |
+
+The server's peak working set was 13,193,216 bytes before and 13,201,408 after. These successive runs used different release binaries on one host. Windows scheduling and background load also vary. The measurements describe this run, and sustained concurrent campaign throughput requires a different measurement. [Before samples](../../research/results/athena-loopback-before.json) · [After samples](../../research/results/athena-loopback-after.json)
+
+The final release repeated the 50-sample workload. Report p50 was 15.46 ms and p95 was 16.64 ms. The fresh report body was 36,961 bytes and the server peak working set was 13,201,408 bytes. [Final recheck](../../research/results/athena-loopback-recheck.json)
+
 AETHER provides two distinct checks. `aether-lab benchmark` executes matched policy arms on a deterministic synthetic observation model. `aether-lab benchmark-native` measures real process-inclusive wall time for reviewed sorting variants and verifies each against a reference. The synthetic study does not measure scientific performance and the native check is a small systems measurement.
 
 See the [protocol](BENCHMARK_SPECIFICATION.md) and [originality assessment](ORIGINALITY_ASSESSMENT.md). Held-out evaluation and comparisons against close prior art remain open.

@@ -1,0 +1,1627 @@
+{
+  "scope": "one Windows host, one locally installed quantization",
+  "model": {
+    "model": "qwen3.5:4b",
+    "manifest_digest": "e0b8c85c75aad2573ff49bec177ebb1013772fba665a53d64c04266439a2222d",
+    "version": "0.40.17",
+    "cloud": {
+      "disabled": true,
+      "source": "env"
+    },
+    "details": {
+      "parent_model": "model.gguf",
+      "format": "gguf",
+      "family": "qwen35",
+      "families": [
+        "qwen35"
+      ],
+      "parameter_size": "4.2B",
+      "quantization_level": "Q4_K_M",
+      "runner": "llamacpp"
+    },
+    "blob_bytes": 3324175492
+  },
+  "initial_gpu": {
+    "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+    "driver": "610.91",
+    "total_mib": 6144,
+    "free_mib": 5970,
+    "used_mib": 32,
+    "utilization_percent": 0
+  },
+  "trials": [
+    {
+      "kind": "cold",
+      "request": {
+        "model": "qwen3.5:4b",
+        "prompt": "Write one short sentence explaining why an independent replay is useful.",
+        "stream": true,
+        "think": false,
+        "keep_alive": "45s",
+        "options": {
+          "seed": 19,
+          "temperature": 0,
+          "num_predict": 32,
+          "num_ctx": 2048
+        }
+      },
+      "output": "An independent replay is useful because it allows you to test your application's behavior in a clean, isolated environment without the side effects of previous runs or external dependencies.",
+      "ttft_ms": 16021.37479998055,
+      "elapsed_ms": 17105.258099996718,
+      "counters": {
+        "load_duration": 15147428000,
+        "prompt_eval_count": 24,
+        "prompt_eval_duration": 790583000,
+        "eval_count": 32,
+        "eval_duration": 1082586000,
+        "total_duration": 17083177700
+      },
+      "resident": [
+        {
+          "name": "qwen3.5:4b",
+          "model": "qwen3.5:4b",
+          "size": 3071289588,
+          "digest": "e0b8c85c75aad2573ff49bec177ebb1013772fba665a53d64c04266439a2222d",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen35",
+            "families": [
+              "qwen35"
+            ],
+            "parameter_size": "4.2B",
+            "quantization_level": "Q4_K_M"
+          },
+          "expires_at": "2026-11-25T21:36:43.1324649+05:30",
+          "size_vram": 3071289588,
+          "context_length": 2048,
+          "runner": "llamacpp"
+        }
+      ]
+    },
+    {
+      "kind": "warmup",
+      "request": {
+        "model": "qwen3.5:4b",
+        "prompt": "Write one short sentence explaining why an independent replay is useful.",
+        "stream": true,
+        "think": false,
+        "keep_alive": "45s",
+        "options": {
+          "seed": 19,
+          "temperature": 0,
+          "num_predict": 32,
+          "num_ctx": 2048
+        }
+      },
+      "output": "An independent replay is useful because it allows you to test your application's behavior in a clean, isolated environment without the side effects of previous runs or external dependencies.",
+      "ttft_ms": 220.91559998807497,
+      "elapsed_ms": 1293.1649999809451,
+      "counters": {
+        "load_duration": 23496500,
+        "prompt_eval_count": 24,
+        "prompt_eval_duration": 128934000,
+        "eval_count": 32,
+        "eval_duration": 1069832000,
+        "total_duration": 1287469800
+      },
+      "resident": [
+        {
+          "name": "qwen3.5:4b",
+          "model": "qwen3.5:4b",
+          "size": 3071289588,
+          "digest": "e0b8c85c75aad2573ff49bec177ebb1013772fba665a53d64c04266439a2222d",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen35",
+            "families": [
+              "qwen35"
+            ],
+            "parameter_size": "4.2B",
+            "quantization_level": "Q4_K_M"
+          },
+          "expires_at": "2026-11-25T21:36:44.4270893+05:30",
+          "size_vram": 3071289588,
+          "context_length": 2048,
+          "runner": "llamacpp"
+        }
+      ]
+    },
+    {
+      "kind": "warm",
+      "request": {
+        "model": "qwen3.5:4b",
+        "prompt": "Write one short sentence explaining why an independent replay is useful.",
+        "stream": true,
+        "think": false,
+        "keep_alive": "45s",
+        "options": {
+          "seed": 19,
+          "temperature": 0,
+          "num_predict": 32,
+          "num_ctx": 2048
+        }
+      },
+      "output": "An independent replay is useful because it allows you to test your application's behavior in a clean, isolated environment without the side effects of previous runs or external dependencies.",
+      "ttft_ms": 193.22690000990406,
+      "elapsed_ms": 2584.5363000116777,
+      "counters": {
+        "load_duration": 25379500,
+        "prompt_eval_count": 24,
+        "prompt_eval_duration": 151546000,
+        "eval_count": 32,
+        "eval_duration": 2387858000,
+        "total_duration": 2578430200
+      },
+      "resident": [
+        {
+          "name": "qwen3.5:4b",
+          "model": "qwen3.5:4b",
+          "size": 3071289588,
+          "digest": "e0b8c85c75aad2573ff49bec177ebb1013772fba665a53d64c04266439a2222d",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen35",
+            "families": [
+              "qwen35"
+            ],
+            "parameter_size": "4.2B",
+            "quantization_level": "Q4_K_M"
+          },
+          "expires_at": "2026-11-25T21:36:47.0283127+05:30",
+          "size_vram": 3071289588,
+          "context_length": 2048,
+          "runner": "llamacpp"
+        }
+      ]
+    },
+    {
+      "kind": "warm",
+      "request": {
+        "model": "qwen3.5:4b",
+        "prompt": "Write one short sentence explaining why an independent replay is useful.",
+        "stream": true,
+        "think": false,
+        "keep_alive": "45s",
+        "options": {
+          "seed": 19,
+          "temperature": 0,
+          "num_predict": 32,
+          "num_ctx": 2048
+        }
+      },
+      "output": "An independent replay is useful because it allows you to test your application's behavior in a clean, isolated environment without the side effects of previous runs or external dependencies.",
+      "ttft_ms": 232.21610000473447,
+      "elapsed_ms": 1298.8187999872025,
+      "counters": {
+        "load_duration": 24742900,
+        "prompt_eval_count": 24,
+        "prompt_eval_duration": 190943000,
+        "eval_count": 32,
+        "eval_duration": 1061513999,
+        "total_duration": 1290562500
+      },
+      "resident": [
+        {
+          "name": "qwen3.5:4b",
+          "model": "qwen3.5:4b",
+          "size": 3071289588,
+          "digest": "e0b8c85c75aad2573ff49bec177ebb1013772fba665a53d64c04266439a2222d",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen35",
+            "families": [
+              "qwen35"
+            ],
+            "parameter_size": "4.2B",
+            "quantization_level": "Q4_K_M"
+          },
+          "expires_at": "2026-11-25T21:36:48.3499533+05:30",
+          "size_vram": 3071289588,
+          "context_length": 2048,
+          "runner": "llamacpp"
+        }
+      ]
+    },
+    {
+      "kind": "warm",
+      "request": {
+        "model": "qwen3.5:4b",
+        "prompt": "Write one short sentence explaining why an independent replay is useful.",
+        "stream": true,
+        "think": false,
+        "keep_alive": "45s",
+        "options": {
+          "seed": 19,
+          "temperature": 0,
+          "num_predict": 32,
+          "num_ctx": 2048
+        }
+      },
+      "output": "An independent replay is useful because it allows you to test your application's behavior in a clean, isolated environment without the side effects of previous runs or external dependencies.",
+      "ttft_ms": 237.40579999866895,
+      "elapsed_ms": 2613.561699981801,
+      "counters": {
+        "load_duration": 26697200,
+        "prompt_eval_count": 24,
+        "prompt_eval_duration": 182724000,
+        "eval_count": 32,
+        "eval_duration": 2371561000,
+        "total_duration": 2594138700
+      },
+      "resident": [
+        {
+          "name": "qwen3.5:4b",
+          "model": "qwen3.5:4b",
+          "size": 3071289588,
+          "digest": "e0b8c85c75aad2573ff49bec177ebb1013772fba665a53d64c04266439a2222d",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen35",
+            "families": [
+              "qwen35"
+            ],
+            "parameter_size": "4.2B",
+            "quantization_level": "Q4_K_M"
+          },
+          "expires_at": "2026-11-25T21:36:50.9903431+05:30",
+          "size_vram": 3071289588,
+          "context_length": 2048,
+          "runner": "llamacpp"
+        }
+      ]
+    },
+    {
+      "kind": "cold",
+      "request": {
+        "model": "qwen3.5:4b",
+        "prompt": "Write one short sentence explaining why an independent replay is useful.",
+        "stream": true,
+        "think": false,
+        "keep_alive": "45s",
+        "options": {
+          "seed": 19,
+          "temperature": 0,
+          "num_predict": 32,
+          "num_ctx": 4096
+        }
+      },
+      "output": "An independent replay is useful because it allows you to test your application's behavior in a clean, isolated environment without the side effects of previous runs or external dependencies.",
+      "ttft_ms": 16489.006599993445,
+      "elapsed_ms": 17660.723999986658,
+      "counters": {
+        "load_duration": 15556412500,
+        "prompt_eval_count": 24,
+        "prompt_eval_duration": 894563000,
+        "eval_count": 32,
+        "eval_duration": 1165879000,
+        "total_duration": 17653650700
+      },
+      "resident": [
+        {
+          "name": "qwen3.5:4b",
+          "model": "qwen3.5:4b",
+          "size": 3140495604,
+          "digest": "e0b8c85c75aad2573ff49bec177ebb1013772fba665a53d64c04266439a2222d",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen35",
+            "families": [
+              "qwen35"
+            ],
+            "parameter_size": "4.2B",
+            "quantization_level": "Q4_K_M"
+          },
+          "expires_at": "2026-11-25T21:37:08.6997408+05:30",
+          "size_vram": 3140495604,
+          "context_length": 4096,
+          "runner": "llamacpp"
+        }
+      ]
+    },
+    {
+      "kind": "warmup",
+      "request": {
+        "model": "qwen3.5:4b",
+        "prompt": "Write one short sentence explaining why an independent replay is useful.",
+        "stream": true,
+        "think": false,
+        "keep_alive": "45s",
+        "options": {
+          "seed": 19,
+          "temperature": 0,
+          "num_predict": 32,
+          "num_ctx": 4096
+        }
+      },
+      "output": "An independent replay is useful because it allows you to test your application's behavior in a clean, isolated environment without the side effects of previous runs or external dependencies.",
+      "ttft_ms": 299.066599982325,
+      "elapsed_ms": 1424.1138999932446,
+      "counters": {
+        "load_duration": 24061400,
+        "prompt_eval_count": 24,
+        "prompt_eval_duration": 162342000,
+        "eval_count": 32,
+        "eval_duration": 1122964000,
+        "total_duration": 1407511500
+      },
+      "resident": [
+        {
+          "name": "qwen3.5:4b",
+          "model": "qwen3.5:4b",
+          "size": 3140495604,
+          "digest": "e0b8c85c75aad2573ff49bec177ebb1013772fba665a53d64c04266439a2222d",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen35",
+            "families": [
+              "qwen35"
+            ],
+            "parameter_size": "4.2B",
+            "quantization_level": "Q4_K_M"
+          },
+          "expires_at": "2026-11-25T21:37:10.1277796+05:30",
+          "size_vram": 3140495604,
+          "context_length": 4096,
+          "runner": "llamacpp"
+        }
+      ]
+    },
+    {
+      "kind": "warm",
+      "request": {
+        "model": "qwen3.5:4b",
+        "prompt": "Write one short sentence explaining why an independent replay is useful.",
+        "stream": true,
+        "think": false,
+        "keep_alive": "45s",
+        "options": {
+          "seed": 19,
+          "temperature": 0,
+          "num_predict": 32,
+          "num_ctx": 4096
+        }
+      },
+      "output": "An independent replay is useful because it allows you to test your application's behavior in a clean, isolated environment without the side effects of previous runs or external dependencies.",
+      "ttft_ms": 224.17000000132248,
+      "elapsed_ms": 1298.5305000038352,
+      "counters": {
+        "load_duration": 17999900,
+        "prompt_eval_count": 24,
+        "prompt_eval_duration": 182009000,
+        "eval_count": 32,
+        "eval_duration": 1071462000,
+        "total_duration": 1281579600
+      },
+      "resident": [
+        {
+          "name": "qwen3.5:4b",
+          "model": "qwen3.5:4b",
+          "size": 3140495604,
+          "digest": "e0b8c85c75aad2573ff49bec177ebb1013772fba665a53d64c04266439a2222d",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen35",
+            "families": [
+              "qwen35"
+            ],
+            "parameter_size": "4.2B",
+            "quantization_level": "Q4_K_M"
+          },
+          "expires_at": "2026-11-25T21:37:11.4289578+05:30",
+          "size_vram": 3140495604,
+          "context_length": 4096,
+          "runner": "llamacpp"
+        }
+      ]
+    },
+    {
+      "kind": "warm",
+      "request": {
+        "model": "qwen3.5:4b",
+        "prompt": "Write one short sentence explaining why an independent replay is useful.",
+        "stream": true,
+        "think": false,
+        "keep_alive": "45s",
+        "options": {
+          "seed": 19,
+          "temperature": 0,
+          "num_predict": 32,
+          "num_ctx": 4096
+        }
+      },
+      "output": "An independent replay is useful because it allows you to test your application's behavior in a clean, isolated environment without the side effects of previous runs or external dependencies.",
+      "ttft_ms": 203.38589997845702,
+      "elapsed_ms": 2024.9446999805514,
+      "counters": {
+        "load_duration": 21641400,
+        "prompt_eval_count": 24,
+        "prompt_eval_duration": 155809000,
+        "eval_count": 32,
+        "eval_duration": 1814924000,
+        "total_duration": 2003018100
+      },
+      "resident": [
+        {
+          "name": "qwen3.5:4b",
+          "model": "qwen3.5:4b",
+          "size": 3140495604,
+          "digest": "e0b8c85c75aad2573ff49bec177ebb1013772fba665a53d64c04266439a2222d",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen35",
+            "families": [
+              "qwen35"
+            ],
+            "parameter_size": "4.2B",
+            "quantization_level": "Q4_K_M"
+          },
+          "expires_at": "2026-11-25T21:37:13.4670153+05:30",
+          "size_vram": 3140495604,
+          "context_length": 4096,
+          "runner": "llamacpp"
+        }
+      ]
+    },
+    {
+      "kind": "warm",
+      "request": {
+        "model": "qwen3.5:4b",
+        "prompt": "Write one short sentence explaining why an independent replay is useful.",
+        "stream": true,
+        "think": false,
+        "keep_alive": "45s",
+        "options": {
+          "seed": 19,
+          "temperature": 0,
+          "num_predict": 32,
+          "num_ctx": 4096
+        }
+      },
+      "output": "An independent replay is useful because it allows you to test your application's behavior in a clean, isolated environment without the side effects of previous runs or external dependencies.",
+      "ttft_ms": 652.474100003019,
+      "elapsed_ms": 3111.62239999976,
+      "counters": {
+        "load_duration": 23101800,
+        "prompt_eval_count": 24,
+        "prompt_eval_duration": 601282000,
+        "eval_count": 32,
+        "eval_duration": 2454377000,
+        "total_duration": 3089203500
+      },
+      "resident": [
+        {
+          "name": "qwen3.5:4b",
+          "model": "qwen3.5:4b",
+          "size": 3140495604,
+          "digest": "e0b8c85c75aad2573ff49bec177ebb1013772fba665a53d64c04266439a2222d",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen35",
+            "families": [
+              "qwen35"
+            ],
+            "parameter_size": "4.2B",
+            "quantization_level": "Q4_K_M"
+          },
+          "expires_at": "2026-11-25T21:37:16.5829804+05:30",
+          "size_vram": 3140495604,
+          "context_length": 4096,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  ],
+  "sampled_gpu_peak_used_mib": 3775,
+  "sampled_host_min_free_bytes": 1730420736,
+  "host_cpu_busy_percent": 53.768330693372846,
+  "resource_samples": [
+    {
+      "ram_available_bytes": 3182448640,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5970,
+      "used_mib": 32,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 3112599552,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5970,
+      "used_mib": 32,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 3093495808,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5964,
+      "used_mib": 38,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 3099713536,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5970,
+      "used_mib": 32,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2968317952,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5897,
+      "used_mib": 105,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 3189903360,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5970,
+      "used_mib": 32,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 3018997760,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5951,
+      "used_mib": 51,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2908758016,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5897,
+      "used_mib": 105,
+      "utilization_percent": 1
+    },
+    {
+      "ram_available_bytes": 2865909760,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5897,
+      "used_mib": 105,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2891059200,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5897,
+      "used_mib": 105,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2863218688,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5897,
+      "used_mib": 105,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2849251328,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5705,
+      "used_mib": 297,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2311995392,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 65
+    },
+    {
+      "ram_available_bytes": 2336649216,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 12
+    },
+    {
+      "ram_available_bytes": 2326958080,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 11
+    },
+    {
+      "ram_available_bytes": 2310119424,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 9
+    },
+    {
+      "ram_available_bytes": 2266128384,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 9
+    },
+    {
+      "ram_available_bytes": 2252394496,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 12
+    },
+    {
+      "ram_available_bytes": 2245967872,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 12
+    },
+    {
+      "ram_available_bytes": 2221764608,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 10
+    },
+    {
+      "ram_available_bytes": 2192080896,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 9
+    },
+    {
+      "ram_available_bytes": 2177974272,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 10
+    },
+    {
+      "ram_available_bytes": 2144784384,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 10
+    },
+    {
+      "ram_available_bytes": 2126303232,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 10
+    },
+    {
+      "ram_available_bytes": 2144059392,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 19
+    },
+    {
+      "ram_available_bytes": 1831518208,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2108485632,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2156797952,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3381,
+      "used_mib": 2621,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2130030592,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3175,
+      "used_mib": 2827,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2084216832,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3175,
+      "used_mib": 2827,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2060402688,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3175,
+      "used_mib": 2827,
+      "utilization_percent": 8
+    },
+    {
+      "ram_available_bytes": 2255474688,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2529,
+      "used_mib": 3473,
+      "utilization_percent": 99
+    },
+    {
+      "ram_available_bytes": 2248052736,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2529,
+      "used_mib": 3473,
+      "utilization_percent": 99
+    },
+    {
+      "ram_available_bytes": 2243911680,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2529,
+      "used_mib": 3473,
+      "utilization_percent": 4
+    },
+    {
+      "ram_available_bytes": 2244165632,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2529,
+      "used_mib": 3473,
+      "utilization_percent": 5
+    },
+    {
+      "ram_available_bytes": 2273300480,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2529,
+      "used_mib": 3473,
+      "utilization_percent": 5
+    },
+    {
+      "ram_available_bytes": 2273140736,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2529,
+      "used_mib": 3473,
+      "utilization_percent": 9
+    },
+    {
+      "ram_available_bytes": 2279694336,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2529,
+      "used_mib": 3473,
+      "utilization_percent": 11
+    },
+    {
+      "ram_available_bytes": 2269958144,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2297,
+      "used_mib": 3705,
+      "utilization_percent": 11
+    },
+    {
+      "ram_available_bytes": 2248765440,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2297,
+      "used_mib": 3705,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2229587968,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2172317696,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 66
+    },
+    {
+      "ram_available_bytes": 2143129600,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 83
+    },
+    {
+      "ram_available_bytes": 2134622208,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 83
+    },
+    {
+      "ram_available_bytes": 2013204480,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 61
+    },
+    {
+      "ram_available_bytes": 2023989248,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 83
+    },
+    {
+      "ram_available_bytes": 2025791488,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 83
+    },
+    {
+      "ram_available_bytes": 2026213376,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 52
+    },
+    {
+      "ram_available_bytes": 2027331584,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 80
+    },
+    {
+      "ram_available_bytes": 1990209536,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2007511040,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2001969152,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2018840576,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 32
+    },
+    {
+      "ram_available_bytes": 2004316160,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 32
+    },
+    {
+      "ram_available_bytes": 1996480512,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 83
+    },
+    {
+      "ram_available_bytes": 2005504000,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 84
+    },
+    {
+      "ram_available_bytes": 2002866176,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 80
+    },
+    {
+      "ram_available_bytes": 2007683072,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2008735744,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2009792512,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2009628672,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2295,
+      "used_mib": 3707,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 1995223040,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5970,
+      "used_mib": 32,
+      "utilization_percent": 80
+    },
+    {
+      "ram_available_bytes": 3175489536,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5970,
+      "used_mib": 32,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 3011903488,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5970,
+      "used_mib": 32,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 3010961408,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5961,
+      "used_mib": 41,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 3003203584,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5970,
+      "used_mib": 32,
+      "utilization_percent": 1
+    },
+    {
+      "ram_available_bytes": 3168841728,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5967,
+      "used_mib": 35,
+      "utilization_percent": 2
+    },
+    {
+      "ram_available_bytes": 2965086208,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5911,
+      "used_mib": 91,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 3192299520,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5967,
+      "used_mib": 35,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2970378240,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5895,
+      "used_mib": 107,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2721423360,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5895,
+      "used_mib": 107,
+      "utilization_percent": 27
+    },
+    {
+      "ram_available_bytes": 2788364288,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5886,
+      "used_mib": 116,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2824527872,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5895,
+      "used_mib": 107,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2897104896,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5895,
+      "used_mib": 107,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2841067520,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 5895,
+      "used_mib": 107,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2471952384,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3379,
+      "used_mib": 2623,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2279628800,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3379,
+      "used_mib": 2623,
+      "utilization_percent": 22
+    },
+    {
+      "ram_available_bytes": 2239811584,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3379,
+      "used_mib": 2623,
+      "utilization_percent": 8
+    },
+    {
+      "ram_available_bytes": 2246615040,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3379,
+      "used_mib": 2623,
+      "utilization_percent": 14
+    },
+    {
+      "ram_available_bytes": 2223648768,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3379,
+      "used_mib": 2623,
+      "utilization_percent": 14
+    },
+    {
+      "ram_available_bytes": 2194415616,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3379,
+      "used_mib": 2623,
+      "utilization_percent": 11
+    },
+    {
+      "ram_available_bytes": 2178211840,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3379,
+      "used_mib": 2623,
+      "utilization_percent": 11
+    },
+    {
+      "ram_available_bytes": 2148048896,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3379,
+      "used_mib": 2623,
+      "utilization_percent": 8
+    },
+    {
+      "ram_available_bytes": 2163032064,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3379,
+      "used_mib": 2623,
+      "utilization_percent": 8
+    },
+    {
+      "ram_available_bytes": 2126053376,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3379,
+      "used_mib": 2623,
+      "utilization_percent": 12
+    },
+    {
+      "ram_available_bytes": 2140930048,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3379,
+      "used_mib": 2623,
+      "utilization_percent": 9
+    },
+    {
+      "ram_available_bytes": 2145107968,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3379,
+      "used_mib": 2623,
+      "utilization_percent": 11
+    },
+    {
+      "ram_available_bytes": 1730420736,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3379,
+      "used_mib": 2623,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2145140736,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3379,
+      "used_mib": 2623,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2158067712,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3199,
+      "used_mib": 2803,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 2302099456,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3107,
+      "used_mib": 2895,
+      "utilization_percent": 13
+    },
+    {
+      "ram_available_bytes": 2254258176,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3107,
+      "used_mib": 2895,
+      "utilization_percent": 2
+    },
+    {
+      "ram_available_bytes": 2213367808,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 3107,
+      "used_mib": 2895,
+      "utilization_percent": 99
+    },
+    {
+      "ram_available_bytes": 2233319424,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2461,
+      "used_mib": 3541,
+      "utilization_percent": 3
+    },
+    {
+      "ram_available_bytes": 2243149824,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2461,
+      "used_mib": 3541,
+      "utilization_percent": 3
+    },
+    {
+      "ram_available_bytes": 2253471744,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2461,
+      "used_mib": 3541,
+      "utilization_percent": 4
+    },
+    {
+      "ram_available_bytes": 2247802880,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2461,
+      "used_mib": 3541,
+      "utilization_percent": 3
+    },
+    {
+      "ram_available_bytes": 2230353920,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2461,
+      "used_mib": 3541,
+      "utilization_percent": 5
+    },
+    {
+      "ram_available_bytes": 2238205952,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2461,
+      "used_mib": 3541,
+      "utilization_percent": 4
+    },
+    {
+      "ram_available_bytes": 2221735936,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2229,
+      "used_mib": 3773,
+      "utilization_percent": 84
+    },
+    {
+      "ram_available_bytes": 2197712896,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2229,
+      "used_mib": 3773,
+      "utilization_percent": 84
+    },
+    {
+      "ram_available_bytes": 2183823360,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 3
+    },
+    {
+      "ram_available_bytes": 2128175104,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 15
+    },
+    {
+      "ram_available_bytes": 2125426688,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 78
+    },
+    {
+      "ram_available_bytes": 2106118144,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 83
+    },
+    {
+      "ram_available_bytes": 2104827904,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 83
+    },
+    {
+      "ram_available_bytes": 1996505088,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 7
+    },
+    {
+      "ram_available_bytes": 1995194368,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 82
+    },
+    {
+      "ram_available_bytes": 1988763648,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 81
+    },
+    {
+      "ram_available_bytes": 1964306432,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 69
+    },
+    {
+      "ram_available_bytes": 1973399552,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 79
+    },
+    {
+      "ram_available_bytes": 1964331008,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 79
+    },
+    {
+      "ram_available_bytes": 1958514688,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 69
+    },
+    {
+      "ram_available_bytes": 1948594176,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 81
+    },
+    {
+      "ram_available_bytes": 1968218112,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 72
+    },
+    {
+      "ram_available_bytes": 1955844096,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 1939607552,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 1959010304,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 1951490048,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 1939824640,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 1967079424,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 0
+    },
+    {
+      "ram_available_bytes": 1960468480,
+      "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+      "driver": "610.91",
+      "total_mib": 6144,
+      "free_mib": 2227,
+      "used_mib": 3775,
+      "utilization_percent": 85
+    }
+  ]
+}

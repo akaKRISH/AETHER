@@ -1,0 +1,13 @@
+{
+  "phase": "heldout",
+  "first_seed": 8193,
+  "seed_count": 30,
+  "caps": [24, 48, 84],
+  "scenarios": [
+    {"id":"flat_heldout","parents":[null,null,null,null,null,null,null,null],"weights":[6,9,4,7,11,3,9,5],"truth":[70,95,80,85,80,75,60,90],"replay_cost":4,"challenge_cost":6,"noise":12,"failure":5},
+    {"id":"valuable_branch","parents":[null,0,0,1,1,2,null,null],"weights":[3,4,5,15,10,11,7,4],"truth":[95,92,92,82,75,88,70,75],"replay_cost":4,"challenge_cost":5,"noise":10,"failure":7},
+    {"id":"deep_chain_heldout","parents":[null,0,1,2,3,4,5,null],"weights":[2,2,3,5,8,8,26,12],"truth":[95,90,94,89,81,90,92,85],"replay_cost":4,"challenge_cost":5,"noise":15,"failure":5},
+    {"id":"unreliable_branch","parents":[null,0,1,1,0,null,null,null],"weights":[3,6,17,13,12,14,12,13],"truth":[21,80,90,85,90,95,90,90],"replay_cost":5,"challenge_cost":7,"noise":16,"failure":9},
+    {"id":"costly_noisy_heldout","parents":[null,null,0,0,1,2,4,5],"weights":[7,3,9,7,6,8,11,15],"truth":[90,67,91,87,78,80,95,86],"replay_cost":7,"challenge_cost":9,"noise":27,"failure":17}
+  ]
+}

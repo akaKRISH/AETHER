@@ -163,6 +163,12 @@ export function campaignPath(id: string) {
   return `/campaigns/${encodeURIComponent(id)}`
 }
 
+export async function getFrozenProtocol(token: string, id: string, signal: AbortSignal): Promise<Row> {
+  const value = await json(token, `${campaignPath(id)}/protocol`, { signal })
+  if (!isRow(value) || typeof value.version !== 'string') throw new Error('Invalid frozen protocol.')
+  return value
+}
+
 export async function getSnapshot(token: string, id: string, signal?: AbortSignal): Promise<Snapshot> {
   const value = await json(token, campaignPath(id), { signal })
   const body = isRow(value) && isRow(value.snapshot) ? { ...value.snapshot, events: value.events ?? value.snapshot.events } : value

@@ -25,6 +25,7 @@ AETHER/
 │   │   └── src/
 │   ├── aether-engine/
 │   │   ├── benches/
+│   │   ├── examples/
 │   │   └── src/
 │   ├── aether-runner/
 │   │   └── src/
@@ -86,7 +87,7 @@ AETHER/
 
 ## Files by directory
 
-426 repository files including 102 archived sources. The list below links the working files and archive inventory.
+449 repository files including 102 archived sources. The list below links the working files and archive inventory.
 
 ### Root
 
@@ -119,6 +120,8 @@ AETHER/
 
 ### benchmarks
 
+- [athena-ecar-development.json](../benchmarks/athena-ecar-development.json)
+- [athena-ecar-heldout-spec.json](../benchmarks/athena-ecar-heldout-spec.json)
 - [prometheus-policy-pilot.json](../benchmarks/prometheus-policy-pilot.json)
 - [README.md](../benchmarks/README.md)
 
@@ -200,6 +203,10 @@ AETHER/
 
 - [scheduler.rs](../crates/aether-engine/benches/scheduler.rs)
 
+### crates/aether-engine/examples
+
+- [ecar_diagnostics.rs](../crates/aether-engine/examples/ecar_diagnostics.rs)
+
 ### crates/aether-engine/src
 
 - [budget.rs](../crates/aether-engine/src/budget.rs)
@@ -217,6 +224,7 @@ AETHER/
 
 - [lib.rs](../crates/aether-runner/src/lib.rs)
 - [optimization.rs](../crates/aether-runner/src/optimization.rs)
+- [windows_worker.rs](../crates/aether-runner/src/windows_worker.rs)
 
 ### crates/aether-store
 
@@ -291,6 +299,7 @@ AETHER/
 - [ADR-010.md](decisions/ADR-010.md)
 - [ADR-011.md](decisions/ADR-011.md)
 - [ADR-012.md](decisions/ADR-012.md)
+- [ADR-013.md](decisions/ADR-013.md)
 
 ### docs/design
 
@@ -380,6 +389,7 @@ AETHER/
 - [COMPUTER_SCIENCE_FOUNDATIONS.md](learning/COMPUTER_SCIENCE_FOUNDATIONS.md)
 - [ENGINEERING_EXERCISES.md](learning/ENGINEERING_EXERCISES.md)
 - [IMPLEMENTATION_API_AGENTS.md](learning/IMPLEMENTATION_API_AGENTS.md)
+- [IMPLEMENTATION_ATHENA.md](learning/IMPLEMENTATION_ATHENA.md)
 - [IMPLEMENTATION_COMPUTE_DISTRIBUTED.md](learning/IMPLEMENTATION_COMPUTE_DISTRIBUTED.md)
 - [IMPLEMENTATION_ECAR_STATISTICS.md](learning/IMPLEMENTATION_ECAR_STATISTICS.md)
 - [IMPLEMENTATION_OS_SECURITY.md](learning/IMPLEMENTATION_OS_SECURITY.md)
@@ -395,6 +405,7 @@ AETHER/
 
 ### docs/operations
 
+- [ATHENA_INFERENCE.md](operations/ATHENA_INFERENCE.md)
 - [CI_CD_DESIGN.md](operations/CI_CD_DESIGN.md)
 - [COST_MANAGEMENT.md](operations/COST_MANAGEMENT.md)
 - [DEVELOPMENT_ENVIRONMENT.md](operations/DEVELOPMENT_ENVIRONMENT.md)
@@ -424,6 +435,7 @@ AETHER/
 ### docs/research
 
 - [ABLATION_STUDY_DESIGN.md](research/ABLATION_STUDY_DESIGN.md)
+- [ATHENA_ECAR_PROTOCOL.md](research/ATHENA_ECAR_PROTOCOL.md)
 - [BASELINE_COMPARISON.md](research/BASELINE_COMPARISON.md)
 - [BENCHMARK_RESULTS.md](research/BENCHMARK_RESULTS.md)
 - [BENCHMARK_SPECIFICATION.md](research/BENCHMARK_SPECIFICATION.md)
@@ -460,6 +472,7 @@ AETHER/
 ### docs/security
 
 - [AI_AGENT_SAFETY.md](security/AI_AGENT_SAFETY.md)
+- [ATHENA_WORKER_CONTAINMENT.md](security/ATHENA_WORKER_CONTAINMENT.md)
 - [DATA_PRIVACY.md](security/DATA_PRIVACY.md)
 - [INCIDENT_RESPONSE.md](security/INCIDENT_RESPONSE.md)
 - [PERMISSION_MODEL.md](security/PERMISSION_MODEL.md)
@@ -523,10 +536,21 @@ AETHER/
 
 ### research/publications
 
+- [ATHENA_REPRODUCIBILITY.md](../research/publications/ATHENA_REPRODUCIBILITY.md)
+- [ATHENA_WORKING_PAPER.md](../research/publications/ATHENA_WORKING_PAPER.md)
 - [README.md](../research/publications/README.md)
 
 ### research/results
 
+- [athena-ecar-pilot.json](../research/results/athena-ecar-pilot.json)
+- [athena-ecar-summary.json](../research/results/athena-ecar-summary.json)
+- [athena-local-draft-report.json](../research/results/athena-local-draft-report.json)
+- [athena-local-draft.json](../research/results/athena-local-draft.json)
+- [athena-loopback-after.json](../research/results/athena-loopback-after.json)
+- [athena-loopback-before.json](../research/results/athena-loopback-before.json)
+- [athena-loopback-recheck.json](../research/results/athena-loopback-recheck.json)
+- [athena-ollama-contexts.json](../research/results/athena-ollama-contexts.json)
+- [athena-ollama-inference.json](../research/results/athena-ollama-inference.json)
 - [ecar-policy-simulation.json](../research/results/ecar-policy-simulation.json)
 - [local-sort-campaign.json](../research/results/local-sort-campaign.json)
 - [native-sort-benchmark.json](../research/results/native-sort-benchmark.json)
@@ -545,6 +569,8 @@ AETHER/
 
 ### scripts
 
+- [athena_ecar_summary.py](../scripts/athena_ecar_summary.py)
+- [athena_ollama.py](../scripts/athena_ollama.py)
 - [README.md](../scripts/README.md)
 - [start-local.ps1](../scripts/start-local.ps1)
 - [start-local.sh](../scripts/start-local.sh)
@@ -552,6 +578,7 @@ AETHER/
 
 ### taskpacks
 
+- [athena-sorting-objective.json](../taskpacks/athena-sorting-objective.json)
 - [example-campaign.json](../taskpacks/example-campaign.json)
 - [example-max-subarray.json](../taskpacks/example-max-subarray.json)
 - [example-planning.json](../taskpacks/example-planning.json)

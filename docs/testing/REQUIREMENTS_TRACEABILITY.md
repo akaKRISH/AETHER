@@ -1,5 +1,14 @@
 # Requirements traceability
 
+## Athena evidence
+
+| Requirement area | Observed evidence | Remaining gate |
+|---|---|---|
+| Local proposal provenance | Installed digest, cloud state, inference options and output measured on the physical GPU. [Inference qualification](../operations/ATHENA_INFERENCE.md) | Measured scope covers one installed quantization and one host. |
+| Frozen objective and sources | Exact-source v4 draft and API validation. [Frozen campaign snapshot](../../research/results/athena-local-draft-report.json) · [Integration tests](../../crates/aether-api/tests/platform.rs) | Execution waits for approval of the archived digest. |
+| Reviewed execution lifecycle | Windows admission and descendant cleanup fixture. [Containment record](../security/ATHENA_WORKER_CONTAINMENT.md) | Qualify restricted identities, filesystem, egress and OS resource ceilings separately. |
+| Matched policy experiments | Identical outcome rows across two development runs and frozen primary contrast. [Diagnostic protocol](../research/ATHENA_ECAR_PROTOCOL.md) | Reproduce an independently reviewed held-out evaluation before efficacy claims. |
+
 The mapping carries forward 12 product IDs, 14 technical IDs, 10 security IDs and 5 Phase 1 criteria. The original test IDs refer to the planned checks. The implementation evidence below specifies the local checks that actually ran.
 
 | Requirement | Verification | Primary concern |

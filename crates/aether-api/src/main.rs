@@ -69,6 +69,8 @@ fn main() -> ExitCode {
 fn execute(args: &[String]) -> Result<()> {
     match args {
         [command, request] if command == WORKER_FLAG => {
+            #[cfg(windows)]
+            aether_runner::wait_for_admission()?;
             let result = execute_worker(request)?;
             io::stdout().lock().write_all(&result)?;
             return Ok(());
@@ -161,21 +163,24 @@ fn print_json(value: &impl serde::Serialize) -> Result<()> {
 }
 
 fn plan_objective(lab: &Lab, id: &str, path: &str, provider: &str, model: &str) -> Result<()> {
-    let request: planning::PlanningRequest = read_json_file(&PathBuf::from(path))?;
+    let request: planning::ObjectiveRequest = read_json_file(&PathBuf::from(path))?;
+    let (request, citations) = request.into_parts();
     let digest = request.digest()?;
     let _draft = lab.lock_objective_draft(id)?;
-    let (campaign, planning) = match lab.existing_objective_draft(id, &digest, provider, model)? {
-        Some(existing) => existing,
-        None => {
-            let advice = planning::propose_with_provider(
-                provider,
-                model,
-                &request,
-                &AtomicBool::new(false),
-            )?;
-            lab.create_objective_draft(id, request, &advice)?
-        }
-    };
+    let sources = lab.freeze_citations(&citations)?;
+    let (campaign, planning) =
+        match lab.existing_objective_draft(id, &digest, provider, model, &sources)? {
+            Some(existing) => existing,
+            None => {
+                let advice = planning::propose_with_provider(
+                    provider,
+                    model,
+                    &request,
+                    &AtomicBool::new(false),
+                )?;
+                lab.create_objective_draft(id, request, &advice, sources)?
+            }
+        };
     print_json(&json!({
         "campaign": campaign,
         "planning": planning,

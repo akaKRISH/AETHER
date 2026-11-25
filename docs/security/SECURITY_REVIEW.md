@@ -1,5 +1,7 @@
 # Security review
 
+Athena adds Windows Job Object lifecycle control for reviewed workers and tests descendant cleanup. OS-enforced resource ceilings, filesystem/network isolation, restricted identities and external workloads remain separately gated. [Athena containment evidence](ATHENA_WORKER_CONTAINMENT.md)
+
 **Scope** — Local Windows Rust release, reviewed built-in worker and authenticated loopback API. The same review applies to the development UI when served from the built local assets.
 
 | Boundary | Implemented controls | Executed evidence |

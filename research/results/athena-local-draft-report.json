@@ -1,0 +1,146 @@
+{
+  "blobs_by_sha256": {},
+  "evidence": {
+    "artifacts": [],
+    "attempts": [],
+    "budget": {
+      "caps": {
+        "attempts": 5,
+        "micro_usd": 0,
+        "tokens": 0,
+        "wall_ms": 12000
+      },
+      "halted": false,
+      "reserved": {
+        "attempts": 0,
+        "micro_usd": 0,
+        "tokens": 0,
+        "wall_ms": 0
+      },
+      "used": {
+        "attempts": 0,
+        "micro_usd": 0,
+        "tokens": 0,
+        "wall_ms": 0
+      }
+    },
+    "campaign": {
+      "caps": {
+        "attempts": 5,
+        "micro_usd": 0,
+        "tokens": 0,
+        "wall_ms": 12000
+      },
+      "evaluator_hash": "e79057c75e9a04ec9a48a951c0662669d609518fa52b9d57046ff9b0f044daa2",
+      "id": "athena-local-01",
+      "objective": "Choose a reviewed sorting method for 96 generated signed integers. Test exact agreement with a trusted reference on the original input and a distinct challenge input, and reproduce the original result in a fresh process.",
+      "policy_hash": "a5d303db49b5b2ee4b8c1537a0df74705990fb4cc25c52c0e67809a888ce9754",
+      "protocol_hash": "3906c69297b1d1582c6f85cb35f44876e5f0d38c7c588e6ea877bfa31bb53dc9",
+      "requires_replay": true,
+      "state": "draft",
+      "title": "Objective-guided sorting study"
+    },
+    "claims": [],
+    "contradictions": [],
+    "dependencies": [],
+    "events": [
+      {
+        "campaign_id": "athena-local-01",
+        "detail": {
+          "protocol_hash": "3906c69297b1d1582c6f85cb35f44876e5f0d38c7c588e6ea877bfa31bb53dc9"
+        },
+        "kind": "campaign.created",
+        "occurred_at_ms": 1795621986383,
+        "sequence": 1
+      }
+    ],
+    "evidence": [],
+    "experiments": [],
+    "hypotheses": [],
+    "metrics": [],
+    "replications": [],
+    "runs": [],
+    "verifications": []
+  },
+  "limitations": [
+    "The frozen comparison covers the original and one challenge seed.",
+    "Replay uses a fresh process and the same pinned executable.",
+    "No held-out scientific study is implied."
+  ],
+  "protocol": {
+    "evaluator_hash": "e79057c75e9a04ec9a48a951c0662669d609518fa52b9d57046ff9b0f044daa2",
+    "plan": {
+      "algorithm": "insertion",
+      "attempts": 5,
+      "id": "athena-local-01",
+      "items": 96,
+      "objective": "Choose a reviewed sorting method for 96 generated signed integers. Test exact agreement with a trusted reference on the original input and a distinct challenge input, and reproduce the original result in a fresh process.",
+      "seed": 19,
+      "title": "Objective-guided sorting study",
+      "wall_ms": 12000
+    },
+    "planning": {
+      "hypothesis": "The insertion sort will produce identical output to the reference on both inputs, while selection and standard sorts may differ due to implementation variance.",
+      "inference": {
+        "context_tokens": 2048,
+        "max_output_tokens": 128,
+        "prompt_sha256": "fbebbd055d8c192677dabe5de3aa0b65d825bfe6fda0f1573a8e982e6447490d",
+        "quantization": "Q4_K_M",
+        "seed": 19,
+        "temperature": 0,
+        "thinking": false
+      },
+      "proposals": [
+        {
+          "algorithm": "insertion",
+          "items": 96,
+          "rationale": "Measure how insertion shifts behave on bounded generated input.",
+          "seed": 19
+        },
+        {
+          "algorithm": "selection",
+          "items": 96,
+          "rationale": "Compare a simple fixed-pass selection algorithm on the same input.",
+          "seed": 19
+        },
+        {
+          "algorithm": "standard",
+          "items": 96,
+          "rationale": "Evaluate the standard-library sort with the same independent reference.",
+          "seed": 19
+        }
+      ],
+      "provenance": {
+        "model_digest": "e0b8c85c75aad2573ff49bec177ebb1013772fba665a53d64c04266439a2222d",
+        "protocol": "ollama.generate/athena-1",
+        "provider": "ollama",
+        "reported_model": "qwen3.5:4b",
+        "requested_model": "qwen3.5:4b"
+      },
+      "request_sha256": "ecf42566f4278bf72eb9df8dc8e719e446a7811d118774a91f366071ccfd50d8",
+      "schema": "aether.planning/1",
+      "tokens": {
+        "input_tokens": 127,
+        "output_tokens": 64
+      },
+      "wall_ms": 15958
+    },
+    "policy_hash": "a5d303db49b5b2ee4b8c1537a0df74705990fb4cc25c52c0e67809a888ce9754",
+    "sources": [
+      {
+        "id": "10.1093/comjnl/5.1.10",
+        "provenance": {
+          "observed_at_unix_seconds": 1795621829,
+          "source": "crossref"
+        },
+        "title": "Quicksort",
+        "url": "https://doi.org/10.1093/comjnl/5.1.10",
+        "year": 1962
+      }
+    ],
+    "version": "aether.protocol/4"
+  },
+  "protocol_hash": "3906c69297b1d1582c6f85cb35f44876e5f0d38c7c588e6ea877bfa31bb53dc9",
+  "scope": "local development experiment on reviewed synthetic sorting inputs",
+  "version": "aether.campaign-report/1"
+}

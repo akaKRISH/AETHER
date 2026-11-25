@@ -23,6 +23,8 @@ pub enum LiteratureError {
     CatalogLimit,
     #[error("citation identifiers match different saved works")]
     AliasConflict,
+    #[error("citation ID was not found in the local catalog")]
+    MissingCitation,
     #[error("metadata lookup is busy or rate-limited; retry in {retry_after_secs} seconds")]
     RateLimited { retry_after_secs: u64 },
     #[error("metadata provider is unavailable")]
@@ -79,6 +81,16 @@ pub struct Citation {
     pub license_urls: Vec<String>,
     #[serde(default)]
     pub provenance: CitationProvenance,
+}
+
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct FrozenCitation {
+    pub id: String,
+    title: String,
+    url: String,
+    year: Option<u16>,
+    provenance: CitationProvenance,
 }
 
 impl Citation {
@@ -372,6 +384,43 @@ impl CitationCatalog {
             })?
             .map(|row| serde_json::from_str::<Citation>(&row?)?.normalized())
             .collect()
+    }
+
+    pub fn freeze(&self, id: &str) -> Result<FrozenCitation, LiteratureError> {
+        let (alias, version) = if valid_doi(id) {
+            (id.trim().to_ascii_lowercase(), None)
+        } else if let Some(value) = id.strip_prefix("arxiv:").filter(|id| valid_arxiv_id(id)) {
+            (format!("arxiv:{}", arxiv_root(value)), Some(value))
+        } else if id.strip_prefix("openalex:").is_some_and(valid_openalex_id) {
+            (id.into(), None)
+        } else {
+            return Err(LiteratureError::InvalidCitation);
+        };
+        let record: String = self
+            .db
+            .query_row(
+                "SELECT record FROM citations WHERE doi =
+                COALESCE((SELECT work FROM citation_aliases WHERE alias = ?1), ?1)",
+                [&alias],
+                |row| row.get(0),
+            )
+            .optional()?
+            .ok_or(LiteratureError::MissingCitation)?;
+        let citation = serde_json::from_str::<Citation>(&record)?.normalized()?;
+        if let Some(requested) = version
+            && requested != arxiv_root(requested)
+            && citation.arxiv_id.as_deref() != Some(requested)
+        {
+            return Err(LiteratureError::MissingCitation);
+        }
+        let url = citation.source_url();
+        Ok(FrozenCitation {
+            id: version.map_or(alias, |id| format!("arxiv:{id}")),
+            title: citation.title,
+            url,
+            year: citation.published_year,
+            provenance: citation.provenance,
+        })
     }
 }
 

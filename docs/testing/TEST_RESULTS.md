@@ -57,3 +57,26 @@ An interrupted maximum-subarray release probe observed a live persisted attempt 
 The first NVIDIA environment-isolation attempt failed to initialize NVML. A direct probe isolated the required `ProgramFiles` addition. The next release reported the physical RTX 3050 with only `SystemRoot` and `ProgramFiles` retained. [GPU profile](../operations/PROMETHEUS_GPU_PROFILE.md)
 
 The default browser service denied unauthenticated hardware access, path-shaped assets and outbound metadata requests. A separately opted-in release service exercised each provider with public bibliographic queries and retrieved the temporary catalog entries. [Literature validation](../research/LITERATURE_ADAPTERS.md)
+
+## Athena Windows checks
+
+The final x64 MSVC release executable SHA-256 is `a6819ae85b420ca3bf6af582fa5ee9e7367b90e57aeea3aa4bbae76ae3fee61c`.
+
+| Check | Observed result |
+|---|---|
+| `cargo fmt --all -- --check` | Exit 0 |
+| `cargo clippy --locked --workspace --all-targets -- -D warnings` | Exit 0 |
+| `cargo test --locked --workspace` | 53 passed. Two ignored Windows child fixtures ran inside the descendant containment test. |
+| `cargo build --locked --release --workspace` | Exit 0 |
+| `npm --prefix web run lint`, `run check`, `test`, `run build` | Lint and type checks passed, all three tests passed, and production assets built. |
+| `node tests/browser-smoke.cjs` | Desktop and mobile Chromium passed sorting and optimization, evidence, offline planner, reports, metadata gates, benchmark and GPU panel. |
+| Cited draft browser check | The real local draft rendered in desktop and 390-pixel mobile Chromium. The protocol API denied unauthenticated access. |
+| Release report compatibility | Four earlier exports and the frozen Athena draft matched byte for byte, after committing the recorded draft with the release CLI's LF line endings. |
+| Scientific replay | Two fresh processes matched all 1,440 development outcome rows and the analysis reproduced its saved values. The held-out specification remains unexecuted. |
+| Dependency advisories | RustSec checked 202 lock entries and npm checked 82. Both exited 0 with zero known findings. [Exact lock and advisory database](../governance/DEPENDENCY_INVENTORY.md#athena-lock-review) |
+| Job Object cleanup | A running child fixture started its descendant, which reached a marker. Closing the job prevented the second marker and the test reaped the parent. |
+| Recovery drill | Terminated a fresh temporary supervisor after observing its persistent active lease. Early recovery refused. After expiry, recovery settled one attempt with 2,000 ms charged, no verified claim, and a failed campaign. The eligible recovery invocation took 71.23 ms on the initial Athena Windows release. |
+
+The final provider regression check confirms that a missing manifest digest rejects the local provider before generation. The first parallel attempt at this test stalled while the two loopback fixtures competed for the one provider slot. A test-only lock now serializes their startup, and both passed in the final suite.
+
+The release compatibility check read the original campaign state. The browser smoke and recovery drill used separate fresh fixtures. The owner-reviewed Athena campaign still awaits approval of its exact protocol digest. [Frozen draft](../../research/results/athena-local-draft-report.json) · [Worker containment](../security/ATHENA_WORKER_CONTAINMENT.md)
