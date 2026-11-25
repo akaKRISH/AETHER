@@ -82,3 +82,21 @@ The final x64 MSVC release executable SHA-256 is `a6819ae85b420ca3bf6af582fa5ee9
 The final provider regression check confirms that a missing manifest digest rejects the local provider before generation. The first parallel attempt at this test stalled while the two loopback fixtures competed for the one provider slot. A test-only lock now serializes their startup, and both passed in the final suite.
 
 The release compatibility check read the original campaign state. The browser smoke and recovery drill used separate fresh fixtures. The campaign execution used the owner approved original binary and did not modify its frozen protocol. [Frozen draft](../../research/results/athena-local-draft-report.json) · [Worker containment](../security/ATHENA_WORKER_CONTAINMENT.md)
+
+## ATH-05 final Athena integration check
+
+| Check | Actual result |
+|---|---|
+| `cargo fmt --all -- --check` | Passed, exit 0 |
+| `cargo clippy --locked --workspace --all-targets -- -D warnings` | Passed, exit 0 |
+| `cargo test --locked --workspace` | 64 passed, 9 ignored; exit 0 |
+| `cargo build --locked --release --workspace` | Passed, exit 0 |
+| `cargo test --locked --offline --release -p aether-runner --lib windows_worker::tests` | 10 passed, 9 ignored; exit 0 |
+| Frontend lint, type check, test and build | All passed; three frontend tests passed |
+| `node tests/browser-smoke.cjs` | Blocked before execution: `Cannot find module 'playwright'`; browser coverage not verified |
+| `python scripts/validate_docs.py` | Exit 1: missing `jsonschema[format]`; negative timestamp case accepted. It parsed 57 JSON files and checked 267 Markdown files, 1,245 relative destinations, 21 SVG views and 41 mapped requirements. |
+| Release service startup | Passed with temporary token and data directory; loopback `/health` and `/` returned successfully |
+| ECAR replay | Two fresh development processes and archived output matched all 1,440 rows; summary generation exited 0 |
+| Frozen artifacts | Recorded SHA-256 values matched for configurations, archived development outputs and summary, objective, drafts, campaign, local measurement records, pinned executable and v2 protocol. Frozen pilot inputs and archive had no changes since `athena-windows-local`. |
+
+The browser smoke was not rerun with an unpinned or newly downloaded dependency. The verification tag was not created because the required browser gate did not pass. No held-out ECAR execution occurred. [Worker limits](../security/ATHENA_WORKER_CONTAINMENT.md) · [Checkpoint and release summary](../../RESUME.md#ath-05-final-athena-integration-check)
