@@ -1,5 +1,13 @@
 # Resume AETHER
 
+## DAE-10 final DAEDALUS engineering release
+
+Release candidate began at `3af6dbd`, the separate Rune probe checkpoint. Rune remains optional, unqualified and outside the default Cargo workspace and release gates. The starter build and host memory interruption are recorded in `experiments/rune-native/README.md`; the probe is not an AETHER interface.
+
+Windows x64 release validation passed with Cargo limited to two jobs: workspace tests (77 passed, 9 ignored), strict workspace Clippy, formatting and locked offline workspace release build. Frontend validation passed after `npm ci --ignore-scripts`: five tests, TypeScript, Biome lint and production build. `node tests/browser-smoke.cjs` passed desktop and 390-pixel mobile flows, including all seven DAE-08 pages and existing campaign workflows. The documentation suite passed 3 timestamp contract tests, 13 schemas, 65 JSON files, 271 Markdown files, 1,287 relative destinations, 41 mapped requirements and five negative cases.
+
+Authentication, worker admission/recovery, Windows Job Object quota, process, timeout, cancellation, child containment and environment tests passed as part of the workspace suite. Discovery and inference integration tests exercised fresh persisted artifacts; no development benchmark was repeated. Frozen `research/results` and `docs/archive` are unchanged from the DAE-08 baseline (`git diff --exit-code 60830db -- research/results docs/archive` passed). The ECAR held-out study was not executed. The worker still has no OS filesystem denial, network denial or restricted identity; it is not a complete sandbox. No external dependencies, models or system settings were added. The validated source is tagged locally as `daedalus-engineering-verified`; nothing was pushed or deployed.
+
 ## DAE-09R Rune feasibility — interrupted
 
 Starting from `dbc9e82`, inspected upstream Rune at `66006728af7cd3dc54a6bb31ca7690242fb8d6aa`, its required patches, examples, documentation and notices. The isolated [build probe](experiments/rune-native/README.md) contains only the upstream hello starter; it is not an AETHER prototype. Cargo resolved 435 packages. A single-job Windows build was stopped while compiling `windows 0.62.2` after observed free physical memory fell to 122,684 KiB; rustc used approximately 2.09 GB working set. Separate workspace metadata passed. No executable, headless screenshot, API integration or runtime measurements were obtained. Decision is provisionally **defer**, pending a build with sufficient available memory and the requested functional and performance validation. No commit is claimed for this incomplete work.

@@ -10,7 +10,9 @@ DAE-07 adds a dependency-free native release performance suite spanning ECAR sch
 
 DAE-08 reorganizes the local React workbench as a scientific command centre while retaining campaign and lab flows. The protected research archive serves frozen historical records as exact bytes and the client checks their SHA-256 before download. Historical benchmarks and local inference are labeled by provenance; no live telemetry or held-out result is implied. [Pages, validation and constraints](RESUME.md#dae-08-aether-research-os)
 
-DAE-09R is deferred after a single-job Rune starter build exhausted available physical memory. The isolated workspace is an incomplete build probe; no AETHER native interface or runtime measurements are available. [Probe and continuation](experiments/rune-native/README.md)
+DAE-09R remains an optional, unqualified Rune native client outside default builds and release acceptance. Its single-job starter build was stopped under host memory pressure. It has no AETHER interface or runtime measurements. [Probe and limits](experiments/rune-native/README.md)
+
+DAE-10 release gates passed on Windows x64. The local release tag follows the validated checkpoint; Rune remains unqualified and ECAR held-out custody and full OS sandbox isolation remain open. [Release record](RESUME.md#dae-10-final-daedalus-engineering-release)
 
 ## Athena
 
