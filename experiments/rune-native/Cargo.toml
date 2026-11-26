@@ -1,0 +1,20 @@
+[workspace]
+
+[package]
+name = "aether-rune-probe"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+rune = { git = "https://github.com/anomalyco/rune", rev = "66006728af7cd3dc54a6bb31ca7690242fb8d6aa" }
+
+[patch.crates-io]
+winit = { git = "https://github.com/anomalyco/rune", rev = "66006728af7cd3dc54a6bb31ca7690242fb8d6aa" }
+sctk-adwaita = { git = "https://github.com/anomalyco/rune", rev = "66006728af7cd3dc54a6bb31ca7690242fb8d6aa" }
+parley_engine = { git = "https://github.com/anomalyco/rune", rev = "66006728af7cd3dc54a6bb31ca7690242fb8d6aa" }
+wgpu-hal = { git = "https://github.com/anomalyco/rune", rev = "66006728af7cd3dc54a6bb31ca7690242fb8d6aa" }
+naga = { git = "https://github.com/anomalyco/rune", rev = "66006728af7cd3dc54a6bb31ca7690242fb8d6aa" }
+accesskit_windows = { git = "https://github.com/anomalyco/rune", rev = "66006728af7cd3dc54a6bb31ca7690242fb8d6aa" }
+accesskit_macos = { git = "https://github.com/anomalyco/rune", rev = "66006728af7cd3dc54a6bb31ca7690242fb8d6aa" }
+accesskit_atspi_common = { git = "https://github.com/anomalyco/rune", rev = "66006728af7cd3dc54a6bb31ca7690242fb8d6aa" }

@@ -1,5 +1,9 @@
 # Resume AETHER
 
+## DAE-09R Rune feasibility — interrupted
+
+Starting from `dbc9e82`, inspected upstream Rune at `66006728af7cd3dc54a6bb31ca7690242fb8d6aa`, its required patches, examples, documentation and notices. The isolated [build probe](experiments/rune-native/README.md) contains only the upstream hello starter; it is not an AETHER prototype. Cargo resolved 435 packages. A single-job Windows build was stopped while compiling `windows 0.62.2` after observed free physical memory fell to 122,684 KiB; rustc used approximately 2.09 GB working set. Separate workspace metadata passed. No executable, headless screenshot, API integration or runtime measurements were obtained. Decision is provisionally **defer**, pending a build with sufficient available memory and the requested functional and performance validation. No commit is claimed for this incomplete work.
+
 ## Checkpoint and phase
 
 The incoming baseline was `d3586bf` (`prometheus-windows-verified`) on `main`. Recovery commit `41d3919` and foundation `c017c05` remain in history. The original Windows baseline is tagged `athena-windows-local`; the latest accepted checkpoint is `athena-engineering-verified`.

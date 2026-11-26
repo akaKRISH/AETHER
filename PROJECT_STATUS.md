@@ -10,6 +10,8 @@ DAE-07 adds a dependency-free native release performance suite spanning ECAR sch
 
 DAE-08 reorganizes the local React workbench as a scientific command centre while retaining campaign and lab flows. The protected research archive serves frozen historical records as exact bytes and the client checks their SHA-256 before download. Historical benchmarks and local inference are labeled by provenance; no live telemetry or held-out result is implied. [Pages, validation and constraints](RESUME.md#dae-08-aether-research-os)
 
+DAE-09R is deferred after a single-job Rune starter build exhausted available physical memory. The isolated workspace is an incomplete build probe; no AETHER native interface or runtime measurements are available. [Probe and continuation](experiments/rune-native/README.md)
+
 ## Athena
 
 - Qualified the locally installed Qwen 3.5 4B Q4_K_M model in a dedicated Ollama 0.40.17 process with cloud disabled. On the RTX 3050, the follow-up measured 224–232 ms median warm time to first text and 3,775 MiB sampled peak device-wide VRAM across two confirmed context lengths. [Inference record](docs/operations/ATHENA_INFERENCE.md)

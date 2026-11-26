@@ -1,0 +1,9 @@
+# DAE-09R Rune feasibility probe — incomplete
+
+This isolated Cargo workspace is a build probe, not the requested AETHER native interface. `src/main.rs` is the unmodified upstream `examples/hello` starter. It does not connect to AETHER or implement the requested UI. No desktop executable, screenshot, functional test or runtime measurement was produced.
+
+Rune and the eight upstream-required crates.io patches use `https://github.com/anomalyco/rune` at `66006728af7cd3dc54a6bb31ca7690242fb8d6aa`. The lockfile resolves 435 packages across all targets. Upstream's MIT license and third-party notices are copied alongside this file; a complete transitive dependency license audit is still required before distribution. The Rune source also carries license files for its vendored crates and bundled fonts; copying the two notices here alone does not establish distribution compliance.
+
+On Windows x64 with Rust 1.96.1, `cargo metadata --locked --offline --format-version 1 --no-deps` passed and confirmed this directory as a separate workspace. `cargo build --jobs 1` fetched and resolved dependencies but was manually interrupted while compiling `windows 0.62.2`: free physical memory was approximately 122,684 KiB and the active rustc working set approximately 2,091,347,968 bytes. After interruption free physical memory recovered to 2,401,416 KiB. These are spot observations, not a complete build resource profile. No application or system tools were deliberately closed or installed.
+
+Provisional decision: **defer**. This establishes a host resource constraint, not a verdict on Rune. When sufficient memory is available, resume with `cargo build --locked --jobs 1`, monitor memory, replace the starter with the requested UI and protected loopback integration, then run headless, input, accessibility and native performance checks. Record actual screenshots and measurements before deciding adoption. Do not run the held-out study.
