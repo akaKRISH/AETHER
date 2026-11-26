@@ -55,7 +55,7 @@ fn ledger(per_attempt: ResourceVec, attempts: u64) -> Result<Budget> {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-enum Action {
+pub(crate) enum Action {
     Generate,
     Refine,
     Critique,
@@ -65,7 +65,7 @@ enum Action {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
-enum Strategy {
+pub(crate) enum Strategy {
     Single,
     BestOfN,
     FixedRefinement,
@@ -78,6 +78,14 @@ const STRATEGIES: [Strategy; 4] = [
     Strategy::FixedRefinement,
     Strategy::Adaptive,
 ];
+
+pub(crate) fn decision_action(strategy: Strategy, calls: u64) -> Action {
+    match (strategy, calls) {
+        (Strategy::BestOfN, _) | (_, 0) => Action::Generate,
+        (Strategy::Adaptive, 1) => Action::Critique,
+        _ => Action::Refine,
+    }
+}
 
 #[derive(Clone, Copy, Debug, Serialize)]
 pub(crate) struct Usage {
@@ -348,11 +356,7 @@ fn run(
             };
             break;
         }
-        let action = match (strategy, calls) {
-            (Strategy::BestOfN, _) | (_, 0) => Action::Generate,
-            (Strategy::Adaptive, 1) => Action::Critique,
-            _ => Action::Refine,
-        };
+        let action = decision_action(strategy, calls);
         let parent = (action != Action::Generate).then_some(latest).flatten();
         let request = Request {
             action,

@@ -10,5 +10,6 @@
 | Reliability follow-up | Future research | Test the information bonus on independently selected development families with partially dependent receipt sources. |
 | DAE-06 adaptive inference | Complete | Compared four bounded strategies with deterministic fixtures and a qualified local Qwen pilot. [Results](RESUME.md#dae-06-adaptive-test-time-compute) |
 | Adaptive inference follow-up | Proposed | Predefine a larger development grid and rotate live strategy order to account for cold model loading. |
+| DAE-07 native performance laboratory | Complete | Reproducible release suite records randomized-order raw samples, robust summaries, uncertainty, workload boundaries and host telemetry. No optimization was made without a profiler-supported hotspot. [Results](RESUME.md#dae-07-native-performance-laboratory) |
 | Discovery follow-up | Proposed | Evaluate seeded local search on separately selected development instances with explicit operator work or elapsed-cost caps and repeated timing. |
 | ECAR held-out study | Deferred | Independent custody, frozen manifest and separate owner and reviewer approval. [Release procedure](docs/research/ATH_02B_ECAR_PROTOCOL.md#independent-custody-and-release) |

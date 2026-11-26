@@ -1,10 +1,12 @@
 # Project status
 
-25 November 2026 · **Operation Athena.** Rust-first implementation and testing continue under the owner's existing approval boundaries.
+26 November 2026 · **Operation Athena.** Rust-first implementation and testing continue under the owner's existing approval boundaries.
 
 ## Discovery
 
 DAE-01 adds a bounded native search over the reviewed knapsack fixture and retains its independently checked result and lineage in the local evidence store. [Results](RESUME.md#dae-01-constrained-discovery) · [Execution queue](EXECUTION_QUEUE.md)
+
+DAE-07 adds a dependency-free native release performance suite spanning ECAR scheduling, evidence snapshots, evolutionary discovery, adaptive action decisions, durable SQLite, reviewed worker startup, loopback API, report generation and four-way bounded concurrency. The first Windows run records raw samples and host telemetry; it does not establish cross-system performance or a regression threshold. [Measurements](research/results/dae-native-performance.json) · [Method and limitations](RESUME.md#dae-07-native-performance-laboratory)
 
 ## Athena
 

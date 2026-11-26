@@ -5,6 +5,7 @@ mod http;
 mod inference;
 mod lab;
 mod literature;
+mod performance;
 mod planning;
 
 use aether_engine::{StudyConfig, simulate};
@@ -33,6 +34,7 @@ Commands
   aether-lab list                   List local campaigns
   aether-lab benchmark [study.json] Execute the matched synthetic A–E simulation
   aether-lab benchmark-native       Measure bounded native sorting variants
+  aether-lab perf-lab               Run the bounded native performance suite
   aether-lab evolve <seed> <evaluation-slots>  Compare four bounded knapsack search policies
   aether-lab discover <seed> <evaluation-slots>  Store and report one bounded knapsack search
   aether-lab inference-study <fixture|ollama>   Compare bounded inference strategies on development tasks
@@ -96,6 +98,10 @@ fn execute(args: &[String]) -> Result<()> {
         }
         [command] if command == "benchmark-native" => {
             print_json(&benchmark_native()?)?;
+            return Ok(());
+        }
+        [command] if command == "perf-lab" => {
+            print_json(&performance::run()?)?;
             return Ok(());
         }
         [command] if command == "hardware" => return print_json(&hardware::gpu_snapshot()),
