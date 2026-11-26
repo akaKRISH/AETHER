@@ -1,4 +1,5 @@
 mod archive;
+mod experiment_design;
 #[cfg(test)]
 mod tests;
 

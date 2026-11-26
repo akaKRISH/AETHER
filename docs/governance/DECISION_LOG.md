@@ -19,6 +19,7 @@
 | Operation APOLLO | The owner authorized local literature discovery, metadata revisions, citation relationships and lawful text extraction under the existing provider controls. | [ADR-014](../decisions/ADR-014.md) records the archive boundary. Extracted text has no execution or verdict authority. |
 | APO-02 scientific knowledge graph | The owner authorized a typed SQLite graph for literature and trusted local research records. | [ADR-015](../decisions/ADR-015.md) records identity, history, graph bounds and the campaign authority boundary. |
 | APO-03 evidence-grounded hypothesis discovery | The owner authorized bounded generation and ranking of unverified hypotheses over the graph. | [ADR-016](../decisions/ADR-016.md) records source and ranking rules. Proposals carry no approval, execution or verification authority. |
+| APO-04 experimental design | The owner authorized deterministic, unapproved designs for the three archived hypotheses. | [ADR-017](../decisions/ADR-017.md) records the protocol identity, limits and approval boundary. |
 | Licence | Apache-2.0 is proposed. Code, documentation and third-party assets require scoped review. | [License decision](../../LICENSE_DECISION.md) and ADR-008. |
 | ECAR study | Proposed research program with prior-art, pilot, frozen main protocol and independent verification gates. | Maintain preregistration and dated deviation records. |
 | Mentor and reviewer | Faculty mentor and independent results reviewer remain unassigned. | Owner identifies and records role scope before dependent gates. |

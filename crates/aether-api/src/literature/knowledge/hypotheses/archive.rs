@@ -3,8 +3,9 @@ use serde_json::{Value, json};
 use super::*;
 use crate::literature::knowledge::projection::edge;
 
-const ARTIFACT: &str = "dae-hybrid-development";
-const PIN: &str = "bc3654d2eb279884cca74f9a5d7f4fafde60e10930bc6cd06338eec256736ced";
+pub(super) const ARTIFACT: &str = "dae-hybrid-development";
+pub(super) const PIN: &str = "bc3654d2eb279884cca74f9a5d7f4fafde60e10930bc6cd06338eec256736ced";
+pub(super) const ROOT_IDENTITY: &str = "archive:dae-hybrid-development:budget-8";
 const BYTES: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../research/results/dae-hybrid-development.json"
@@ -73,7 +74,7 @@ impl CitationCatalog {
         let root = save_node(
             &tx,
             Kind::Experiment,
-            "archive:dae-hybrid-development:budget-8",
+            ROOT_IDENTITY,
             observation(
                 "DAE-04 matched hybrid search (8 evaluations)".into(),
                 archive.scope,

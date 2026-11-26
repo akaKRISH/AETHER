@@ -55,6 +55,8 @@ Commands
   aether-lab graph-export <node-id> [depth]  Export a bounded graph and its digest
   aether-lab hypothesis-index               Index the pinned DAE-04 observations
   aether-lab hypothesis-discover <node-id>  Rank advisory hypotheses for a bounded graph slice
+  aether-lab design-experiments <node-id>    Export unapproved experimental designs
+  aether-lab design-validate <draft.json>    Check a draft's digest and current provenance
   aether-lab recover <id>           Reconcile an interrupted campaign
   aether-lab serve [port]           Start authenticated loopback API and built workspace
 
@@ -243,6 +245,13 @@ fn execute(args: &[String]) -> Result<()> {
         [command, id] if command == "hypothesis-discover" => {
             print_json(&lab.catalog()?.discover_hypotheses(id)?)
         }
+        [command, id] if command == "design-experiments" => {
+            print_json(&lab.catalog()?.design_experiments(id)?)
+        }
+        [command, path] if command == "design-validate" => print_json(
+            &lab.catalog()?
+                .validate_experiment_design(read_json_file(&PathBuf::from(path))?)?,
+        ),
         [command] if command == "serve" => serve(lab, 8080),
         [command, port] if command == "serve" => serve(lab, port.parse()?),
         _ => Err("unrecognized command; run aether-lab --help".into()),

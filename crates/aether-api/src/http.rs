@@ -97,6 +97,7 @@ pub async fn serve(lab: Lab, port: u16, token: String, assets: PathBuf) -> std::
         .route("/v1/knowledge", get(knowledge_search))
         .route("/v1/knowledge/{id}", get(knowledge_export))
         .route("/v1/knowledge/{id}/hypotheses", get(knowledge_hypotheses))
+        .route("/v1/knowledge/{id}/designs", get(knowledge_designs))
         .route("/v1/literature/lookup", post(lookup_metadata))
         .route("/v1/proposals", post(proposals))
         .layer(DefaultBodyLimit::max(8192))
@@ -686,6 +687,20 @@ async fn knowledge_hypotheses(
         app.lab
             .catalog()?
             .discover_hypotheses(&id)
+            .map_err(graph_error)
+    })
+    .await
+    .map(Json)
+}
+
+async fn knowledge_designs(
+    State(app): State<App>,
+    Path(id): Path<String>,
+) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        app.lab
+            .catalog()?
+            .design_experiments(&id)
             .map_err(graph_error)
     })
     .await

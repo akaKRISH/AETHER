@@ -586,7 +586,8 @@ impl Lab {
                 "approval hash does not match frozen protocol".into(),
             ));
         }
-        self.protocol_bytes(digest)?;
+        let _: FrozenPlan = serde_json::from_slice(&self.protocol_bytes(digest)?)
+            .map_err(|_| Error::Conflict("approval requires a frozen campaign protocol".into()))?;
         storage(store.approve_campaign(id, digest))?;
         self.get(&store, id)
     }

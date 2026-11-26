@@ -45,6 +45,12 @@ The annotated comparison path accepts a local `metric` whose statement is a JSON
 
 Synthetic fixtures cover false conflicts, copied evidence, unsupported claims, misleading associations, proposal deduplication and incomplete local coverage. DAE-04 provides the separate measured development cases. Any proposed test needs a reviewed protocol, resource decision and the existing approval workflow. [Ranking and limits](../decisions/ADR-016.md)
 
+### APO-04 experimental design
+
+Run `aether-lab hypothesis-index` and pass its `root` to `aether-lab design-experiments <node-id>`. To check a saved draft, extract one element of `designs` into a UTF-8 JSON file and run `aether-lab design-validate <draft.json>`. The check requires the same local archive-backed graph slice. The Research OS shows **Review experiment designs** after the archived hypotheses are loaded in the Knowledge Graph. It displays the same three drafts over an authenticated read-only route.
+
+The negative-result design has 20 matched cases and two arms. The boundary design crosses 12 seed blocks with two difficulty profiles and compares the same arms. The method-composition design has 12 cases and four factorial cells, including one missing cell. Each arm has eight candidate evaluations per case. The plans call for 320, 384 and 384 candidate evaluations respectively, with separately reserved scoring and oracle work. Sample sizes are exploratory. The drafts contain no power estimate or private inputs. See the [design and approval decision](../decisions/ADR-017.md).
+
 ### Pending literature work
 
 1. Review the starter corpus and expand it with authorized full-text copies. Label conversion methods and record version-specific rights before importing a new format.

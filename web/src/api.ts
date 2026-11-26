@@ -237,6 +237,14 @@ export async function getGraphHypotheses(token: string, id: string, signal: Abor
   return value
 }
 
+export async function getExperimentDesigns(token: string, id: string, signal: AbortSignal): Promise<Row> {
+  const value = await json(token, `/knowledge/${encodeURIComponent(id)}/designs`, { signal })
+  if (!isRow(value) || value.schema !== 'aether.design-review/1' || !Array.isArray(value.designs)) {
+    throw new Error('Invalid experiment design report.')
+  }
+  return value
+}
+
 export async function runStudy(token: string): Promise<StudyReport> {
   const result = await json(token, '/benchmarks', { method: 'POST' })
   const report = isRow(result) && isRow(result.report) ? result.report : result

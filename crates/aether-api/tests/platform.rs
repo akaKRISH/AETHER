@@ -779,6 +779,68 @@ impl Drop for Server {
 }
 
 #[test]
+fn experimental_designs_reproduce_and_cannot_enter_campaigns() {
+    let work = Workspace::new();
+    let indexed = work.success(&["hypothesis-index"]);
+    let root = indexed["root"].as_str().unwrap();
+    let export = ["design-experiments", root];
+    let first = work.invoke(&export);
+    assert!(
+        first.status.success(),
+        "{}",
+        String::from_utf8_lossy(&first.stderr)
+    );
+    assert_eq!(first.stdout, work.invoke(&export).stdout);
+    let report: Value = serde_json::from_slice(&first.stdout).unwrap();
+    let designs = report["designs"].as_array().unwrap();
+    assert_eq!(designs.len(), 3);
+    let path = work.0.join("draft.json");
+    let file = path.to_str().unwrap();
+    for draft in designs {
+        fs::write(&path, draft.to_string()).unwrap();
+        let receipt = work.success(&["design-validate", file]);
+        assert_eq!(receipt["valid_review_draft"], true);
+        assert_eq!(receipt["approval_status"], "unapproved");
+        assert!(!work.invoke(&["plan", file]).status.success());
+    }
+    fs::write(&path, json!({
+        "id": "design-boundary", "title": "Ordinary draft", "objective": "Check approval binding",
+        "seed": 19, "items": 8, "algorithm": "insertion", "attempts": 5, "wall_ms": 12000
+    }).to_string()).unwrap();
+    let before = work.success(&["plan", file]);
+    let digest = designs[0]["protocol_sha256"].as_str().unwrap();
+    let rejected = work.invoke(&["approve", "design-boundary", digest]);
+    assert!(!rejected.status.success());
+    assert!(String::from_utf8_lossy(&rejected.stderr).contains("does not match frozen protocol"));
+    assert_eq!(before, work.success(&["plan", file]));
+
+    // Even a misindexed digest with matching bytes must fail campaign approval.
+    let bytes = serde_json::to_vec(&designs[0]["protocol"]).unwrap();
+    let mut spec: aether_store::NewCampaign = serde_json::from_value(before).unwrap();
+    spec.id = "misindexed-design".into();
+    spec.protocol_hash = aether_store::artifact_sha256(&bytes);
+    fs::write(
+        work.0
+            .join("protocols")
+            .join(format!("{}.json", spec.protocol_hash)),
+        bytes,
+    )
+    .unwrap();
+    let mut store = aether_store::Store::open(work.0.join("laboratory.sqlite3")).unwrap();
+    store.create_campaign(&spec).unwrap();
+    let rejected = work.invoke(&["approve", &spec.id, &spec.protocol_hash]);
+    assert!(!rejected.status.success());
+    assert!(
+        String::from_utf8_lossy(&rejected.stderr)
+            .contains("approval requires a frozen campaign protocol")
+    );
+    assert_eq!(
+        store.campaign(&spec.id).unwrap().unwrap().state,
+        aether_store::CampaignState::Draft
+    );
+}
+
+#[test]
 fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
     let work = Workspace::new();
     let mut server = Server(
@@ -817,6 +879,31 @@ fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
     };
     let unauthenticated = agent.get(format!("{origin}/v1/campaigns")).call().unwrap();
     assert_eq!(unauthenticated.status().as_u16(), 401);
+    let indexed = work.success(&["hypothesis-index"]);
+    let root = indexed["root"].as_str().unwrap();
+    let designs_path = format!("/v1/knowledge/{root}/designs");
+    assert_eq!(
+        agent
+            .get(format!("{origin}{designs_path}"))
+            .call()
+            .unwrap()
+            .status()
+            .as_u16(),
+        401
+    );
+    let mut response = get(&designs_path);
+    assert_eq!(response.status().as_u16(), 200);
+    let designs: Value = response.body_mut().read_json().unwrap();
+    assert_eq!(designs, work.success(&["design-experiments", root]));
+    assert_eq!(post(&designs_path, json!({})).status().as_u16(), 405);
+    assert_eq!(
+        post("/v1/campaigns", json!({
+            "protocol_sha256": designs["designs"][0]["protocol_sha256"], "approval_status": "unapproved"
+        }))
+            .status()
+            .as_u16(),
+        422
+    );
     assert_eq!(
         agent
             .get(format!("{origin}/v1/research/archive"))

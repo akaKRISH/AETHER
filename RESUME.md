@@ -1,5 +1,17 @@
 # Resume AETHER
 
+## APO-04 automated scientific experimental design
+
+Started from `b89d3b8`. The Rust CLI and authenticated Research OS generate three exploratory drafts from the pinned APO-03 graph. The plans cover negative results, profile boundaries and local improvement with repair. They record exact source revisions, confounders, paired controls, falsification rules and reproducibility manifests. Each review draft has a canonical SHA-256 identity and remains unapproved. [Commands](docs/research/APOLLO_EXECUTION_PLAN.md#apo-04-experimental-design) · [Design decision](docs/decisions/ADR-017.md)
+
+The planned candidate counts are 320, 384 and 384. The matched grids reserve 100, 120 and 108 total attempts covering search, independent scoring and the isolated oracle. The respective aggregate wall ceilings are 70, 84 and 72 seconds. These are planning figures. No proposed experiment or ECAR held-out study ran.
+
+Two fresh CLI processes produced byte-identical review JSON with SHA-256 `92d255a0d0343836ccf0e8ce8e42ca1a664d46a4faa05ede840f50a9d1a90765`. The validated protocol digests are `dd45aa84ef4c084353b8fa8ac0378758fb1a34f57e180087bf48295d754b489f` for negative results, `5ba8f71ed215007a7a998b37a96db09b075aafc16214b743ab54a4d34b551159` for the boundary, and `085974cb95640aee3b082406c2658bd64c3467af21359e961720b15728c6b112` for method composition.
+
+Validation passed 31 Rust API unit tests, 15 platform tests, strict API Clippy, workspace formatting, the native API release build, five frontend tests, type checking, lint, production web build, desktop and mobile browser smoke, and documentation and schema checks. The CLI and HTTP campaign paths rejected the drafts. The approval gate also rejected a test record indexed with a digest matching the draft bytes. Frozen artifacts matched `b89d3b8`.
+
+Next, qualify a fresh matched-case adapter and exact archive-input exclusion, register a reviewed paired knapsack worker and verifier, implement the exact joint factorial cell, and review the aggregate resource plan through the existing campaign workflow. Confirmatory work also needs independent held-out custody and justified sampling assumptions. Historical records remain frozen.
+
 ## APO-03 evidence-grounded hypothesis discovery
 
 Started from `bed6758`. The CLI and authenticated Research OS read a bounded graph slice and return deterministic, ranked unverified proposals. The six generators cover comparable conflicts, evidence gaps, profile boundaries, negative results, method composition and candidate transfers between declared domains. Proposals carry pinned source revisions, counterevidence when found, alternatives, assumptions, limitations, a falsification test, suggested metrics and checked planning costs. The [ranking decision](docs/decisions/ADR-016.md) and [commands](docs/research/APOLLO_EXECUTION_PLAN.md#apo-03-hypothesis-discovery) describe their use.

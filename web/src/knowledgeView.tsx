@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { getGraphHypotheses, getKnowledge, message, rows, searchKnowledge, type Row } from './api'
+import { getExperimentDesigns, getGraphHypotheses, getKnowledge, message, rows, searchKnowledge, type Row } from './api'
 import { Empty, Fields, Panel, RecordTable, errorText, pretty, readableRecord, text } from './components'
 
 const kinds = ['paper', 'claim', 'method', 'dataset', 'metric', 'experiment', 'model', 'evidence',
@@ -151,6 +151,50 @@ function GraphHypotheses({ token, id }: { token: string; id: string }) {
           columns={['node', 'revision_sha256', 'status', 'source', 'statement']} empty="No additional graph context." />
       </details>)}
       <details><summary>Scan diagnostics</summary><Fields data={readableRecord(report.diagnostics)} /></details>
+      {currentArchive(report) && <ExperimentDesigns token={token} id={id} />}
+    </>}
+  </section>
+}
+
+function currentArchive(report: Row) {
+  return rows(report.proposals).some((proposal) => rows(proposal.supports).some((reference) =>
+    readableRecord(reference.source).artifact === 'dae-hybrid-development'))
+}
+
+function ExperimentDesigns({ token, id }: { token: string; id: string }) {
+  const [requested, setRequested] = useState(false)
+  const [report, setReport] = useState<Row>()
+  const [error, setError] = useState('')
+  useEffect(() => {
+    if (!requested) return
+    const controller = new AbortController()
+    getExperimentDesigns(token, id, controller.signal).then(
+      (value) => { if (!controller.signal.aborted) setReport(value) },
+      (reason) => { if (!controller.signal.aborted) setError(message(reason)) },
+    )
+    return () => controller.abort()
+  }, [id, requested, token])
+  if (!requested) return <div className="toolbar">
+    <button className="button" type="button" onClick={() => setRequested(true)}>Review experiment designs</button>
+  </div>
+  return <section aria-label="Experimental design review">
+    <h3>Experimental design review</h3>
+    {error ? errorText(error) : !report ? <p role="status">Loading experiment designs…</p> : <>
+      {rows(report.designs).length === 0 && <Empty title="No experiment designs available." />}
+      {rows(report.designs).map((design) => {
+        const draft = readableRecord(design.protocol)
+        return <details key={text(design.protocol_sha256)}>
+          <summary>{pretty(text(draft.recipe))} · {pretty(text(draft.mode))} · {pretty(text(design.approval_status))}</summary>
+          <p className="panel-note">{text(draft.proposition)}</p>
+          <Fields data={{ protocol_sha256: design.protocol_sha256, ...draft }}
+            omit={['schema', 'recipe', 'mode', 'proposition', 'supports', 'counterevidence', 'context']} />
+          <RecordTable label="Design provenance" data={[
+            ...rows(draft.supports).map((item) => ({ ...item, role: 'Support' })),
+            ...rows(draft.counterevidence).map((item) => ({ ...item, role: 'Counterevidence' })),
+            ...rows(draft.context).map((item) => ({ ...item, role: 'Context' })),
+          ]} columns={['role', 'node', 'revision_sha256', 'source']} />
+        </details>
+      })}
     </>}
   </section>
 }
