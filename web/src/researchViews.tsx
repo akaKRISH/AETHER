@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { getResearchArtifact, isRow, rows, type Campaign, type ResearchArchive, type Row, type Snapshot } from './api'
 import { Badge, Empty, Fields, Panel, RecordTable, errorText, text } from './components'
 import { Evolution } from './consoleViews'
-import { ModelLaboratory } from './modelView'
+import { ModelLaboratory, TrainingProposals } from './modelView'
 
 const numeric = (value: unknown) => typeof value === 'number' && Number.isFinite(value) ? value : null
 const fmt = (value: unknown, digits = 2) => numeric(value)?.toLocaleString(undefined, { maximumFractionDigits: digits }) ?? '—'
@@ -75,6 +75,7 @@ export function IntelligenceObservatory({ archive, token }: { archive: ResearchA
         <small>{liveTokens.toLocaleString()} reported model tokens · reasoning tokens were unavailable</small></div>
     </section>
     <ModelLaboratory token={token} />
+    <TrainingProposals token={token} />
     <div className="dashboard-columns">
       <Panel title="Local model pilot" aside={<Badge value="historical" />}>
         {liveRows.length ? <RecordTable label="Local model inference strategies" data={liveRows}

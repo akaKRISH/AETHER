@@ -57,6 +57,12 @@ Run `aether-lab models-discover` for the default local Ollama inventory, or pass
 
 Run `aether-lab models-evaluate fixture` and `aether-lab models-evaluate fixture-regression` to reproduce the public, scripted evaluation. Pass their artifact digests to `aether-lab models-compare <baseline-sha> <candidate-sha>`. The Research OS can inspect complete or blocked runs and compare reports. Run `aether-lab models-evaluate ollama` only against the qualified cloud-disabled loopback service with the installed Qwen pin. The live path checks current memory, runtime identity and blob integrity before generation. [Scope and limits](../decisions/ADR-018.md)
 
+### APO-06A adapter-training feasibility
+
+Use `aether-lab training-fixture lora` or `aether-lab training-fixture qlora` to publish a synthetic proposal. Pass its exact printed digest as both arguments to `aether-lab training-rehearse <manifest-sha> <approval-sha> [cancel-before-step]`. For example, cancellation at step 3 keeps only the synthetic checkpoint at step 2. Replay the receipt's `job` through `scripts/training_worker_fixture.py` on standard input to check cross-language receipt parity.
+
+For a local proposal, first run `models-inspect <file> <sha256>`. Supply a request with `base` (identity, license, provenance and geometry), `dataset` (train, validation and independent-test descriptors), `settings`, `caps`, optional `baseline_sha256`, and optional `python` pins. Each split descriptor has `path`, `sha256`, `provenance` and `curator`. Its JSON Lines records contain `id`, `group`, `input` and `output`. Use the fixture output to see the settings and caps fields. `training-propose <request.json>` validates files and freezes the plan. `training-list` and the Intelligence Observatory show estimates and blockers. [Training boundary and estimate model](../decisions/ADR-019.md)
+
 ### Pending literature work
 
 1. Review the starter corpus and expand it with authorized full-text copies. Label conversion methods and record version-specific rights before importing a new format.

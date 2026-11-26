@@ -899,6 +899,110 @@ fn model_lab_persists_local_metadata_and_reproduces_matched_regressions() {
 }
 
 #[test]
+fn training_plans_pin_inputs_and_rehearsals_cannot_train() {
+    let work = Workspace::new();
+    let fixture = work.success(&["training-fixture", "lora"]);
+    let pin = fixture["manifest_sha256"].as_str().unwrap();
+    assert_eq!(
+        work.success(&["training-fixture", "lora"])["manifest_sha256"],
+        pin
+    );
+    let qlora = work.success(&["training-fixture", "qlora"]);
+    assert_ne!(qlora["manifest_sha256"], pin);
+    assert!(
+        qlora["manifest"]["estimate"]["resources"]["vram_bytes"].as_u64()
+            < fixture["manifest"]["estimate"]["resources"]["vram_bytes"].as_u64()
+    );
+    assert!(
+        !work
+            .invoke(&[
+                "training-rehearse",
+                pin,
+                qlora["manifest_sha256"].as_str().unwrap()
+            ])
+            .status
+            .success()
+    );
+    let completed = work.success(&["training-rehearse", pin, pin]);
+    assert_eq!(completed, work.success(&["training-rehearse", pin, pin]));
+    assert_eq!(completed["outcome"], "completed");
+    assert_eq!(completed["checkpoints"].as_array().unwrap().len(), 2);
+    assert_eq!(completed["actual_weight_updates"], 0);
+    assert_eq!(completed["adapter_artifact_sha256"], Value::Null);
+    let cancelled = work.success(&["training-rehearse", pin, pin, "3"]);
+    assert_eq!(cancelled["outcome"], "cancelled");
+    assert_eq!(cancelled["checkpoints"].as_array().unwrap().len(), 1);
+    assert_eq!(cancelled["checkpoints"][0]["step"], 2);
+    assert_eq!(
+        work.success(&["training-rehearse", pin, pin, "0"])["checkpoints"],
+        json!([])
+    );
+    assert!(completed["job"].get("independent_test").is_none());
+    let protected = fixture["manifest"]["dataset"]["independent_test"]["sha256"]
+        .as_str()
+        .unwrap();
+    assert!(!completed["job"].to_string().contains(protected));
+    assert_eq!(
+        work.success(&["training-list"])["proposals"]
+            .as_array()
+            .unwrap()
+            .len(),
+        2
+    );
+    assert_eq!(work.success(&["models-list"])["entries"], json!([]));
+}
+
+#[test]
+fn inspected_safetensors_shard_yields_a_blocked_proposal() {
+    let work = Workspace::new();
+    let path = work.0.join("base.safetensors");
+    let header = br#"{"__metadata__":{"architecture":"fixture","license":"CC0-1.0"},"weight":{"dtype":"F16","shape":[32,64],"data_offsets":[0,4096]}}"#;
+    let mut bytes = (header.len() as u64).to_le_bytes().to_vec();
+    bytes.extend(header);
+    bytes.resize(bytes.len() + 4096, 0);
+    fs::write(&path, &bytes).unwrap();
+    let digest = aether_store::artifact_sha256(&bytes);
+    work.success(&["models-inspect", path.to_str().unwrap(), &digest]);
+    let split = |id: &str, prompt: &str, curator: &str| {
+        let file = format!("{id}.jsonl");
+        let row = json!({"id":id, "group":id, "input":prompt, "output":"5"}).to_string();
+        fs::write(work.0.join(&file), &row).unwrap();
+        json!({"path":file,"sha256":aether_store::artifact_sha256(row.as_bytes()),"provenance":"public fixture","curator":curator})
+    };
+    let template = work.success(&["training-fixture", "lora"]);
+    let mut request = json!({
+        "base":{"sha256":digest,"architecture":"fixture","license":"CC0-1.0","provenance":"test",
+            "geometry":{"hidden":64,"layers":2,"attention_heads":4}},
+        "dataset":{"train":split("t","2 + 3","builder"),"validation":split("v","1 + 4","builder"),
+            "independent_test":split("i","6 - 1","reviewer")},
+        "settings":template["manifest"]["settings"],"caps":template["manifest"]["caps"],
+        "baseline_sha256":null, "python":null,
+    });
+    request["settings"]["checkpoint_every_steps"] = json!(1);
+    let spec = work.0.join("proposal.json");
+    let file = spec.to_str().unwrap();
+    fs::write(&spec, request.to_string()).unwrap();
+    let saved = work.success(&["training-propose", file]);
+    assert_eq!(saved["manifest"]["base"]["format"], "safetensors_shard");
+    assert_eq!(saved["real_training"], "blocked");
+    assert!(
+        saved["feasibility"]["blockers"]
+            .to_string()
+            .contains("complete trainable checkpoint")
+    );
+    let pin = saved["manifest_sha256"].as_str().unwrap();
+    assert!(
+        !work
+            .invoke(&["training-rehearse", pin, pin])
+            .status
+            .success()
+    );
+    request["dataset"]["independent_test"]["curator"] = json!(" BUILDER ");
+    fs::write(&spec, request.to_string()).unwrap();
+    assert!(!work.invoke(&["training-propose", file]).status.success());
+}
+
+#[test]
 fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
     let work = Workspace::new();
     let mut server = Server(
@@ -933,10 +1037,33 @@ fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
             .post(format!("{origin}{path}"))
             .header("Authorization", format!("Bearer {TOKEN}"))
             .send_json(body)
-            .unwrap()
+            .unwrap_or_else(|error| panic!("POST {path}: {error}"))
     };
     let unauthenticated = agent.get(format!("{origin}/v1/campaigns")).call().unwrap();
     assert_eq!(unauthenticated.status().as_u16(), 401);
+    assert_eq!(
+        agent
+            .get(format!("{origin}/v1/training"))
+            .call()
+            .unwrap()
+            .status()
+            .as_u16(),
+        401
+    );
+    let dispatch = agent
+        .post(format!("{origin}/v1/training"))
+        .header("Authorization", format!("Bearer {TOKEN}"))
+        .header("Connection", "close")
+        .send_empty()
+        .unwrap();
+    assert_eq!(dispatch.status().as_u16(), 405);
+    let plan = work.success(&["training-fixture", "qlora"]);
+    let training: Value = get("/v1/training").body_mut().read_json().unwrap();
+    assert_eq!(
+        training["proposals"][0]["manifest_sha256"],
+        plan["manifest_sha256"]
+    );
+    assert_eq!(training["proposals"][0]["approval"], "unapproved");
     assert_eq!(
         agent
             .get(format!("{origin}/v1/models"))

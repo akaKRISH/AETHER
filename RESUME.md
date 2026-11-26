@@ -1,5 +1,21 @@
 # Resume AETHER
 
+## APO-06A adapter-training infrastructure and feasibility
+
+Started from `ff48125`. The Rust controller publishes unapproved LoRA and QLoRA manifests with exact base and dataset identities, split provenance, adapter settings, resource caps, baseline identity, and regression requirements. The CLI, authenticated API and Intelligence Observatory expose proposals, feasibility and synthetic receipts. [Commands](docs/research/APOLLO_EXECUTION_PLAN.md#apo-06a-adapter-training-feasibility) · [Backend contract](docs/decisions/ADR-019.md)
+
+The Windows Python checks covered the project and PATH Python 3.14.7 installations and the five registered interpreter entries. PyTorch, Transformers, PEFT, Accelerate, SafeTensors, bitsandbytes, TorchAO and Triton were absent in those checks. The RTX 3050 had 6,144 MiB of VRAM and 5,649 MiB free at the initial probe. NVIDIA reported driver 610.91 and CUDA UMD 13.3. The probe found no `nvcc` on PATH or toolkit under the standard installation directory. No PyTorch CUDA runtime was available to qualify. The workspace volume had 28,369,821,696 bytes free and the host had 1,206,865,920 bytes of available RAM at that probe.
+
+The installed Qwen 3.5 4B Q4_K_M GGUF is an inference artifact for this backend. Its local header declares 32 blocks, embedding width 2,560 and 16 attention heads. Eight full-attention query tensors have shape 2,560 × 8,192. A GGUF content pin does not establish a trainable checkpoint. A single SafeTensors shard also leaves the config, tokenizer, complete tensor set and immutable runtime mount unqualified.
+
+For a hypothetical four-step, rank-4 proposal on those eight query projections, the planner estimated 9.84 GiB RAM and 8.92 GiB VRAM for LoRA, and 4.47 GiB RAM and 3.54 GiB VRAM for QLoRA. Both estimated 2.54 GiB storage and 6.46 trillion dense-reference FLOPs. The QLoRA proposal observed 1.47 GiB available RAM. These estimates use the inferred geometry and public synthetic split controls. They provide no measurement of a trainable checkpoint or actual allocation. The saved Qwen manifests are `925eb5a9d56c72279f723e1ac1993913272d8505af6bd5ba290576b5a6f1d177` and `4adf9885a1184649d0a3e73542723f8581c3d977e77a091fda85061db408c2e7`.
+
+Both synthetic manifests reproduced across fresh CLI processes. The independent Python fixture matched all four Rust receipts. Completion produced steps 2 and 4, and cancellation before step 3 preserved just step 2. Each recorded zero weight updates. The pinned APO-05 baseline still reproduced its recorded digest.
+
+The affected API suite passed 39 unit and 18 platform tests. Coverage includes split overlap and mutated pins, isolated test custody declarations, resource arithmetic, synthetic receipt integrity, cancellation and authenticated read-only review. Strict Clippy, workspace formatting, the offline native release build, five frontend tests, lint, type checking, the frontend build, desktop and mobile browser smoke, and documentation and schema validation passed. The desktop browser opened the QLoRA proposal and its cancelled synthetic receipt. Frozen research artifacts, the model evaluator and the deferred Rune workspace match `ff48125`.
+
+Real training remains deferred. The next gate needs a complete rights-reviewed native checkpoint, a pinned and reviewed Python worker and runtime, qualified resources and independent custody and evaluation. The approved model and ECAR evidence stay separate.
+
 ## APO-05 open-weight model research laboratory
 
 Started from `77e135a`. The native registry retains inspected metadata, file identities and evidence-backed evaluation receipts. The CLI, authenticated API and Intelligence Observatory expose inspections, case results and matched regressions. [Commands](docs/research/APOLLO_EXECUTION_PLAN.md#apo-05-open-weight-model-laboratory) · [Design and restrictions](docs/decisions/ADR-018.md)

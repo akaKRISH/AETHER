@@ -21,6 +21,8 @@
 | APO-04 executable qualification | Pending | Review the paired knapsack runner and verifier, exact joint cell, fresh-case adapter, archive exclusion and campaign resource admission before any execution approval. |
 | APO-05 open-weight model laboratory | Complete for local inspection and fixtures | Bounded file inspection, content-addressed evaluation and matched regression review. [Checkpoint](RESUME.md#apo-05-open-weight-model-research-laboratory) |
 | APO-05 live Qwen pilot | Deferred by admission | Recheck available RAM and VRAM, qualified local Ollama identity, and pinned blob integrity. |
+| APO-06A adapter-training feasibility | Complete for proposals and rehearsal | LoRA/QLoRA manifests, deterministic split validation, exact synthetic approval and backend receipts. [Checkpoint](RESUME.md#apo-06a-adapter-training-infrastructure-and-feasibility) |
+| Adapter-training execution | Deferred | Qualify a full native checkpoint, pinned reviewed worker/runtime, immutable base, resource admission, independent test and regression gates. |
 | APOLLO corpus and extraction evaluation | Proposed | Expand a rights-reviewed full-text collection, measure extraction coverage and disagreement, and qualify additional formats separately. [Execution plan](docs/research/APOLLO_EXECUTION_PLAN.md) |
 | PDF ingestion and live metadata providers | Pending | Qualify PDF conversion with original-location mapping and run approved live provider checks separately from deterministic fixtures. |
 | Discovery follow-up | Proposed | Evaluate seeded local search on separately selected development instances with explicit operator work or elapsed-cost caps and repeated timing. |

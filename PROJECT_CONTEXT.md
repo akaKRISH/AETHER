@@ -18,6 +18,7 @@ The [Rust v0.2 design package](docs/archive/v0.2/AETHER/README.md) and [Project 
 - Hypothesis discovery ranks unverified proposals over bounded graph slices. Each proposal records its test design, limits and exact supporting sources. [ADR-016](docs/decisions/ADR-016.md)
 - Experimental design turns three archived hypotheses into canonical, unapproved exploratory drafts. Campaign freeze, approval and independent verification keep their existing authority. [ADR-017](docs/decisions/ADR-017.md)
 - The model laboratory indexes local model headers, verifies file identities and checks public development responses under separate inference and evaluation budgets. [ADR-018](docs/decisions/ADR-018.md)
+- Adapter-training manifests pin checked dataset splits and base identity. The current controller only rehearses synthetic checkpoint receipts. [ADR-019](docs/decisions/ADR-019.md)
 - The workspace host has Windows 11, i5-13420H (8 cores, 12 logical processors), 15.64 GiB observed system RAM and an RTX 3050 Laptop GPU with 6144 MiB reported VRAM. Ubuntu WSL2 is registered. Verify tooling and isolation before any external worker. [Environment snapshot](docs/operations/DEVELOPMENT_ENVIRONMENT.md)
 
 ## Sequence and boundaries

@@ -53,6 +53,7 @@ async function main() {
     const origin = await address(server)
     assert.equal((await fetch(origin + '/v1/hardware')).status, 401)
     assert.equal((await fetch(origin + '/v1/models')).status, 401)
+    assert.equal((await fetch(origin + '/v1/training')).status, 401)
     assert.equal((await fetch(origin + '/assets/%2e%2e%2findex.html')).status, 404)
     for (const provider of ['crossref', 'openalex', 'arxiv']) {
       const denied = await fetch(origin + '/v1/literature/lookup', {
@@ -198,6 +199,9 @@ async function main() {
     execFileSync(executable, ['models-inspect', modelFile], {
       cwd: root, env: { ...process.env, AETHER_DATA_DIR: directory }, windowsHide: true,
     })
+    const trainingOptions = { cwd: root, env: { ...process.env, AETHER_DATA_DIR: directory }, windowsHide: true }
+    const training = JSON.parse(execFileSync(executable, ['training-fixture', 'qlora'], trainingOptions))
+    execFileSync(executable, ['training-rehearse', training.manifest_sha256, training.manifest_sha256, '3'], trainingOptions)
     await desktop.getByRole('button', { name: 'Intelligence Observatory', exact: true }).click()
     await desktop.getByRole('heading', { name: 'Inference is advisory. Verification decides.' }).waitFor()
     await desktop.getByRole('table', { name: 'Local model inference strategies' }).waitFor()
@@ -210,6 +214,9 @@ async function main() {
     await desktop.getByLabel('Candidate report').selectOption({ index: 2 })
     await desktop.getByRole('button', { name: 'Compare reports' }).click()
     await desktop.getByRole('table', { name: 'Paired model results' }).waitFor()
+    await desktop.getByText('QLoRA · aether-fixture · Unapproved', { exact: true }).click()
+    await desktop.getByRole('heading', { name: 'Feasibility and blockers' }).waitFor()
+    await desktop.getByRole('table', { name: 'Synthetic training rehearsals' }).getByText('cancelled', { exact: true }).waitFor()
     await desktop.getByRole('button', { name: 'Compute Observatory', exact: true }).click()
     await desktop.getByRole('heading', { name: 'Measure the control plane.' }).waitFor()
     await desktop.getByRole('table', { name: 'DAE-07 component measurements' }).waitFor()

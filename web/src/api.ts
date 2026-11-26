@@ -299,6 +299,13 @@ export async function getModelRegistry(token: string, signal: AbortSignal): Prom
   return value
 }
 
+export async function getTrainingRegistry(token: string, signal: AbortSignal): Promise<Row> {
+  const value = await json(token, '/training', { signal })
+  if (!isRow(value) || value.schema !== 'aether.training-registry/1' || !Array.isArray(value.proposals)
+    || !Array.isArray(value.receipts)) throw new Error('Invalid training registry response.')
+  return value
+}
+
 export async function getModelReport(token: string, hash: string, signal: AbortSignal): Promise<Row> {
   if (!/^[a-f0-9]{64}$/.test(hash)) throw new Error('Invalid model artifact digest.')
   const bytes = await (await request(token, `/artifacts/${hash}`, { signal })).arrayBuffer()

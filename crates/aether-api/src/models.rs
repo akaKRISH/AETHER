@@ -1,5 +1,6 @@
 mod evaluation;
 mod metadata;
+pub(crate) mod training;
 
 use std::fs::{self, File};
 use std::io::{Read, Seek, SeekFrom};
@@ -331,7 +332,8 @@ impl Registry {
 
     pub(crate) fn list(&self) -> Result<Value> {
         let mut stmt = self.0.prepare(
-            "SELECT kind, record FROM model_registry ORDER BY kind, rowid DESC LIMIT 65",
+            "SELECT kind, record FROM model_registry WHERE kind IN ('file','ollama','report')
+             ORDER BY kind, rowid DESC LIMIT 65",
         )?;
         let mut rows = stmt.query([])?;
         let mut entries = Vec::new();

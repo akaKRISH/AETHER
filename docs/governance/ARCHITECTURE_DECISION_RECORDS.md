@@ -22,5 +22,6 @@ An architecture decision record documents the decision, alternatives considered,
 | [ADR-016](../decisions/ADR-016.md) | Deterministic proposals from bounded graph slices | APOLLO local scope |
 | [ADR-017](../decisions/ADR-017.md) | Canonical experimental design drafts and campaign authority | APOLLO local scope |
 | [ADR-018](../decisions/ADR-018.md) | Local model metadata, evaluation and admission | APOLLO local scope |
+| [ADR-019](../decisions/ADR-019.md) | Adapter-training proposals and synthetic backend | APOLLO local scope |
 
 Preserve historic reasoning. Record changes with a superseding ADR and update relevant requirements, contract versions and diagrams in the same review. Document areas where the executable acceptance criterion still needs refinement. [v0.2 ADR and traceability](../archive/v0.2/AETHER/19_ADR_TRACEABILITY.md)

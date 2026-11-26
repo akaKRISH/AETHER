@@ -44,6 +44,10 @@ Commands
   aether-lab models-list                        List the saved model registry and evaluation reports
   aether-lab models-evaluate <fixture|fixture-regression|ollama>  Run the bounded development suite
   aether-lab models-compare <baseline-sha> <candidate-sha>       Compare two saved reports
+  aether-lab training-propose <request.json>  Validate inputs and freeze an unapproved training proposal
+  aether-lab training-fixture <lora|qlora>     Freeze a public synthetic proposal
+  aether-lab training-rehearse <manifest-sha> <approval-sha> [cancel-before-step]  Exercise synthetic checkpoints
+  aether-lab training-list                    Show saved proposals and rehearsal receipts
   aether-lab hardware               Read local NVIDIA driver telemetry, when available
   aether-lab propose <request.json> Produce deterministic reviewed-task proposals
   aether-lab propose-local <request.json> <model>  Use an existing local Ollama model
@@ -195,6 +199,21 @@ fn execute(args: &[String]) -> Result<()> {
         [command, baseline, candidate] if command == "models-compare" => {
             print_json(&models::compare(&lab, baseline, candidate)?)
         }
+        [command, path] if command == "training-propose" => {
+            print_json(&models::training::propose(&lab, &PathBuf::from(path))?)
+        }
+        [command, method] if command == "training-fixture" => {
+            print_json(&models::training::fixture(&lab, method)?)
+        }
+        [command, manifest, approval, rest @ ..]
+            if command == "training-rehearse" && rest.len() <= 1 =>
+        {
+            let cancel = rest.first().map(|n| n.parse()).transpose()?;
+            print_json(&models::training::rehearse(
+                &lab, manifest, approval, cancel,
+            )?)
+        }
+        [command] if command == "training-list" => print_json(&models::training::list(&lab)?),
         [command, seed, evaluations] if command == "discover" => {
             let report = aether_engine::discover(seed.parse()?, evaluations.parse()?)?;
             let digest = lab.record_discovery(&report)?;

@@ -21,6 +21,7 @@
 | APO-03 evidence-grounded hypothesis discovery | The owner authorized bounded generation and ranking of unverified hypotheses over the graph. | [ADR-016](../decisions/ADR-016.md) records source and ranking rules. Proposals carry no approval, execution or verification authority. |
 | APO-04 experimental design | The owner authorized deterministic, unapproved designs for the three archived hypotheses. | [ADR-017](../decisions/ADR-017.md) records the protocol identity, limits and approval boundary. |
 | APO-05 open-weight model laboratory | The owner authorized local metadata inspection and bounded evaluation of the existing model. | [ADR-018](../decisions/ADR-018.md) records resource admission, local-only restrictions and independent scoring. |
+| APO-06A adapter-training feasibility | The owner authorized local proposals and synthetic training receipts. | [ADR-019](../decisions/ADR-019.md) records input validation, backend pins and the approval boundary. |
 | Licence | Apache-2.0 is proposed. Code, documentation and third-party assets require scoped review. | [License decision](../../LICENSE_DECISION.md) and ADR-008. |
 | ECAR study | Proposed research program with prior-art, pilot, frozen main protocol and independent verification gates. | Maintain preregistration and dated deviation records. |
 | Mentor and reviewer | Faculty mentor and independent results reviewer remain unassigned. | Owner identifies and records role scope before dependent gates. |

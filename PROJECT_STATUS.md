@@ -12,6 +12,8 @@ APO-04 adds three reproducible, unapproved experimental designs. A reviewed pair
 
 APO-05 adds local model inspection, an evidence-backed development suite and matched regression reports. Live results depend on the qualified local model and available host resources. [Model laboratory](RESUME.md#apo-05-open-weight-model-research-laboratory)
 
+APO-06A adds deterministic adapter-training proposals and synthetic checkpoint rehearsals. Real training remains blocked on the base package, runtime, worker, resource and independent evaluation gates. [Feasibility checkpoint](RESUME.md#apo-06a-adapter-training-infrastructure-and-feasibility)
+
 ## Discovery
 
 DAE-01 adds a bounded native search over the reviewed knapsack fixture and retains its independently checked result and lineage in the local evidence store. [Results](RESUME.md#dae-01-constrained-discovery) · [Execution queue](EXECUTION_QUEUE.md)

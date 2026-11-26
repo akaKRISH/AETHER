@@ -95,6 +95,7 @@ pub async fn serve(lab: Lab, port: u16, token: String, assets: PathBuf) -> std::
             "/v1/models/compare/{baseline}/{candidate}",
             get(model_comparison),
         )
+        .route("/v1/training", get(training_registry))
         .route("/v1/benchmarks", post(benchmarks))
         .route("/v1/evolution", post(evolution))
         .route("/v1/literature", get(literature))
@@ -408,6 +409,14 @@ async fn model_comparison(
     blocking(move || {
         crate::models::compare(&app.lab, &baseline, &candidate)
             .map_err(|error| Error::Input(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn training_registry(State(app): State<App>) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::training::list(&app.lab).map_err(|error| Error::Storage(error.to_string()))
     })
     .await
     .map(Json)
