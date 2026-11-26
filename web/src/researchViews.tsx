@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { getResearchArtifact, isRow, rows, type Campaign, type ResearchArchive, type Row, type Snapshot } from './api'
 import { Badge, Empty, Fields, Panel, RecordTable, errorText, text } from './components'
 import { Evolution } from './consoleViews'
+import { ModelLaboratory } from './modelView'
 
 const numeric = (value: unknown) => typeof value === 'number' && Number.isFinite(value) ? value : null
 const fmt = (value: unknown, digits = 2) => numeric(value)?.toLocaleString(undefined, { maximumFractionDigits: digits }) ?? '—'
@@ -58,7 +59,7 @@ function usageRows(trials: Row[]) {
   })
 }
 
-export function IntelligenceObservatory({ archive }: { archive: ResearchArchive }) {
+export function IntelligenceObservatory({ archive, token }: { archive: ResearchArchive; token: string }) {
   const fixture = records(archive.inference_fixture.trials)
   const localStudy = isRow(archive.inference_local.study) ? archive.inference_local.study : {}
   const local = records(localStudy.trials)
@@ -73,6 +74,7 @@ export function IntelligenceObservatory({ archive }: { archive: ResearchArchive 
       <div className="mission-current"><span>Local Qwen · one development task</span><strong>{liveVerified} / {liveRows.length} verified</strong>
         <small>{liveTokens.toLocaleString()} reported model tokens · reasoning tokens were unavailable</small></div>
     </section>
+    <ModelLaboratory token={token} />
     <div className="dashboard-columns">
       <Panel title="Local model pilot" aside={<Badge value="historical" />}>
         {liveRows.length ? <RecordTable label="Local model inference strategies" data={liveRows}

@@ -5,6 +5,7 @@ mod http;
 mod inference;
 mod lab;
 mod literature;
+mod models;
 mod performance;
 mod planning;
 
@@ -38,6 +39,11 @@ Commands
   aether-lab evolve <seed> <evaluation-slots>  Compare four bounded knapsack search policies
   aether-lab discover <seed> <evaluation-slots>  Store and report one bounded knapsack search
   aether-lab inference-study <fixture|ollama>   Compare bounded inference strategies on development tasks
+  aether-lab models-discover [ollama-model-dir]  Inspect the local Ollama inventory
+  aether-lab models-inspect <file> [sha256]     Inspect and hash a local GGUF or SafeTensors file
+  aether-lab models-list                        List the saved model registry and evaluation reports
+  aether-lab models-evaluate <fixture|fixture-regression|ollama>  Run the bounded development suite
+  aether-lab models-compare <baseline-sha> <candidate-sha>       Compare two saved reports
   aether-lab hardware               Read local NVIDIA driver telemetry, when available
   aether-lab propose <request.json> Produce deterministic reviewed-task proposals
   aether-lab propose-local <request.json> <model>  Use an existing local Ollama model
@@ -147,12 +153,9 @@ fn execute(args: &[String]) -> Result<()> {
         .map_or_else(|| PathBuf::from(".aether/lab"), PathBuf::from);
     let lab = Lab::open(root)?;
     match args {
-        [command, provider] if command == "inference-study" => {
-            let live = match provider.as_str() {
-                "fixture" => false,
-                "ollama" => true,
-                _ => return Err("inference-study accepts fixture or local ollama".into()),
-            };
+        [command, provider]
+            if matches!(command.as_str(), "inference-study" | "models-evaluate") =>
+        {
             let runtime = tokio::runtime::Builder::new_multi_thread()
                 .worker_threads(1)
                 .enable_all()
@@ -164,7 +167,33 @@ fn execute(args: &[String]) -> Result<()> {
                     signal.store(true, std::sync::atomic::Ordering::Release);
                 }
             });
-            print_json(&inference::compare(&lab, live, &cancelled)?)
+            if command == "models-evaluate" {
+                print_json(&models::evaluate(&lab, provider, &cancelled)?)
+            } else {
+                let live = match provider.as_str() {
+                    "fixture" => false,
+                    "ollama" => true,
+                    _ => return Err("inference-study accepts fixture or local ollama".into()),
+                };
+                print_json(&inference::compare(&lab, live, &cancelled)?)
+            }
+        }
+        [command] if command == "models-discover" => {
+            print_json(&lab.model_registry()?.discover(&models::local_root()?)?)
+        }
+        [command, root] if command == "models-discover" => {
+            print_json(&lab.model_registry()?.discover(&PathBuf::from(root))?)
+        }
+        [command, file] if command == "models-inspect" => {
+            print_json(&lab.model_registry()?.inspect(&PathBuf::from(file), None)?)
+        }
+        [command, file, pin] if command == "models-inspect" => print_json(
+            &lab.model_registry()?
+                .inspect(&PathBuf::from(file), Some(pin))?,
+        ),
+        [command] if command == "models-list" => print_json(&lab.model_registry()?.list()?),
+        [command, baseline, candidate] if command == "models-compare" => {
+            print_json(&models::compare(&lab, baseline, candidate)?)
         }
         [command, seed, evaluations] if command == "discover" => {
             let report = aether_engine::discover(seed.parse()?, evaluations.parse()?)?;

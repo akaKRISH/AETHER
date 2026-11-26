@@ -23,6 +23,25 @@ pub use windows_worker::wait_for_admission;
 pub const WORKER_FLAG: &str = "__aether-builtin-worker-v1";
 pub const WORKER_VERSION: &str = "aether.native-worker/1";
 pub const MAX_OUTPUT: u64 = 4096;
+
+/// Query physical headroom without starting a subprocess.
+#[cfg(windows)]
+#[allow(unsafe_code)]
+pub fn available_memory_bytes() -> Option<u64> {
+    use windows::Win32::System::SystemInformation::{GlobalMemoryStatusEx, MEMORYSTATUSEX};
+    let mut status = MEMORYSTATUSEX {
+        dwLength: std::mem::size_of::<MEMORYSTATUSEX>() as u32,
+        ..Default::default()
+    };
+    // The supplied pointer refers to a writable, initialized Windows structure.
+    unsafe { GlobalMemoryStatusEx(&mut status) }.ok()?;
+    Some(status.ullAvailPhys)
+}
+
+#[cfg(not(windows))]
+pub fn available_memory_bytes() -> Option<u64> {
+    None
+}
 const MAX_ITEMS: u16 = 128;
 static ATTEMPT_DIRECTORY: AtomicU64 = AtomicU64::new(0);
 

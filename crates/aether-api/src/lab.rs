@@ -638,10 +638,24 @@ impl Lab {
     }
 
     pub(crate) fn record_inference(&self, report: &crate::inference::Report) -> Result<String> {
+        self.record_development_artifact(report)
+    }
+
+    pub(crate) fn record_development_artifact(&self, report: &impl Serialize) -> Result<String> {
         storage(
             self.store()?
                 .record_discovery_artifact(&serde_json::to_vec(report)?),
         )
+    }
+
+    pub(crate) fn model_registry(&self) -> Result<crate::models::Registry> {
+        storage(crate::models::Registry::open(
+            &self.root.join("model-lab.sqlite3"),
+        ))
+    }
+
+    pub(crate) fn model_evaluation_lock(&self) -> Result<File> {
+        Self::try_lock(&self.root.join("model-evaluation.lock"), "model evaluation")
     }
 
     pub fn report(&self, id: &str) -> Result<Value> {

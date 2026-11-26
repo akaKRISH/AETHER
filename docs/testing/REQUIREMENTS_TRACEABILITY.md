@@ -85,6 +85,7 @@ These rows map the authorized A–N work to runnable evidence and outstanding sc
 | Local correctness and admission | [Engineering audit](../engineering/PROMETHEUS_AUDIT.md) and [current tests](TEST_RESULTS.md) |
 | Reviewed task and negative results | [Frozen taskpack](../../taskpacks/example-max-subarray.json) and [release report](../../research/results/prometheus-max-subarray.json) |
 | Proposal boundary and normalized research sources | [Planner adapters](../operations/MODEL_PROVIDERS.md) and [literature adapters](../research/LITERATURE_ADAPTERS.md) |
+| Local model inspection and development evaluation | [Metadata parser and fixtures](../../crates/aether-api/src/models/metadata.rs), [resource gate and trusted scoring](../../crates/aether-api/src/models/evaluation.rs) and [platform tests](../../crates/aether-api/tests/platform.rs) |
 | Search, policy and performance evidence | [Development benchmarks](../research/BENCHMARK_RESULTS.md) and [simulated pilot](../research/PROMETHEUS_POLICY_PILOT.md) |
 | UI, recovery and reproducibility | [Browser smoke](../../tests/browser-smoke.cjs) and [security review](../security/SECURITY_REVIEW.md) |
 | Readiness and learning | [Remaining gates](../../NEXT_ACTIONS.md) and [Prometheus curriculum](../learning/IMPLEMENTATION_PROMETHEUS.md) |

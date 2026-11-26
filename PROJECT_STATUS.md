@@ -10,6 +10,8 @@ APO-03 adds advisory hypothesis discovery in the CLI and Research OS. The engine
 
 APO-04 adds three reproducible, unapproved experimental designs. A reviewed paired knapsack worker, fresh-case qualification and the missing factorial cell are pending. Confirmatory work requires independent custody and a justified sampling analysis. [Design review](RESUME.md#apo-04-automated-scientific-experimental-design)
 
+APO-05 adds local model inspection, an evidence-backed development suite and matched regression reports. Live results depend on the qualified local model and available host resources. [Model laboratory](RESUME.md#apo-05-open-weight-model-research-laboratory)
+
 ## Discovery
 
 DAE-01 adds a bounded native search over the reviewed knapsack fixture and retains its independently checked result and lineage in the local evidence store. [Results](RESUME.md#dae-01-constrained-discovery) · [Execution queue](EXECUTION_QUEUE.md)

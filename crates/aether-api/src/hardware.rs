@@ -18,7 +18,7 @@ pub struct Gpu {
     name: String,
     driver: String,
     memory_total_mib: u32,
-    memory_free_mib: u32,
+    pub(crate) memory_free_mib: u32,
     utilization_percent: u8,
 }
 

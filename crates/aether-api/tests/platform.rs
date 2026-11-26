@@ -841,6 +841,64 @@ fn experimental_designs_reproduce_and_cannot_enter_campaigns() {
 }
 
 #[test]
+fn model_lab_persists_local_metadata_and_reproduces_matched_regressions() {
+    let work = Workspace::new();
+    let path = work.0.join("test.safetensors");
+    let header = br#"{"weight":{"dtype":"I8","shape":[2],"data_offsets":[0,2]}}"#;
+    let bytes = (header.len() as u64)
+        .to_le_bytes()
+        .into_iter()
+        .chain(header.iter().copied())
+        .chain([0, 0])
+        .collect::<Vec<_>>();
+    fs::write(&path, &bytes).unwrap();
+    let pin = aether_store::artifact_sha256(&bytes);
+    let path = path.to_str().unwrap();
+    assert!(
+        !work
+            .invoke(&["models-inspect", path, &"0".repeat(64)])
+            .status
+            .success()
+    );
+    let inspected = work.success(&["models-inspect", path, &pin]);
+    assert_eq!(inspected["inspection"]["stored_elements"], 2);
+    assert_eq!(inspected["integrity"], "expected_digest_matched");
+    assert_eq!(work.success(&["models-list"])["entries"][0], inspected);
+
+    let baseline = work.success(&["models-evaluate", "fixture"]);
+    assert_eq!(baseline, work.success(&["models-evaluate", "fixture"]));
+    assert_eq!(baseline["report"]["summary"]["passed"], 7);
+    assert_eq!(baseline["report"]["summary"]["calibration_samples"], 5);
+    let changed = work.success(&["models-evaluate", "fixture-regression"]);
+    assert_eq!(changed["report"]["summary"]["passed"], 5);
+    assert_eq!(changed["report"]["summary"]["brier_numerator"], 80_000_000);
+    let left = baseline["artifact_sha256"].as_str().unwrap();
+    let right = changed["artifact_sha256"].as_str().unwrap();
+    let diff = work.success(&["models-compare", left, right]);
+    let regressions = diff["paired"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|r| r["regression"] == true)
+        .map(|r| r["case"].as_str().unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(regressions, ["calibration_hard", "safety"]);
+    assert_eq!(
+        work.success(&["models-list"])["reports"]
+            .as_array()
+            .unwrap()
+            .len(),
+        2
+    );
+    assert!(
+        !work
+            .invoke(&["models-compare", left, &pin])
+            .status
+            .success()
+    );
+}
+
+#[test]
 fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
     let work = Workspace::new();
     let mut server = Server(
@@ -879,6 +937,22 @@ fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
     };
     let unauthenticated = agent.get(format!("{origin}/v1/campaigns")).call().unwrap();
     assert_eq!(unauthenticated.status().as_u16(), 401);
+    assert_eq!(
+        agent
+            .get(format!("{origin}/v1/models"))
+            .call()
+            .unwrap()
+            .status()
+            .as_u16(),
+        401
+    );
+    assert_eq!(post("/v1/models", json!({})).status().as_u16(), 405);
+    let model_report = work.success(&["models-evaluate", "fixture"]);
+    let registry: Value = get("/v1/models").body_mut().read_json().unwrap();
+    assert_eq!(
+        registry["reports"][0]["artifact_sha256"],
+        model_report["artifact_sha256"]
+    );
     let indexed = work.success(&["hypothesis-index"]);
     let root = indexed["root"].as_str().unwrap();
     let designs_path = format!("/v1/knowledge/{root}/designs");

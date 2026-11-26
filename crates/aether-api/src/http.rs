@@ -90,6 +90,11 @@ pub async fn serve(lab: Lab, port: u16, token: String, assets: PathBuf) -> std::
         .route("/v1/artifacts/{sha256}", get(artifact))
         .route("/v1/research/archive", get(research_archive))
         .route("/v1/research/archive/{id}", get(research_artifact))
+        .route("/v1/models", get(model_registry))
+        .route(
+            "/v1/models/compare/{baseline}/{candidate}",
+            get(model_comparison),
+        )
         .route("/v1/benchmarks", post(benchmarks))
         .route("/v1/evolution", post(evolution))
         .route("/v1/literature", get(literature))
@@ -383,6 +388,29 @@ async fn artifact(State(app): State<App>, Path(hash): Path<String>) -> ApiResult
         data,
     )
         .into_response())
+}
+
+async fn model_registry(State(app): State<App>) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        app.lab
+            .model_registry()?
+            .list()
+            .map_err(|error| Error::Storage(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn model_comparison(
+    State(app): State<App>,
+    Path((baseline, candidate)): Path<(String, String)>,
+) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::compare(&app.lab, &baseline, &candidate)
+            .map_err(|error| Error::Input(error.to_string()))
+    })
+    .await
+    .map(Json)
 }
 
 async fn research_archive() -> ApiResult<Json<Value>> {

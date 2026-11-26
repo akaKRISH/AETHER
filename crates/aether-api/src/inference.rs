@@ -11,13 +11,13 @@ use crate::planning::{OllamaModel, PlanningError};
 use crate::{Result, lab::Lab};
 
 pub(crate) const OUTPUT_TOKENS: u64 = 64;
-const PROMPT_TOKENS: u64 = 2048;
+pub(crate) const PROMPT_TOKENS: u64 = 2048;
 const MODEL: ResourceVec = units(35_000, PROMPT_TOKENS + OUTPUT_TOKENS, 256);
 const VERIFY: ResourceVec = units(100, 0, 0);
 const EXECUTE: ResourceVec = units(1_000, 0, aether_runner::MAX_OUTPUT);
 const CALLS: u64 = 3;
 
-const fn units(wall_ms: u64, model_tokens: u64, output_bytes: u64) -> ResourceVec {
+pub(crate) const fn units(wall_ms: u64, model_tokens: u64, output_bytes: u64) -> ResourceVec {
     ResourceVec {
         wall_ms,
         model_tokens,
@@ -27,11 +27,11 @@ const fn units(wall_ms: u64, model_tokens: u64, output_bytes: u64) -> ResourceVe
     }
 }
 
-fn elapsed_ms(start: Instant) -> u64 {
+pub(crate) fn elapsed_ms(start: Instant) -> u64 {
     start.elapsed().as_micros().div_ceil(1000) as u64
 }
 
-fn ledger(per_attempt: ResourceVec, attempts: u64) -> Result<Budget> {
+pub(crate) fn ledger(per_attempt: ResourceVec, attempts: u64) -> Result<Budget> {
     Ok(Budget::new(
         ResourceVec {
             wall_ms: per_attempt
@@ -96,7 +96,7 @@ pub(crate) struct Usage {
 }
 
 impl Usage {
-    fn tokens(self) -> Option<u64> {
+    pub(crate) fn tokens(self) -> Option<u64> {
         (self.prompt_tokens <= PROMPT_TOKENS
             && self.output_tokens <= OUTPUT_TOKENS
             && self

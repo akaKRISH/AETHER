@@ -287,12 +287,38 @@ export async function getResearchArchive(token: string, signal?: AbortSignal): P
   return value as ResearchArchive
 }
 
+async function contentDigest(bytes: ArrayBuffer) {
+  return [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))]
+    .map((byte) => byte.toString(16).padStart(2, '0')).join('')
+}
+
+export async function getModelRegistry(token: string, signal: AbortSignal): Promise<Row> {
+  const value = await json(token, '/models', { signal })
+  if (!isRow(value) || value.schema !== 'aether.model-registry/1' || !Array.isArray(value.entries)
+    || !Array.isArray(value.reports)) throw new Error('Invalid model registry response.')
+  return value
+}
+
+export async function getModelReport(token: string, hash: string, signal: AbortSignal): Promise<Row> {
+  if (!/^[a-f0-9]{64}$/.test(hash)) throw new Error('Invalid model artifact digest.')
+  const bytes = await (await request(token, `/artifacts/${hash}`, { signal })).arrayBuffer()
+  if (await contentDigest(bytes) !== hash) throw new Error('Model artifact integrity check failed.')
+  const value: unknown = JSON.parse(new TextDecoder().decode(bytes))
+  if (!isRow(value) || value.schema !== 'aether.model-evaluation/1') throw new Error('Invalid model report.')
+  return value
+}
+
+export async function getModelComparison(token: string, baseline: string, candidate: string, signal: AbortSignal): Promise<Row> {
+  const value = await json(token, `/models/compare/${encodeURIComponent(baseline)}/${encodeURIComponent(candidate)}`, { signal })
+  if (!isRow(value) || value.schema !== 'aether.model-comparison/1') throw new Error('Invalid model comparison.')
+  return value
+}
+
 export async function getResearchArtifact(token: string, id: string): Promise<ArrayBuffer> {
   if (!/^[a-z0-9-]{1,64}$/.test(id)) throw new Error('Invalid research artifact ID.')
   const response = await request(token, `/research/archive/${encodeURIComponent(id)}`)
   const bytes = await response.arrayBuffer()
-  const digest = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))]
-    .map((byte) => byte.toString(16).padStart(2, '0')).join('')
+  const digest = await contentDigest(bytes)
   if (response.headers.get('x-content-sha256') !== digest) throw new Error('Research artifact integrity check failed.')
   return bytes
 }

@@ -7,6 +7,7 @@ use thiserror::Error;
 
 mod providers;
 pub use providers::OllamaModel;
+pub(crate) use providers::QWEN_PIN;
 
 #[derive(Debug, Error)]
 pub enum PlanningError {
@@ -16,6 +17,8 @@ pub enum PlanningError {
     InvalidModel,
     #[error("the model provider slot is busy")]
     Busy,
+    #[error("available RAM or VRAM is below the laboratory admission threshold")]
+    InsufficientMemory,
     #[error("the model provider is unavailable")]
     Unavailable,
     #[error("the model provider exceeded its deadline")]

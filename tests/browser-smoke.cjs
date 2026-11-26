@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict')
 const { execFileSync, spawn } = require('node:child_process')
 const { once } = require('node:events')
-const { mkdir, mkdtemp, rm } = require('node:fs/promises')
+const { mkdir, mkdtemp, rm, writeFile } = require('node:fs/promises')
 const { join, resolve } = require('node:path')
 const { tmpdir } = require('node:os')
 const { randomBytes } = require('node:crypto')
@@ -52,6 +52,7 @@ async function main() {
   try {
     const origin = await address(server)
     assert.equal((await fetch(origin + '/v1/hardware')).status, 401)
+    assert.equal((await fetch(origin + '/v1/models')).status, 401)
     assert.equal((await fetch(origin + '/assets/%2e%2e%2findex.html')).status, 404)
     for (const provider of ['crossref', 'openalex', 'arxiv']) {
       const denied = await fetch(origin + '/v1/literature/lookup', {
@@ -184,9 +185,31 @@ async function main() {
     await desktop.getByRole('button', { name: 'Discovery Laboratory', exact: true }).click()
     await desktop.getByRole('heading', { name: 'Search, inspect, replay.' }).waitFor()
     await desktop.getByRole('table', { name: 'Archived hybrid discovery comparison' }).waitFor()
+    for (const provider of ['fixture', 'fixture-regression']) {
+      execFileSync(executable, ['models-evaluate', provider], {
+        cwd: root, env: { ...process.env, AETHER_DATA_DIR: directory }, windowsHide: true,
+      })
+    }
+    const modelFile = join(directory, 'browser-model.safetensors')
+    const modelHeader = Buffer.from('{"weight":{"dtype":"I8","shape":[2],"data_offsets":[0,2]}}')
+    const modelPrefix = Buffer.alloc(8)
+    modelPrefix.writeBigUInt64LE(BigInt(modelHeader.length))
+    await writeFile(modelFile, Buffer.concat([modelPrefix, modelHeader, Buffer.alloc(2)]))
+    execFileSync(executable, ['models-inspect', modelFile], {
+      cwd: root, env: { ...process.env, AETHER_DATA_DIR: directory }, windowsHide: true,
+    })
     await desktop.getByRole('button', { name: 'Intelligence Observatory', exact: true }).click()
     await desktop.getByRole('heading', { name: 'Inference is advisory. Verification decides.' }).waitFor()
     await desktop.getByRole('table', { name: 'Local model inference strategies' }).waitFor()
+    await desktop.getByText('browser-model.safetensors · content_hashed', { exact: true }).click()
+    await desktop.getByRole('table', { name: 'Tensor shapes' }).waitFor()
+    await desktop.getByRole('table', { name: 'Saved model evaluations' })
+      .getByRole('button', { name: 'Read report' }).first().click()
+    await desktop.getByRole('table', { name: 'Model evaluation cases' }).waitFor()
+    await desktop.getByLabel('Baseline report').selectOption({ index: 1 })
+    await desktop.getByLabel('Candidate report').selectOption({ index: 2 })
+    await desktop.getByRole('button', { name: 'Compare reports' }).click()
+    await desktop.getByRole('table', { name: 'Paired model results' }).waitFor()
     await desktop.getByRole('button', { name: 'Compute Observatory', exact: true }).click()
     await desktop.getByRole('heading', { name: 'Measure the control plane.' }).waitFor()
     await desktop.getByRole('table', { name: 'DAE-07 component measurements' }).waitFor()
@@ -235,11 +258,16 @@ async function main() {
     await phone.getByText(/Boundary · Exploratory · Unapproved/).click()
     await phone.getByRole('table', { name: 'Design provenance' }).waitFor()
     assert.equal(await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true)
+    await phone.getByRole('button', { name: 'Intelligence Observatory', exact: true }).click()
+    await phone.getByRole('table', { name: 'Saved model evaluations' })
+      .getByRole('button', { name: 'Read report' }).first().click()
+    await phone.getByRole('table', { name: 'Model evaluation cases' }).waitFor()
+    assert.equal(await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true)
     if (process.env.AETHER_SCREENSHOT_DIR) {
       await phone.screenshot({ path: join(process.env.AETHER_SCREENSHOT_DIR, 'aether-mobile.png'), fullPage: true })
     }
     assert.deepEqual(browserErrors, [])
-    console.log('Browser smoke passed: campaign workflows, knowledge traversal, desktop and mobile design review, archived pilot data, benchmark views, and security limits.')
+    console.log('Browser smoke passed: campaigns, knowledge and design review, model inspection and comparison, archived results, security limits, and mobile layout.')
   } finally {
     await browser?.close()
     if (server.exitCode === null && server.signalCode === null) {

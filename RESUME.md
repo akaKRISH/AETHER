@@ -1,5 +1,17 @@
 # Resume AETHER
 
+## APO-05 open-weight model research laboratory
+
+Started from `77e135a`. The native registry retains inspected metadata, file identities and evidence-backed evaluation receipts. The CLI, authenticated API and Intelligence Observatory expose inspections, case results and matched regressions. [Commands](docs/research/APOLLO_EXECUTION_PLAN.md#apo-05-open-weight-model-laboratory) · [Design and restrictions](docs/decisions/ADR-018.md)
+
+The local inventory read seven Ollama manifests. Four GGUF headers passed inspection. BGE-M3 had 389 tensors, Gemma 4 E4B had 2,131, Qwen 3.5 4B had 426 and Qwen 3.5 9B had 883. Three cloud aliases were excluded. The Qwen 3.5 4B configuration declares Q4_K_M, and its metadata declares Apache-2.0 with 248,320 tokenizer entries. Its inspected weight file is 2,648,593,216 bytes, describes 4,205,751,296 stored tensor elements and matched SHA-256 `a9d0a3e1d8c91732a3812becd31f8d4a8ff57414903f226306069f0437e2ac50`. The other models received header checks. SafeTensors validation used fixtures.
+
+The scripted baseline scored 7/7 and reproduced byte-for-byte across fresh release CLI processes. The deliberately degraded fixture scored 5/7. Matched comparison identified the calibration and refusal regressions. Brier loss on five scored answers rose from 0.04 to 0.16. These are scripted controls for the evaluator. Local artifact digests are `acd399f1367b0106e6ddff50739939c373b4457ee66244d8d552d2455068b8c3` and `e4fa201ad70767032d098561129e11ae1ee6ab2ede721dbfca8ec394072be64f`.
+
+Live admission stopped before any model call. After the build and browser checks, the release CLI observed 2,910,543,872 bytes of available RAM against a 5,471,658,963-byte policy estimate. The RTX 3050 reported 5,685 MiB free VRAM. Receipt `a85059e920b3e0160fb01ad081daf24992ceeabdc1341ee9123a5b690470a24d` contains the measured snapshots and zero calls. Live token, latency and peak-memory results remain unavailable for APO-05. Resume with the existing qualified cloud-disabled service and sufficient headroom.
+
+Validation passed 36 API unit, 16 platform and 14 runner tests, including Windows containment checks. The final bounded parser and platform model workflow were rechecked. Strict Clippy, Rust formatting, offline native release build, five frontend tests, frontend lint and build, desktop and mobile browser smoke, and documentation and schema validation passed. The browser inspected a fixture tensor and opened model reports and a comparison. Historical artifacts, ECAR protocols and the deferred Rune workspace match `77e135a`.
+
 ## APO-04 automated scientific experimental design
 
 Started from `b89d3b8`. The Rust CLI and authenticated Research OS generate three exploratory drafts from the pinned APO-03 graph. The plans cover negative results, profile boundaries and local improvement with repair. They record exact source revisions, confounders, paired controls, falsification rules and reproducibility manifests. Each review draft has a canonical SHA-256 identity and remains unapproved. [Commands](docs/research/APOLLO_EXECUTION_PLAN.md#apo-04-experimental-design) · [Design decision](docs/decisions/ADR-017.md)

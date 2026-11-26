@@ -304,7 +304,7 @@ export function App() {
     content = <KnowledgeGraph token={token} />
   } else if (['discovery', 'intelligence', 'compute', 'archive'].includes(view)) {
     content = archive ? view === 'discovery' ? <DiscoveryLaboratory token={token} archive={archive} />
-      : view === 'intelligence' ? <IntelligenceObservatory archive={archive} />
+      : view === 'intelligence' ? <IntelligenceObservatory archive={archive} token={token} />
         : view === 'compute' ? <ComputeObservatory archive={archive} />
           : <ResearchArchiveView archive={archive} token={token} />
       : <Panel title={title}>{archiveError ? <>{errorText(archiveError)}<div className="toolbar">

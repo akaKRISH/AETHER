@@ -51,6 +51,12 @@ Run `aether-lab hypothesis-index` and pass its `root` to `aether-lab design-expe
 
 The negative-result design has 20 matched cases and two arms. The boundary design crosses 12 seed blocks with two difficulty profiles and compares the same arms. The method-composition design has 12 cases and four factorial cells, including one missing cell. Each arm has eight candidate evaluations per case. The plans call for 320, 384 and 384 candidate evaluations respectively, with separately reserved scoring and oracle work. Sample sizes are exploratory. The drafts contain no power estimate or private inputs. See the [design and approval decision](../decisions/ADR-017.md).
 
+### APO-05 open-weight model laboratory
+
+Run `aether-lab models-discover` for the default local Ollama inventory, or pass the model directory as an argument. Run `aether-lab models-inspect <file> [sha256]` to validate a local GGUF or SafeTensors file and persist its streamed digest. The inventory never fetches a missing blob. Run `aether-lab models-list` or open the **Intelligence Observatory** to review the saved registry.
+
+Run `aether-lab models-evaluate fixture` and `aether-lab models-evaluate fixture-regression` to reproduce the public, scripted evaluation. Pass their artifact digests to `aether-lab models-compare <baseline-sha> <candidate-sha>`. The Research OS can inspect complete or blocked runs and compare reports. Run `aether-lab models-evaluate ollama` only against the qualified cloud-disabled loopback service with the installed Qwen pin. The live path checks current memory, runtime identity and blob integrity before generation. [Scope and limits](../decisions/ADR-018.md)
+
 ### Pending literature work
 
 1. Review the starter corpus and expand it with authorized full-text copies. Label conversion methods and record version-specific rights before importing a new format.
