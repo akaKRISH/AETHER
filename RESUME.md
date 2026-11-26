@@ -1,5 +1,17 @@
 # Resume AETHER
 
+## APO-02 persistent scientific knowledge graph
+
+Built from `3bac54c` using the existing literature SQLite database and typed campaign snapshot. Canonical paper aliases and normalized keys identify entities. Revisions and opposing assertions are retained. Edges pin both endpoint revisions. Literature imports project metadata and exact passages atomically. The operator can classify a checked passage as a reported claim. Qualified verification receipts are copied only from the trusted campaign store and marked at capture.
+
+The authenticated Research OS Knowledge Graph view supports search, bounded traversal, citation and dependency exploration, revision history and duplicate groups. Exported slices carry a reproducible digest. Commands, identity and authority rules are in the [APOLLO plan](docs/research/APOLLO_EXECUTION_PLAN.md) and [graph decision](docs/decisions/ADR-015.md).
+
+PDF ingestion and live provider qualification remain pending. The two-paper real corpus tests exact passage grounding under CC BY 4.0. Synthetic fixtures test contradictory outcomes, cycles, identity changes, malformed and malicious input. These cases do not establish extraction accuracy on an unreviewed corpus. [Corpus and attribution](research/literature/README.md#apo-02-reviewed-excerpts)
+
+A synthetic star with 65 nodes and 64 links returned 64 nodes and 63 links at depth one with explicit truncation. Five fresh debug CLI processes emitted identical 81,258-byte export files. Independent SHA-256 over compact graph JSON matched `521ddf30d939acf87cb96d084d2288cadc317894b0facf863f2d1160c73b3137`. Whole-process median was 714.1 ms including startup and database opening during package validation. SQLite query plans used the type and title index and the inbound edge index. The measurement covers one small fixture on the development host.
+
+Validation passed 22 API unit tests, 13 platform tests, strict API Clippy, the offline release build, five frontend tests, type checking, lint, the web build, and desktop and mobile browser smoke. The browser followed a captured campaign edge into a claim dependency. Documentation and schema validation passed. Frozen research results and archived documents match the APO-01 checkpoint.
+
 ## APO-01 scientific literature intelligence
 
 Started from `a18c1b8` (`daedalus-engineering-verified`). APOLLO extends the existing Rust provider adapters and SQLite catalog with bounded page caching, persisted provider cooldowns, deduplicated metadata snapshots, explicit arXiv revisions and source-reported citation identifiers. The first planning citation remains stable. The Research OS Literature view shows snapshots, source links, and extracted prose with byte offsets when a local text is present.

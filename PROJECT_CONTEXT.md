@@ -14,6 +14,7 @@ The [Rust v0.2 design package](docs/archive/v0.2/AETHER/README.md) and [Project 
 - Athena qualifies local Qwen on a dedicated cloud-disabled Ollama process. A version 4 protocol freezes advisory output and reviewed citation snapshots. The owner approves the exact digest before any task runs. [Inference record](docs/operations/ATHENA_INFERENCE.md) · [ADR-013](docs/decisions/ADR-013.md)
 - ECAR selects EXPLORE, REPLAY, CHALLENGE or STOP. The scheduler ranks eligible actions, while the verifier rules on claims. Scientific comparison holds resource caps, task information and final evaluation constant. See the [ECAR specification](docs/research/ECAR_SPECIFICATION.md).
 - APOLLO keeps literature metadata revisions, citation links and verbatim source passages in the local catalog. Extracted passages are unverified and have no execution or approval authority. [ADR-014](docs/decisions/ADR-014.md)
+- The scientific knowledge graph preserves source and version references for typed entities and relationships. A captured verification receipt stays scoped to its authoritative campaign record and capture time. [ADR-015](docs/decisions/ADR-015.md)
 - The workspace host has Windows 11, i5-13420H (8 cores, 12 logical processors), 15.64 GiB observed system RAM and an RTX 3050 Laptop GPU with 6144 MiB reported VRAM. Ubuntu WSL2 is registered. Verify tooling and isolation before any external worker. [Environment snapshot](docs/operations/DEVELOPMENT_ENVIRONMENT.md)
 
 ## Sequence and boundaries

@@ -213,6 +213,22 @@ export async function getLiteratureWork(token: string, id: string, signal: Abort
   return value
 }
 
+export async function searchKnowledge(token: string, query: string, kind: string, signal: AbortSignal): Promise<Row> {
+  const params = new URLSearchParams({ query })
+  if (kind) params.set('kind', kind)
+  const value = await json(token, `/knowledge?${params}`, { signal })
+  if (!isRow(value) || !Array.isArray(value.nodes)) throw new Error('Invalid knowledge search response.')
+  return value
+}
+
+export async function getKnowledge(token: string, id: string, depth: string, signal: AbortSignal): Promise<Row> {
+  const value = await json(token, `/knowledge/${encodeURIComponent(id)}?${new URLSearchParams({ depth })}`, { signal })
+  if (!isRow(value) || value.schema !== 'aether.knowledge/1' || !isRow(value.graph)) {
+    throw new Error('Invalid knowledge graph response.')
+  }
+  return value
+}
+
 export async function runStudy(token: string): Promise<StudyReport> {
   const result = await json(token, '/benchmarks', { method: 'POST' })
   const report = isRow(result) && isRow(result.report) ? result.report : result

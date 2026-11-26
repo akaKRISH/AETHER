@@ -1,0 +1,30 @@
+[
+  {
+    "citation": {
+      "doi": "10.1038/s41467-023-44484-5",
+      "title": "rworkflows: automating reproducible practices for the R community",
+      "authors": ["Brian M. Schilder", "Alan E. Murphy", "Nathan G. Skene"],
+      "published_year": 2024,
+      "container_title": "Nature Communications"
+    },
+    "source_url": "https://doi.org/10.1038/s41467-023-44484-5",
+    "license": "CC-BY-4.0",
+    "source_section": "Introduction",
+    "fixture_heading": "Claim",
+    "quote": "Reproducibility is essential to the progress of research."
+  },
+  {
+    "citation": {
+      "doi": "10.1186/s41073-020-00095-y",
+      "title": "Publishing computational research - a review of infrastructures for reproducible and transparent scholarly communication",
+      "authors": ["Markus Konkol", "Daniel Nüst", "Laura Goulier"],
+      "published_year": 2020,
+      "container_title": "Research Integrity and Peer Review"
+    },
+    "source_url": "https://doi.org/10.1186/s41073-020-00095-y",
+    "license": "CC-BY-4.0",
+    "source_section": "Discussion / Creating executable analyses",
+    "fixture_heading": "Limitations",
+    "quote": "Computational reproducibility is challenging also because of sensitive data."
+  }
+]

@@ -4,6 +4,8 @@
 
 APO-01 adds versioned provider metadata and a local passage archive to the Research OS. Exact byte spans remain source quotations with unverified status. [Scope and limits](RESUME.md#apo-01-scientific-literature-intelligence)
 
+APO-02 adds a persistent SQLite graph with immutable research revisions, typed links and source groups for exploration. Captured campaign receipts retain their original authority boundary. PDF ingestion and live provider qualification are pending. [Graph scope](RESUME.md#apo-02-persistent-scientific-knowledge-graph)
+
 ## Discovery
 
 DAE-01 adds a bounded native search over the reviewed knapsack fixture and retains its independently checked result and lineage in the local evidence store. [Results](RESUME.md#dae-01-constrained-discovery) · [Execution queue](EXECUTION_QUEUE.md)

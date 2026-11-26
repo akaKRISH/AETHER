@@ -6,6 +6,7 @@ use rusqlite::{Connection, OptionalExtension, TransactionBehavior, params};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use super::discovery::{PAGE_LIMIT, fetch_page};
+use super::knowledge::{enforce_graph_bounds, projection};
 use super::{
     Citation, CitationCatalog, CitationSource, LiteratureError, MetadataPage, MetadataProvider,
     arxiv_root, observed_now, paper_id, valid_license_url, validate_query,
@@ -39,7 +40,7 @@ pub(super) fn initialize(db: &Connection) -> Result<(), LiteratureError> {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MetadataSnapshot {
-    sha256: String,
+    pub(super) sha256: String,
     pub(super) citation: Citation,
     acquisition: Option<Acquisition>,
 }
@@ -80,6 +81,7 @@ pub(super) fn save_snapshot(
     if inserted > 0 && count_for(db, "literature_snapshots", work)? > 24 {
         return Err(LiteratureError::ArchiveLimit);
     }
+    projection::snapshot(db, work, &snapshot.sha256, citation)?;
     Ok(())
 }
 
@@ -175,11 +177,11 @@ struct TextRecord {
 
 #[derive(Debug, Serialize)]
 pub struct ArchiveWork {
-    id: String,
-    citation: Citation,
-    snapshots: Vec<MetadataSnapshot>,
+    pub(super) id: String,
+    pub(super) citation: Citation,
+    pub(super) snapshots: Vec<MetadataSnapshot>,
     text_status: &'static str,
-    documents: Vec<serde_json::Value>,
+    pub(super) documents: Vec<serde_json::Value>,
 }
 
 fn stored_records<T: DeserializeOwned>(
@@ -417,8 +419,17 @@ impl CitationCatalog {
             params![work, record.id],
             |row| row.get(0),
         )?;
+        let metadata: String = tx.query_row(
+            "SELECT record FROM citations WHERE doi = ?1",
+            [&work],
+            |row| row.get(0),
+        )?;
+        save_snapshot(&tx, &work, &serde_json::from_str(&metadata)?, None)?;
+        let stored = serde_json::from_str(&stored)?;
+        projection::document(&tx, &work, serde_json::Value::clone(&stored), body)?;
+        enforce_graph_bounds(&tx)?;
         tx.commit()?;
-        Ok(serde_json::from_str(&stored)?)
+        Ok(stored)
     }
 
     pub fn source_text(

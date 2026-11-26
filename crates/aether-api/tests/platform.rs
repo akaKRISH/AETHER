@@ -118,6 +118,56 @@ fn literature_ingestion_reopens_exact_source_and_never_creates_evidence() {
         1
     );
     assert_eq!(work.success(&["list"]), json!([]));
+    let indexed = work.success(&["graph-paper", id]);
+    let paper = indexed["paper"].as_str().unwrap();
+    let graph = work.success(&["graph-export", paper, "1"]);
+    assert_eq!(work.success(&["graph-export", paper, "1"]), graph);
+    assert_eq!(graph["graph"]["nodes"].as_array().unwrap().len(), 6);
+    let nodes = graph["graph"]["nodes"].as_array().unwrap();
+    let injected = nodes
+        .iter()
+        .find(|node| {
+            node["current"]["statement"]
+                .as_str()
+                .unwrap()
+                .starts_with("Ignore earlier")
+        })
+        .unwrap();
+    assert_eq!(injected["current"]["status"], "extracted");
+    assert_eq!(
+        injected["current"]["source"]["source_sha256"],
+        archived["source_sha256"]
+    );
+    let injection_id = injected["id"].as_str().unwrap();
+    let group = work.success(&["graph-export", injection_id, "1"]);
+    assert_eq!(
+        group["graph"]["source_group_peers"]
+            .as_array()
+            .unwrap()
+            .len(),
+        5
+    );
+    assert_eq!(group["graph"]["exact_duplicate_peers"], json!([]));
+
+    let duplicate_id = "10.9999/aether-apo02-duplicate";
+    fs::write(
+        &metadata,
+        json!([{"doi":duplicate_id,"title":"Synthetic duplicate source"}]).to_string(),
+    )
+    .unwrap();
+    work.success(&["import-citations", metadata.to_str().unwrap()]);
+    rights["paper_id"] = json!(duplicate_id);
+    fs::write(&manifest, rights.to_string()).unwrap();
+    work.success(&ingest);
+    let group = work.success(&["graph-export", injection_id, "1"]);
+    assert_eq!(
+        group["graph"]["exact_duplicate_peers"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    assert_eq!(work.success(&["list"]), json!([]));
     let catalog = rusqlite::Connection::open(work.0.join("literature.sqlite3")).unwrap();
     catalog
         .execute(
@@ -131,6 +181,92 @@ fn literature_ingestion_reopens_exact_source_and_never_creates_evidence() {
             .status
             .success()
     );
+}
+
+#[test]
+fn graph_archives_two_rights_cleared_scientific_excerpts_offline() {
+    let work = Workspace::new();
+    let corpus: Vec<Value> = serde_json::from_str(include_str!(
+        "../../../research/literature/apo02-reviewed-excerpts.json"
+    ))
+    .unwrap();
+    let metadata = work.0.join("reviewed.json");
+    let manifest = work.0.join("manifest.json");
+    let source = work.0.join("excerpt.txt");
+    fs::write(
+        &metadata,
+        serde_json::to_vec(
+            &corpus
+                .iter()
+                .map(|row| &row["citation"])
+                .collect::<Vec<_>>(),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        work.success(&["import-citations", metadata.to_str().unwrap()])["imported"],
+        2
+    );
+    for (row, kind) in corpus.iter().zip(["claim", "limitation"]) {
+        let doi = row["citation"]["doi"].as_str().unwrap();
+        let quote = row["quote"].as_str().unwrap();
+        let body = format!("## {}\n{quote}\n", row["fixture_heading"].as_str().unwrap());
+        fs::write(&source, &body).unwrap();
+        fs::write(
+            &manifest,
+            json!({"paper_id": doi, "license": row["license"],
+            "source_url": row["source_url"], "rights_confirmed": true})
+            .to_string(),
+        )
+        .unwrap();
+        let document = work.success(&[
+            "literature-ingest",
+            manifest.to_str().unwrap(),
+            source.to_str().unwrap(),
+        ]);
+        assert_eq!(document["passages"].as_array().unwrap().len(), 1);
+        let indexed = work.success(&["graph-paper", doi]);
+        let root = indexed["paper"].as_str().unwrap();
+        let graph = work.success(&["graph-export", root, "1"]);
+        assert_eq!(graph["graph"]["nodes"].as_array().unwrap().len(), 2);
+        assert_eq!(graph["graph"]["edges"].as_array().unwrap().len(), 1);
+        let passage = graph["graph"]["nodes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|node| node["kind"] == kind)
+            .unwrap();
+        let current = &passage["current"];
+        assert_eq!(current["status"], "extracted");
+        assert_eq!(current["source"]["license"], "CC-BY-4.0");
+        let start = current["source"]["start_byte"].as_u64().unwrap() as usize;
+        let end = current["source"]["end_byte"].as_u64().unwrap() as usize;
+        assert_eq!(&body[start..end], quote);
+        assert_eq!(current["statement"], quote);
+        assert_eq!(work.success(&["graph-export", root, "1"]), graph);
+        if kind == "claim" {
+            let document = document["id"].as_str().unwrap();
+            assert!(
+                !work
+                    .invoke(&["graph-report", doi, document, "999", "1000"])
+                    .status
+                    .success()
+            );
+            let revised = work.success(&[
+                "graph-report",
+                doi,
+                document,
+                &start.to_string(),
+                &end.to_string(),
+            ]);
+            let id = revised["claim"].as_str().unwrap();
+            assert_eq!(id, passage["id"]);
+            let graph = work.success(&["graph-export", id, "0"]);
+            assert_eq!(graph["graph"]["root_history"][0]["status"], "extracted");
+            assert_eq!(graph["graph"]["root_history"][1]["status"], "reported");
+        }
+    }
 }
 
 #[test]
@@ -246,6 +382,35 @@ fn reviewed_campaign_persists_independent_replay_and_verified_report() {
         .collect();
     assert_eq!(actions, ["EXPLORE", "REPLAY", "CHALLENGE"]);
     assert_eq!(work.success(&["report", "first"]), report);
+    let captured = work.success(&["graph-campaign", "first"]);
+    let root = captured["campaign"].as_str().unwrap();
+    let graph = work.success(&["graph-export", root, "2"]);
+    assert!(
+        graph["graph"]["nodes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|node| {
+                node["kind"] == "evidence" && node["current"]["status"] == "independently_verified"
+            })
+    );
+    assert!(
+        graph["graph"]["nodes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|node| node["kind"] == "claim")
+            .all(|node| node["current"]["status"] == "observed")
+    );
+    assert!(
+        graph["graph"]["edges"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|link| link["relation"] == "depends_on")
+    );
+    assert_eq!(work.success(&["graph-campaign", "first"]), captured);
+    assert_eq!(work.success(&["graph-export", root, "2"]), graph);
     let digest = report["protocol_hash"].as_str().unwrap();
     fs::write(
         work.0.join("protocols").join(format!("{digest}.json")),
@@ -800,6 +965,35 @@ fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
     let detail: Value = get(path).body_mut().read_json().unwrap();
     assert_eq!(detail["text_status"], "unavailable");
     assert_eq!(detail["snapshots"].as_array().unwrap().len(), 1);
+    let search = "/v1/knowledge?query=CAVEAT&kind=paper";
+    assert_eq!(
+        agent
+            .get(format!("{origin}{search}"))
+            .call()
+            .unwrap()
+            .status()
+            .as_u16(),
+        401
+    );
+    let entities: Value = get(search).body_mut().read_json().unwrap();
+    let node = entities["nodes"][0]["id"].as_str().unwrap();
+    let graph = format!("/v1/knowledge/{node}");
+    assert_eq!(
+        agent
+            .get(format!("{origin}{graph}"))
+            .call()
+            .unwrap()
+            .status()
+            .as_u16(),
+        401
+    );
+    let exported: Value = get(&graph).body_mut().read_json().unwrap();
+    assert_eq!(exported["graph"]["root"], node);
+    assert_eq!(
+        exported["graph"]["nodes"][0]["current"]["status"],
+        "reported"
+    );
+    assert_eq!(get(&format!("{graph}?depth=4")).status().as_u16(), 400);
     assert_eq!(
         get("/v1/literature/work?id=10.9999%2Fabsent")
             .status()

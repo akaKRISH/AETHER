@@ -48,6 +48,11 @@ Commands
   aether-lab literature-work <paper-id>  Inspect metadata versions and extracted passages
   aether-lab literature-ingest <manifest.json> <full-text.txt>  Archive approved local UTF-8 text
   aether-lab literature-text <paper-id> <document-id>  Read exact archived source text
+  aether-lab graph-apply <batch.json>  Record proposed entities and relationships
+  aether-lab graph-paper <paper-id>    Index a saved paper and its extracted passages
+  aether-lab graph-report <paper-id> <document-id> <start-byte> <end-byte>  Mark a source span as a reported claim
+  aether-lab graph-campaign <id>      Capture trusted campaign records in the research graph
+  aether-lab graph-export <node-id> [depth]  Export a bounded graph and its digest
   aether-lab recover <id>           Reconcile an interrupted campaign
   aether-lab serve [port]           Start authenticated loopback API and built workspace
 
@@ -211,6 +216,24 @@ fn execute(args: &[String]) -> Result<()> {
         }
         [command, id, digest] if command == "literature-text" => {
             print_json(&lab.catalog()?.source_text(id, digest)?)
+        }
+        [command, file] if command == "graph-apply" => {
+            let batch: literature::GraphBatch = read_json_file(&PathBuf::from(file))?;
+            print_json(&lab.catalog()?.graph_apply(batch)?)
+        }
+        [command, id] if command == "graph-paper" => {
+            print_json(&lab.catalog()?.graph_index_paper(id)?)
+        }
+        [command, paper, document, start, end] if command == "graph-report" => print_json(
+            &lab.catalog()?
+                .graph_report_claim(paper, document, start.parse()?, end.parse()?)?,
+        ),
+        [command, id] if command == "graph-campaign" => print_json(&lab.graph_index_campaign(id)?),
+        [command, id] if command == "graph-export" => {
+            print_json(&lab.catalog()?.graph_export(id, 1)?)
+        }
+        [command, id, depth] if command == "graph-export" => {
+            print_json(&lab.catalog()?.graph_export(id, depth.parse()?)?)
         }
         [command] if command == "serve" => serve(lab, 8080),
         [command, port] if command == "serve" => serve(lab, port.parse()?),

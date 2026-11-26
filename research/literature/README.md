@@ -17,3 +17,12 @@ For discovery, start `literature-discover crossref "machine learning reproducibi
 To import locally acquired, rights-cleared UTF-8 full text, run `literature-ingest manifest.json source.txt`. The manifest takes `paper_id`, `source_url`, `license` and `rights_confirmed`. Enter the exact source version, ensure the license permits copying the exact input, and use an allowed SPDX value (`CC-BY-4.0` or `CC0-1.0`). PDF, archived content and arbitrary remote links have no import route. Inspect archived bytes via `literature-text <paper-id> <document-id>`.
 
 The [synthetic fixture](../../crates/aether-api/tests/fixtures/apollo-extraction.txt) tests extraction without attributing invented results to these papers. The extractor recognizes explicit headings and saves literal question, method, claim, result and limitation paragraphs with half-open UTF-8 byte ranges. Missing sections and truncated output are explicit. The document hash covers the supplied UTF-8 file. For converted source text the offsets refer to the conversion, not the original PDF or layout.
+
+## APO-02 reviewed excerpts
+
+The [two-paper fixture](apo02-reviewed-excerpts.json) contains one verbatim sentence per article. The test prepends an editor-supplied heading to exercise extraction. It records offsets into that UTF-8 fixture. This is a small passage-grounding check using separately attributed real sources. Synthetic papers supply the cycle, conflict and duplicate cases.
+
+- Brian M. Schilder, Alan E. Murphy and Nathan G. Skene (2024), © Crown 2024. One excerpt from the introduction was copied unchanged and grouped under a fixture heading. [Article and rights](https://doi.org/10.1038/s41467-023-44484-5)
+- Markus Konkol, Daniel Nüst and Laura Goulier (2020), © The Author(s) 2020. One excerpt from the discussion was copied unchanged and grouped under a fixture heading. [Article and rights](https://doi.org/10.1186/s41073-020-00095-y)
+
+Both excerpts are used under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). They are excerpts from two articles, with no automated full-text or PDF retrieval.

@@ -94,6 +94,8 @@ pub async fn serve(lab: Lab, port: u16, token: String, assets: PathBuf) -> std::
         .route("/v1/evolution", post(evolution))
         .route("/v1/literature", get(literature))
         .route("/v1/literature/work", get(literature_work))
+        .route("/v1/knowledge", get(knowledge_search))
+        .route("/v1/knowledge/{id}", get(knowledge_export))
         .route("/v1/literature/lookup", post(lookup_metadata))
         .route("/v1/proposals", post(proposals))
         .layer(DefaultBodyLimit::max(8192))
@@ -624,6 +626,55 @@ struct MetadataQuery {
 #[derive(Deserialize)]
 struct LiteratureWorkQuery {
     id: String,
+}
+
+#[derive(Deserialize)]
+struct KnowledgeSearch {
+    #[serde(default)]
+    query: String,
+    kind: Option<crate::literature::GraphKind>,
+}
+
+#[derive(Deserialize)]
+struct KnowledgeTraversal {
+    depth: Option<u8>,
+}
+
+fn graph_error(error: LiteratureError) -> Error {
+    match error {
+        LiteratureError::MissingGraphNode => Error::Missing,
+        LiteratureError::InvalidGraph(reason) => Error::Input(reason.into()),
+        _ => Error::Storage(error.to_string()),
+    }
+}
+
+async fn knowledge_search(
+    State(app): State<App>,
+    Query(query): Query<KnowledgeSearch>,
+) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        app.lab
+            .catalog()?
+            .graph_search(&query.query, query.kind)
+            .map_err(graph_error)
+    })
+    .await
+    .map(Json)
+}
+
+async fn knowledge_export(
+    State(app): State<App>,
+    Path(id): Path<String>,
+    Query(query): Query<KnowledgeTraversal>,
+) -> ApiResult<Json<crate::literature::GraphExport>> {
+    blocking(move || {
+        app.lab
+            .catalog()?
+            .graph_export(&id, query.depth.unwrap_or(1))
+            .map_err(graph_error)
+    })
+    .await
+    .map(Json)
 }
 
 async fn literature_work(

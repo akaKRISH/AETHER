@@ -597,6 +597,14 @@ impl Lab {
         Ok(serde_json::to_value(storage(store.snapshot(id))?)?)
     }
 
+    pub fn graph_index_campaign(&self, id: &str) -> Result<Value> {
+        let store = self.store()?;
+        let campaign = self.get(&store, id)?;
+        self.protocol_bytes(&campaign.spec.protocol_hash)?;
+        let snapshot = storage(store.snapshot(id))?;
+        storage(self.catalog()?.graph_index_campaign(&snapshot))
+    }
+
     pub fn protocol(&self, id: &str) -> Result<Value> {
         let store = self.store()?;
         let campaign = self.get(&store, id)?;

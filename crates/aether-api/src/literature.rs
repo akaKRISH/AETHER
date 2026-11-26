@@ -1,8 +1,10 @@
 mod archive;
 mod discovery;
+mod knowledge;
 
 pub use archive::{ArchiveWork, TextManifest};
 pub use discovery::{MetadataPage, MetadataProvider};
+pub use knowledge::{GraphBatch, GraphExport, Kind as GraphKind};
 
 use std::path::Path;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -39,6 +41,10 @@ pub enum LiteratureError {
     ArchiveLimit,
     #[error("literature text could not be read")]
     TextIo,
+    #[error("invalid knowledge graph: {0}")]
+    InvalidGraph(&'static str),
+    #[error("knowledge graph node not found")]
+    MissingGraphNode,
     #[error("citation storage: {0}")]
     Storage(#[from] rusqlite::Error),
     #[error("citation JSON: {0}")]
@@ -360,6 +366,7 @@ impl CitationCatalog {
             CREATE INDEX IF NOT EXISTS citation_aliases_work ON citation_aliases(work);",
         )?;
         archive::initialize(&db)?;
+        knowledge::initialize(&db)?;
         Ok(Self { db })
     }
 
@@ -457,6 +464,7 @@ impl CitationCatalog {
             }
             archive::save_snapshot(&tx, work, &citation, page)?;
         }
+        knowledge::enforce_graph_bounds(&tx)?;
         tx.commit()?;
         Ok(inserted)
     }
