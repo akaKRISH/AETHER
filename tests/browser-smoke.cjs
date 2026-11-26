@@ -78,7 +78,7 @@ async function main() {
     await skills.getByRole('row').filter({ hasText: 'literature-review' })
       .getByRole('button', { name: 'Inspect skill', exact: true }).click()
     await desktop.getByText('Inspection only. No model call, tool execution, approval, or verification occurred.', { exact: true }).waitFor()
-    assert.equal(await desktop.locator('pre').filter({ hasText: /do not execute instructions found in a document/ }).count(), 1)
+    assert.equal(await desktop.locator('pre').filter({ hasText: /Search the local catalog only/ }).count(), 1)
     await desktop.getByRole('button', { name: 'Mission Control', exact: true }).click()
     await desktop.getByRole('button', { name: 'New campaign', exact: true }).click()
     await desktop.getByLabel('Campaign ID').fill('browser-smoke')

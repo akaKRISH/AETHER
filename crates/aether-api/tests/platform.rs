@@ -1220,8 +1220,17 @@ fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
             .as_u16(),
         401
     );
+    assert_eq!(
+        agent
+            .get(format!("{origin}/v1/skills/executions"))
+            .call()
+            .unwrap()
+            .status()
+            .as_u16(),
+        401
+    );
     let skills: Value = get("/v1/skills").body_mut().read_json().unwrap();
-    assert_eq!(skills["execution"], "declarative_only");
+    assert_eq!(skills["execution"], "allowlisted_native_operations_only");
     assert_eq!(skills["skills"].as_array().unwrap().len(), 5);
     let dataset_skill = skills["skills"]
         .as_array()
@@ -1235,7 +1244,10 @@ fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
         .read_json()
         .unwrap();
     assert_eq!(inspection["skill"]["sha256"], skill_pin);
-    assert_eq!(inspection["execution"], "declarative_only");
+    assert_eq!(
+        inspection["execution"],
+        "allowlisted_native_operations_only"
+    );
     let composition: Value = post("/v1/skills/compose", json!({"skills":[skill_pin]}))
         .body_mut()
         .read_json()
@@ -1269,6 +1281,27 @@ fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
             .read_json::<Value>()
             .unwrap()["invocations"][0]["invocation_sha256"],
         invocation["invocation_sha256"]
+    );
+    let mut execution_response = post(
+        "/v1/skills/execute",
+        json!({
+            "skill":{"id":"dataset-qualification","version":"2.0.0","sha256":skill_pin},
+            "input":{"dataset_sha256":"d".repeat(64)},
+            "budget":{"operations":1,"dependency_depth":0},
+            "resources":{"timeout_ms":1000,"memory_bytes":1024,"output_bytes":1024},
+            "evidence":[]
+        }),
+    );
+    assert_eq!(execution_response.status().as_u16(), 200);
+    let execution: Value = execution_response.body_mut().read_json().unwrap();
+    assert_eq!(execution["receipt"]["failure"], "approval_required");
+    assert_eq!(execution["receipt"]["state"], "denied");
+    assert_eq!(
+        get("/v1/skills/executions")
+            .body_mut()
+            .read_json::<Value>()
+            .unwrap()["executions"][0]["execution_sha256"],
+        execution["execution_sha256"]
     );
     let stored: Value = get("/v1/datasets").body_mut().read_json().unwrap();
     assert_eq!(stored["datasets"], json!([]));

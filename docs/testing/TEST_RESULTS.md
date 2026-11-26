@@ -143,3 +143,19 @@ The similarity check is lexical and does not establish semantic paraphrase or pr
 | Frozen research artifacts | No changed paths under `research/results` or `docs/archive`; final diff check also clean. |
 
 Tests used local synthetic fixtures only. Imported hostile instructions were retained as inert text; the invocation record states reference-shape-only evidence validation and `never_executed`. No model calls, held-out experiment, training, dependency installation or changes to frozen scientific artifacts were made.
+
+## APO-09 bounded skill execution kernel
+
+| Check | Actual result |
+|---|---|
+| `cargo test --locked --offline --workspace --jobs 1` | Passed: 127 tests; nine existing runner containment tests ignored by the default workspace run. API package: 57 unit and 20 platform tests. |
+| APO-09 focused skill tests | 18 passed, covering every allowlisted local operation, operation/schema pins, approval and revocation, capability intersection, invalid input/output, independent-verification refusal, dependency cycles/depth, budget and payload limits, cancellation, malicious instructions, replay integrity and unverified evidence. |
+| `cargo clippy --locked --workspace --all-targets -- -D warnings` | Passed, exit 0. |
+| `cargo fmt --all -- --check` | Passed, exit 0. |
+| `cargo build --locked --offline --release -p aether-api --jobs 1` | Passed, exit 0; final optimized Windows x64 build completed in 3m48s. |
+| Frontend lint, type check, tests and build | All passed; five frontend tests passed. |
+| `node tests/browser-smoke.cjs` | Passed against the optimized release executable. Desktop authenticated research flows and mobile layout passed. |
+| Documentation validation | Passed: 13 schema metaschemas, 67 JSON files, 281 Markdown files, 21 SVG views, 29 planned test IDs, 1,398 relative links, 41 mapped requirements, 102 source fingerprints, five accepted examples and five negative cases. |
+| Frozen artifacts | Compared all 136 tracked files under `research/results` and `docs/archive` against HEAD using Git-filtered content identities; zero mismatches and no changed paths. On this Windows checkout, five result JSON files are CRLF in the working tree under `core.autocrlf=true`; normalized Git blob identities match. |
+
+The authenticated API exposes execution and receipt listing, but approval and revocation remain local CLI operations. Local approvals are not cryptographic proofs. The synchronous Rust operations have bounded inputs and outputs and cooperative cancellation at operation boundaries; they do not provide hard timeout preemption or OS-level isolation. No skill instructions, arbitrary code, model/provider calls, held-out data or training ran. [Resume](../../RESUME.md#apo-09-bounded-skill-execution-kernel) · [ADR-022](../decisions/ADR-022.md)

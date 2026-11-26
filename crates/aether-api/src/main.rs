@@ -58,9 +58,12 @@ Commands
   aether-lab skill-import <manifest.json>      Import an inert, untrusted skill manifest
   aether-lab skill-review <skill-sha>          Record local review of an imported declaration
   aether-lab skill-approve <skill-sha> <caps>  Approve exact declared capabilities (comma-separated)
+  aether-lab skill-revoke <skill-sha>          Revoke a local skill approval
   aether-lab skill-invoke <skill-sha> <request.json>  Record preflight only; never executes skill instructions
+  aether-lab skill-execute <request.json>       Execute one approved registered native operation
   aether-lab skill-compose <request.json>      Validate pinned dependencies and aggregate budgets
   aether-lab skills-invocations                List deterministic preflight records
+  aether-lab skills-executions                 List integrity-checked native execution receipts
   aether-lab hardware               Read local NVIDIA driver telemetry, when available
   aether-lab propose <request.json> Produce deterministic reviewed-task proposals
   aether-lab propose-local <request.json> <model>  Use an existing local Ollama model
@@ -256,6 +259,9 @@ fn execute(args: &[String]) -> Result<()> {
             pin,
             models::skills::parse_capabilities(caps)?,
         )?),
+        [command, pin] if command == "skill-revoke" => {
+            print_json(&models::skills::revoke(&lab, pin)?)
+        }
         [command, pin, path] if command == "skill-invoke" => {
             let request = read_json_file(&PathBuf::from(path))?;
             print_json(&models::skills::invoke(&lab, request, "local_cli")?)
@@ -264,8 +270,19 @@ fn execute(args: &[String]) -> Result<()> {
             let request = read_json_file(&PathBuf::from(path))?;
             print_json(&models::skills::compose(&lab, request)?)
         }
+        [command, path] if command == "skill-execute" => {
+            let request = read_json_file(&PathBuf::from(path))?;
+            print_json(&models::skills::execute(
+                &lab,
+                request,
+                &AtomicBool::new(false),
+            )?)
+        }
         [command] if command == "skills-invocations" => {
             print_json(&models::skills::invocations(&lab)?)
+        }
+        [command] if command == "skills-executions" => {
+            print_json(&models::skills::executions(&lab)?)
         }
         [command, seed, evaluations] if command == "discover" => {
             let report = aether_engine::discover(seed.parse()?, evaluations.parse()?)?;

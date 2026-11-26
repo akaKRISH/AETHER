@@ -99,8 +99,19 @@ Sources: [PRD](../product/FUNCTIONAL_REQUIREMENTS.md), [v0.2 technical requireme
 | Requirement | Verification | Evidence and limit |
 |---|---|---|
 | APO-07-01 · immutable identity | `same_skill_version_cannot_be_republished_with_changed_content`, registry integrity checks | Definition version is pinned by SHA-256; registry and content-addressed artifact must agree. |
-| APO-07-02 · strict typed contract | `typed_schemas_reject_missing_unknown_and_wrongly_typed_values` | Bounded input/output schema validation; output is not produced in this milestone. |
-| APO-07-03 · default-deny permissions | `imported_malicious_instructions_stay_inert_and_cannot_escalate_permissions` | Closed capability enum; imported declarations require local review and exact CLI approval; no execution capability exists. |
+| APO-07-02 · strict typed contract | `typed_schemas_reject_missing_unknown_and_wrongly_typed_values` | Bounded input/output schema validation; `/1` remains inert. |
+| APO-07-03 · default-deny permissions | `imported_malicious_instructions_stay_inert_and_cannot_escalate_permissions` | Closed capability enum; imported declarations require local review and exact CLI approval. APO-09 execution is limited to the reviewed Rust operation allowlist. |
 | APO-07-04 · safe composition and budgets | `dependency_validation_rejects_cycles_and_unpinned_missing_versions`, `budgets_use_checked_arithmetic_and_reject_overflow` | Pinned acyclic dependencies and checked aggregate limits; composition remains preflight-only. |
 | APO-07-05 · reproducible invocation | `invocation_replay_is_deterministic_and_never_executes` | Content-addressed request and approval provenance; evidence references are shape-checked, not independently verified. |
 | APO-07-06 · protected discovery | `authenticated_loopback_api_runs_a_campaign_and_serves_evidence`, Research OS browser smoke | Bearer-protected read/compose/preflight endpoints and read-only UI; review/approval remain local CLI operations. |
+
+## APO-09 bounded skill execution requirements
+
+| Requirement | Verification | Evidence and limit |
+|---|---|---|
+| APO-09-01 · explicit operation allowlist and immutable identity | `native_execution_is_approved_pinned_bounded_and_replayable`, `modified_operation_contract_and_stale_approval_fail_closed` | `/2` operation IDs map to Rust functions; `/1` definitions stay inert; execution pins ID, version and canonical digest. |
+| APO-09-02 · default-deny capability intersection | `execution_intersects_permissions_and_keeps_evidence_unverified`, `execution_rejects_unpinned_versions_revocation_bad_input_and_limits` | Effective permissions are bounded by the operation-supported, declared and operator-approved sets. Local approvals are not signed credentials. |
+| APO-09-03 · bounded composition, inputs, outputs and cancellation | `dependency_cycles_and_depth_limits_are_enforced_before_dispatch`, `oversized_output_and_tampered_receipts_fail_closed` | One root operation, depth at most eight, 8 KiB input and per-skill output capped at 256 KiB (1 MiB kernel ceiling); cancellation is cooperative and cannot preempt synchronous native code. |
+| APO-09-04 · receipt integrity and deterministic replay | `native_execution_is_approved_pinned_bounded_and_replayable`, `oversized_output_and_tampered_receipts_fail_closed` | Deterministic content-addressed receipts bind skill, dependency, approval, operation, input/output and budget digests. |
+| APO-09-05 · instructions and evidence remain untrusted | `imported_malicious_instruction_text_never_changes_the_native_operation`, `execution_intersects_permissions_and_keeps_evidence_unverified`, `execution_fails_closed_when_independent_verification_is_required` | Instruction strings are never dispatched; evidence refs receive structural checks only and remain unverified. Execution refuses contracts that require independent verification. |
+| APO-09-06 · authenticated API boundary | `authenticated_loopback_api_runs_a_campaign_and_serves_evidence` | Execution and receipt-list routes are behind existing bearer authorization; no API approval or revocation route exists. |

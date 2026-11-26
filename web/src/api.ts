@@ -332,7 +332,7 @@ export async function getDatasetPart(token: string, hash: string): Promise<Array
 export async function getSkillRegistry(token: string, signal: AbortSignal): Promise<Row> {
   const value = await json(token, '/skills', { signal })
   if (!isRow(value) || value.schema !== 'aether.skill-registry/1' || !Array.isArray(value.skills)
-    || value.execution !== 'declarative_only') throw new Error('Invalid research skill registry response.')
+    || value.execution !== 'allowlisted_native_operations_only') throw new Error('Invalid research skill registry response.')
   return value
 }
 
@@ -340,7 +340,7 @@ export async function getSkillManifest(token: string, hash: string, signal: Abor
   if (!/^[a-f0-9]{64}$/.test(hash)) throw new Error('Invalid skill digest.')
   const value = await json(token, `/skills/${encodeURIComponent(hash)}`, { signal })
   if (!isRow(value) || !isRow(value.skill) || value.skill.sha256 !== hash
-    || value.execution !== 'declarative_only') throw new Error('Invalid research skill manifest.')
+    || value.execution !== 'allowlisted_native_operations_only') throw new Error('Invalid research skill manifest.')
   return value
 }
 

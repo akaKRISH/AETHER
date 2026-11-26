@@ -104,6 +104,8 @@ pub async fn serve(lab: Lab, port: u16, token: String, assets: PathBuf) -> std::
             "/v1/skills/invocations",
             get(skill_invocations).post(skill_invoke),
         )
+        .route("/v1/skills/executions", get(skill_executions))
+        .route("/v1/skills/execute", post(skill_execute))
         .route("/v1/skills/compose", post(skill_compose))
         .route("/v1/skills/{sha256}", get(skill_inspect))
         .route("/v1/benchmarks", post(benchmarks))
@@ -493,6 +495,28 @@ async fn skill_invocations(State(app): State<App>) -> ApiResult<Json<Value>> {
     blocking(move || {
         crate::models::skills::invocations(&app.lab)
             .map_err(|error| Error::Storage(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn skill_executions(State(app): State<App>) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::skills::executions(&app.lab)
+            .map_err(|error| Error::Storage(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn skill_execute(
+    State(app): State<App>,
+    Json(request): Json<crate::models::skills::ExecutionRequest>,
+) -> ApiResult<Json<Value>> {
+    let cancel = app.shutdown.clone();
+    blocking(move || {
+        crate::models::skills::execute(&app.lab, request, &cancel)
+            .map_err(|error| Error::Input(error.to_string()))
     })
     .await
     .map(Json)
