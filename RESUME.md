@@ -1,5 +1,17 @@
 # Resume AETHER
 
+## APO-06B scientific dataset engineering laboratory
+
+Started from `0fb3662`. The native Rust pipeline adds deterministic `dataset-build` and bounded `dataset-qualify` commands, content-addressed manifests and JSONL exports, an authenticated API, and a Research OS dataset review. It reuses the APOLLO archive, trusted task evaluator, SQLite artifact store and APO-06A split validator. [Execution steps](docs/research/APOLLO_EXECUTION_PLAN.md#apo-06b-scientific-dataset-engineering) · [Dataset and authority decision](docs/decisions/ADR-020.md)
+
+The 28 bundled recipes produced 26 accepted rows and two duplicate rejections. Independent fresh CLI processes with separate temporary data directories emitted the same manifest SHA-256: `0c52ab45a5bdcd5fa50e9f965017ca5efd81d19f5e8c9d6913a5fc7b5c8c1eb9`. The development-only split contains 18 train and eight validation samples across six and two disjoint groups. All five topics appear across the two parts. The two extracted items cite the already reviewed CC BY 4.0 excerpts with exact source bytes, offsets and graph revision pins. Synthetic origins remain distinct from correctness checks. A human-authored answer label is self-attested, not independently reviewed.
+
+No independent test data or export is included; the manifest requires external test custody. The lexical near-duplicate threshold is a contamination screen and does not guarantee paraphrase or pretraining independence. Dataset qualification does not authorize training. APO-06C–F remain resource-blocked, and APO-07/08/09 are prioritized before any live training; their briefs must define scope and acceptance gates.
+
+The affected API package passed 39 unit tests and 20 platform tests, including authenticated dataset routes, malformed/incorrect submissions, duplicate filtering, source provenance, deterministic exports and disjoint grouping. Strict API Clippy, workspace format check, release build, five frontend tests, frontend lint, production build, documentation/schema validation and desktop/mobile browser smoke passed. Browser coverage reviewed the two licensed source records and downloaded the train JSONL. Tracked frozen research outputs and archived documents were unchanged.
+
+Next action: define APO-07/08/09 scopes and acceptance criteria before returning to live training. APO-06C–F remain resource-blocked pending qualified compute, reviewed worker, exact approval and independent test custody.
+
 ## APO-06A adapter-training infrastructure and feasibility
 
 Started from `ff48125`. The Rust controller publishes unapproved LoRA and QLoRA manifests with exact base and dataset identities, split provenance, adapter settings, resource caps, baseline identity, and regression requirements. The CLI, authenticated API and Intelligence Observatory expose proposals, feasibility and synthetic receipts. [Commands](docs/research/APOLLO_EXECUTION_PLAN.md#apo-06a-adapter-training-feasibility) · [Backend contract](docs/decisions/ADR-019.md)

@@ -63,6 +63,16 @@ Use `aether-lab training-fixture lora` or `aether-lab training-fixture qlora` to
 
 For a local proposal, first run `models-inspect <file> <sha256>`. Supply a request with `base` (identity, license, provenance and geometry), `dataset` (train, validation and independent-test descriptors), `settings`, `caps`, optional `baseline_sha256`, and optional `python` pins. Each split descriptor has `path`, `sha256`, `provenance` and `curator`. Its JSON Lines records contain `id`, `group`, `input` and `output`. Use the fixture output to see the settings and caps fields. `training-propose <request.json>` validates files and freezes the plan. `training-list` and the Intelligence Observatory show estimates and blockers. [Training boundary and estimate model](../decisions/ADR-019.md)
 
+### APO-06B scientific dataset engineering
+
+Run `aether-lab dataset-build` to qualify the small development corpus. It creates deterministic computational tasks and synthetic cases for algorithmic reasoning, source grounding, uncertainty, abstention and scientific reasoning. The two source passages are taken from the pinned APO-02 CC BY 4.0 excerpts; exact bytes, rights metadata, source spans and graph revision pins are checked against the literature archive. No other text is imported. `dataset-qualify <request.json>` accepts bounded reviewed recipes and answer submissions, rejects malformed or incorrect cases, and never saves unrecognized candidate text. `dataset-list`, `dataset-inspect <manifest-sha>` and `dataset-export <manifest-sha> <part>` list, inspect and export content-addressed manifests, JSONL splits, annotations and rejection reports. The authenticated Research OS provides the same review and verified downloads.
+
+Task families, related cases, source documents and exact or near prompts are assigned to connected groups before a deterministic seeded train/validation split. These are development splits only; the manifest declares `independent_test: external_custody_required` and does not export test data. Provenance distinguishes synthetic, extracted and self-attested human-authored answers from independently verified correctness. None of these records authorizes training. [Dataset policy and limits](../decisions/ADR-020.md)
+
+### Training priority and resource gate
+
+APO-06C through APO-06F are resource-blocked and not started. No live training or fine-tuning is authorized by dataset qualification. APO-07, APO-08 and APO-09 are prioritized before any live training; their briefs must define scope and acceptance criteria. Live training remains last and requires qualified resources, an exact approved manifest, a reviewed worker and independent test custody.
+
 ### Pending literature work
 
 1. Review the starter corpus and expand it with authorized full-text copies. Label conversion methods and record version-specific rights before importing a new format.

@@ -246,6 +246,33 @@ pub(in crate::literature) fn document(
 }
 
 impl CitationCatalog {
+    pub(crate) fn dataset_passage_ref(
+        &self,
+        work: &str,
+        document: &str,
+        span: std::ops::Range<usize>,
+        quote: &str,
+        limitation: bool,
+    ) -> Result<(String, String), LiteratureError> {
+        let kind = if limitation {
+            Kind::Limitation
+        } else {
+            Kind::Claim
+        };
+        let id = node_id(
+            kind,
+            &passage_identity(work, document, span.start, span.end),
+        );
+        let graph = self.graph_export(&id, 0)?.graph;
+        let revision = graph.root_history.iter().find(|revision| {
+            let observed = &revision.observation;
+            observed.statement == quote && observed.status == Status::Extracted
+                && matches!(&observed.source, Source::Passage { paper, document: saved, start_byte, end_byte, .. }
+                    if paper == work && saved == document && *start_byte == span.start && *end_byte == span.end)
+        }).ok_or(LiteratureError::InvalidText)?;
+        Ok((id, revision.sha256.clone()))
+    }
+
     pub fn graph_report_claim(
         &mut self,
         paper: &str,

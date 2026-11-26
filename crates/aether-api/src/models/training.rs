@@ -558,6 +558,7 @@ pub(crate) fn list(lab: &Lab) -> Result<Value> {
 }
 
 pub(crate) use backend::rehearse;
+pub(super) use dataset::validate_development_exports;
 
 #[cfg(test)]
 mod tests {

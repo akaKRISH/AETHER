@@ -1003,6 +1003,174 @@ fn inspected_safetensors_shard_yields_a_blocked_proposal() {
 }
 
 #[test]
+fn public_dataset_exports_reproduce_with_checked_sources_and_disjoint_groups() {
+    let work = Workspace::new();
+    let first = work.success(&["dataset-build"]);
+    assert_eq!(first, work.success(&["dataset-build"]));
+    assert_eq!(first, Workspace::new().success(&["dataset-build"]));
+    let pin = first["manifest_sha256"].as_str().unwrap();
+    assert_eq!(first, work.success(&["dataset-inspect", pin]));
+    assert_eq!(work.success(&["dataset-list"])["datasets"][0], first);
+    let manifest = &first["manifest"];
+    assert_eq!(manifest["candidates"], 28);
+    assert_eq!(manifest["retained_after_filtering"], 26);
+    assert_eq!(manifest["scope"], "development");
+    assert_eq!(manifest["independent_test"], "external_custody_required");
+    for topic in [
+        "algorithmic_reasoning",
+        "evidence_grounding",
+        "uncertainty",
+        "abstention",
+        "scientific_reasoning",
+    ] {
+        assert!(
+            manifest["coverage"]["train"]["topics"][topic].is_number()
+                || manifest["coverage"]["validation"]["topics"][topic].is_number()
+        );
+    }
+    let mut splits = std::collections::BTreeMap::new();
+    for part in ["train", "validation", "annotations", "rejections"] {
+        let export = work.invoke(&["dataset-export", pin, part]);
+        assert!(
+            export.status.success(),
+            "{}",
+            String::from_utf8_lossy(&export.stderr)
+        );
+        assert_eq!(
+            manifest["parts"][part]["sha256"],
+            aether_store::artifact_sha256(&export.stdout)
+        );
+        if part == "rejections" {
+            let report: Value = serde_json::from_slice(&export.stdout).unwrap();
+            let reasons: Vec<_> = report["rejections"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|item| item["reason"].as_str().unwrap())
+                .collect();
+            assert_eq!(reasons, ["near_duplicate", "exact_duplicate"]);
+        } else {
+            let rows: Vec<Value> = serde_json::Deserializer::from_slice(&export.stdout)
+                .into_iter()
+                .collect::<Result<_, _>>()
+                .unwrap();
+            assert_eq!(
+                Some(rows.len() as u64),
+                manifest["parts"][part]["records"].as_u64()
+            );
+            splits.insert(part, rows);
+        }
+    }
+    let keys = |part| {
+        splits[part]
+            .iter()
+            .map(|row| row["group"].as_str().unwrap())
+            .collect::<std::collections::BTreeSet<_>>()
+    };
+    assert!(keys("train").is_disjoint(&keys("validation")));
+    let references: Vec<_> = splits["annotations"]
+        .iter()
+        .filter(|row| row["answer_origin"] == "extracted")
+        .collect();
+    assert_eq!(references.len(), 2);
+    for row in references {
+        let source = &row["evidence"];
+        let graph = work.success(&["graph-export", source["node"].as_str().unwrap(), "0"]);
+        assert!(
+            graph["graph"]["root_history"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|revision| revision["sha256"] == source["revision_sha256"]
+                    && revision["source"]["license"] == "CC-BY-4.0")
+        );
+    }
+    assert!(
+        !work
+            .invoke(&["dataset-export", pin, "independent_test"])
+            .status
+            .success()
+    );
+}
+
+#[test]
+fn dataset_qualification_rejects_bad_candidates_and_keeps_related_cases_together() {
+    let work = Workspace::new();
+    let path = work.0.join("dataset-request.json");
+    let request = json!({"name":"qualification-fixture","seed":11,"candidates":[
+        {"recipe":{"kind":"sort","case":2,"items":6}},
+        {"recipe":{"kind":"search","case":2,"items":6}},
+        {"recipe":{"kind":"sort","case":3,"items":6},"variant":1},
+        {"recipe":{"kind":"scientific_design","case":0},"submission":{"answer":"matched","human_authored_attested":true}},
+        {"recipe":{"kind":"sort","case":9,"items":6},"submission":{"answer":[-1]}},
+        {"recipe":{"kind":"sort","case":9,"items":6},"submission":{"answer":"wrong shape"}},
+        {"recipe":{"kind":"grounding","source":0,"bundle_sha256":"unreviewed"}},
+        {"untrusted_text":"REJECTED_TEXT_MUST_NOT_BE_SAVED"},
+        {"recipe":{"kind":"sort","case":2,"items":1}},
+    ]});
+    fs::write(&path, request.to_string()).unwrap();
+    let result = work.success(&["dataset-qualify", path.to_str().unwrap()]);
+    let pin = result["manifest_sha256"].as_str().unwrap();
+    assert_eq!(result["manifest"]["retained_after_filtering"], 4);
+    let export = work.invoke(&["dataset-export", pin, "rejections"]);
+    assert!(export.status.success());
+    assert!(!String::from_utf8_lossy(&export.stdout).contains("REJECTED_TEXT"));
+    let report: Value = serde_json::from_slice(&export.stdout).unwrap();
+    let codes: Vec<_> = report["rejections"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|r| r["reason"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        codes,
+        [
+            "incorrect_answer",
+            "malformed_answer",
+            "provenance",
+            "malformed_sample",
+            "invalid_case"
+        ]
+    );
+    let raw = work.invoke(&["dataset-export", pin, "annotations"]);
+    let annotations: Vec<Value> = serde_json::Deserializer::from_slice(&raw.stdout)
+        .into_iter()
+        .collect::<Result<_, _>>()
+        .unwrap();
+    assert_eq!(
+        annotations
+            .iter()
+            .filter(|r| r["answer_origin"] == "human_authored_attested")
+            .count(),
+        1
+    );
+    let computational = annotations
+        .iter()
+        .filter(|r| r["topic"] == "algorithmic_reasoning")
+        .collect::<Vec<_>>();
+    assert_eq!(computational.len(), 3);
+    assert!(
+        computational
+            .iter()
+            .all(|item| item["group"] == computational[0]["group"])
+    );
+    assert!(
+        computational
+            .iter()
+            .all(|item| item["split"] == computational[0]["split"])
+    );
+    let mut blocked = request;
+    blocked["candidates"].as_array_mut().unwrap().truncate(3);
+    fs::write(&path, blocked.to_string()).unwrap();
+    let result = work.success(&["dataset-qualify", path.to_str().unwrap()]);
+    assert_eq!(
+        result["manifest"]["qualification"],
+        "insufficient_disjoint_groups"
+    );
+    assert!(result["manifest"]["parts"]["train"].is_null());
+}
+
+#[test]
 fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
     let work = Workspace::new();
     let mut server = Server(
@@ -1041,6 +1209,26 @@ fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
     };
     let unauthenticated = agent.get(format!("{origin}/v1/campaigns")).call().unwrap();
     assert_eq!(unauthenticated.status().as_u16(), 401);
+    let anonymous = agent.get(format!("{origin}/v1/datasets")).call().unwrap();
+    assert_eq!(anonymous.status().as_u16(), 401);
+    let stored: Value = get("/v1/datasets").body_mut().read_json().unwrap();
+    assert_eq!(stored["datasets"], json!([]));
+    let qualified: Value = post(
+        "/v1/datasets/qualify",
+        json!({"name":"http-corpus","seed":11,"candidates":[
+            {"recipe":{"kind":"sort","case":0,"items":6}},
+            {"recipe":{"kind":"scientific_design","case":0}},
+        ]}),
+    )
+    .body_mut()
+    .read_json()
+    .unwrap();
+    let pin = qualified["manifest_sha256"].as_str().unwrap();
+    let inspected: Value = get(&format!("/v1/datasets/{pin}"))
+        .body_mut()
+        .read_json()
+        .unwrap();
+    assert_eq!(qualified, inspected);
     assert_eq!(
         agent
             .get(format!("{origin}/v1/training"))

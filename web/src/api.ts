@@ -306,6 +306,29 @@ export async function getTrainingRegistry(token: string, signal: AbortSignal): P
   return value
 }
 
+export async function getDatasetRegistry(token: string, signal: AbortSignal): Promise<Row> {
+  const value = await json(token, '/datasets', { signal })
+  if (!isRow(value) || value.schema !== 'aether.dataset-registry/1' || !Array.isArray(value.datasets)) {
+    throw new Error('Invalid dataset registry response.')
+  }
+  return value
+}
+
+export async function getDatasetManifest(token: string, pin?: string): Promise<Row> {
+  const value = pin ? await json(token, `/datasets/${encodeURIComponent(pin)}`)
+    : await json(token, '/datasets', { method: 'POST' })
+  if (!isRow(value) || typeof value.manifest_sha256 !== 'string' || !isRow(value.manifest)
+    || value.manifest.schema !== 'aether.development-dataset/1') throw new Error('Invalid dataset manifest.')
+  return value
+}
+
+export async function getDatasetPart(token: string, hash: string): Promise<ArrayBuffer> {
+  if (!/^[a-f0-9]{64}$/.test(hash)) throw new Error('Invalid dataset artifact digest.')
+  const bytes = await (await request(token, `/artifacts/${hash}`)).arrayBuffer()
+  if (await contentDigest(bytes) !== hash) throw new Error('Dataset artifact integrity check failed.')
+  return bytes
+}
+
 export async function getModelReport(token: string, hash: string, signal: AbortSignal): Promise<Row> {
   if (!/^[a-f0-9]{64}$/.test(hash)) throw new Error('Invalid model artifact digest.')
   const bytes = await (await request(token, `/artifacts/${hash}`, { signal })).arrayBuffer()

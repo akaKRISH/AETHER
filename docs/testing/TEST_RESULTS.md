@@ -113,3 +113,18 @@ At `e0396b5`, the browser smoke was blocked by missing Playwright and no verific
 | Frozen artifacts | Expected hashes still match, including the original pinned executable, development/held-out configs, archived pilot and summary, Athena draft/report, local measurements and amended protocol. |
 
 Cause: the prior global `jsonschema` installation lacked `jsonschema[format]`, so its `FormatChecker` did not register `date-time`. Exact project-local dependency pins are in `requirements-validation.txt` and `web/package-lock.json`; reproducible commands are in [validation setup](VALIDATION_SETUP.md). Rust gates and measurements unchanged by this repair are reused from ATH-05. No held-out ECAR run occurred. [Resume](../../RESUME.md#ath-05b-final-acceptance-repair)
+
+## APO-06B scientific dataset engineering
+
+| Check | Actual result |
+|---|---|
+| Fresh-process dataset build | Two isolated CLI processes emitted manifest SHA-256 `0c52ab45a5bdcd5fa50e9f965017ca5efd81d19f5e8c9d6913a5fc7b5c8c1eb9`. |
+| Corpus summary | 28 candidate recipes, 26 retained, two duplicate rejections; 18 train and eight validation samples across six and two groups. Two source documents are exact-span-linked CC BY 4.0 excerpts. No independent-test part exists. |
+| `cargo test --locked --offline -p aether-api --jobs 1` | 39 unit tests and 20 platform tests passed. |
+| Strict Clippy / formatting / release | API package Clippy with `--all-targets -- -D warnings`, workspace `cargo fmt --all -- --check`, and optimized API release build passed. |
+| Frontend | Five tests, lint, TypeScript check and production build passed. |
+| Desktop/mobile browser smoke | Passed. Desktop qualified the corpus, reviewed both source records and downloaded train JSONL; existing mobile Research OS checks passed. |
+| Documentation validation | Passed: 13 schema metaschemas, 67 JSON files, 279 Markdown files, 1,375 relative destinations, 21 SVGs, 41 mapped requirements, and five positive plus five negative examples. |
+| Historical artifacts | No tracked changes under frozen research results or archived source documents. |
+
+The similarity check is lexical and does not establish semantic paraphrase or pretraining independence. Human authorship is self-attested in the input record. The corpus is development-only. APO-06C–F are resource-blocked; APO-07/08/09 are prioritized before live training. [Resume](../../RESUME.md#apo-06b-scientific-dataset-engineering-laboratory)

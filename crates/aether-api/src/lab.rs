@@ -642,10 +642,11 @@ impl Lab {
     }
 
     pub(crate) fn record_development_artifact(&self, report: &impl Serialize) -> Result<String> {
-        storage(
-            self.store()?
-                .record_discovery_artifact(&serde_json::to_vec(report)?),
-        )
+        self.record_development_bytes(&serde_json::to_vec(report)?)
+    }
+
+    pub(crate) fn record_development_bytes(&self, bytes: &[u8]) -> Result<String> {
+        storage(self.store()?.record_discovery_artifact(bytes))
     }
 
     pub(crate) fn model_registry(&self) -> Result<crate::models::Registry> {

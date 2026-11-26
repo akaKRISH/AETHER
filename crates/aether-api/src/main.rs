@@ -48,6 +48,11 @@ Commands
   aether-lab training-fixture <lora|qlora>     Freeze a public synthetic proposal
   aether-lab training-rehearse <manifest-sha> <approval-sha> [cancel-before-step]  Exercise synthetic checkpoints
   aether-lab training-list                    Show saved proposals and rehearsal receipts
+  aether-lab dataset-build                    Qualify the bundled public development corpus
+  aether-lab dataset-qualify <request.json>    Validate public recipe and answer candidates
+  aether-lab dataset-list                     List saved dataset manifests
+  aether-lab dataset-inspect <manifest-sha>     Inspect a pinned dataset manifest
+  aether-lab dataset-export <manifest-sha> <part>  Write a verified export or rejection report
   aether-lab hardware               Read local NVIDIA driver telemetry, when available
   aether-lab propose <request.json> Produce deterministic reviewed-task proposals
   aether-lab propose-local <request.json> <model>  Use an existing local Ollama model
@@ -214,6 +219,20 @@ fn execute(args: &[String]) -> Result<()> {
             )?)
         }
         [command] if command == "training-list" => print_json(&models::training::list(&lab)?),
+        [command] if command == "dataset-build" => print_json(&models::datasets::build(&lab)?),
+        [command, path] if command == "dataset-qualify" => {
+            print_json(&models::datasets::qualify_file(&lab, &PathBuf::from(path))?)
+        }
+        [command] if command == "dataset-list" => print_json(&models::datasets::list(&lab)?),
+        [command, pin] if command == "dataset-inspect" => {
+            print_json(&models::datasets::inspect(&lab, pin)?)
+        }
+        [command, pin, part] if command == "dataset-export" => {
+            io::stdout()
+                .lock()
+                .write_all(&models::datasets::export(&lab, pin, part)?)?;
+            Ok(())
+        }
         [command, seed, evaluations] if command == "discover" => {
             let report = aether_engine::discover(seed.parse()?, evaluations.parse()?)?;
             let digest = lab.record_discovery(&report)?;

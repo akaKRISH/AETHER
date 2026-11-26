@@ -206,6 +206,24 @@ impl Dataset {
     }
 }
 
+pub(in crate::models) fn validate_development_exports(
+    train: &[u8],
+    validation: &[u8],
+) -> Result<()> {
+    let mut check = SplitCheck::default();
+    for (role, bytes) in [("train", train), ("validation", validation)] {
+        validate_split(
+            bytes,
+            role,
+            &sha256(bytes),
+            "Qualified development corpus".into(),
+            "AETHER".into(),
+            &mut check,
+        )?;
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

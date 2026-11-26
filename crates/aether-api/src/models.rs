@@ -1,3 +1,4 @@
+pub(crate) mod datasets;
 mod evaluation;
 mod metadata;
 pub(crate) mod training;

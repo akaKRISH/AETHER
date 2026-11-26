@@ -343,8 +343,22 @@ impl CitationCatalog {
 
     pub fn ingest_text(
         &mut self,
-        mut source: TextManifest,
+        source: TextManifest,
         path: &Path,
+    ) -> Result<serde_json::Value, LiteratureError> {
+        self.ingest_text_from(source, || {
+            let mut raw = Vec::new();
+            File::open(path)
+                .and_then(|file| file.take(MAX_TEXT_BYTES + 1).read_to_end(&mut raw))
+                .map_err(|_| LiteratureError::TextIo)?;
+            Ok(raw)
+        })
+    }
+
+    pub(crate) fn ingest_text_from(
+        &mut self,
+        mut source: TextManifest,
+        read: impl FnOnce() -> Result<Vec<u8>, LiteratureError>,
     ) -> Result<serde_json::Value, LiteratureError> {
         let (id, work) = self.resolve_work(&source.paper_id)?;
         if !source.rights_confirmed
@@ -356,10 +370,7 @@ impl CitationCatalog {
         }
         self.freeze(&id)?;
         source.paper_id = id;
-        let mut raw = Vec::new();
-        File::open(path)
-            .and_then(|file| file.take(MAX_TEXT_BYTES + 1).read_to_end(&mut raw))
-            .map_err(|_| LiteratureError::TextIo)?;
+        let raw = read()?;
         let body = std::str::from_utf8(&raw).map_err(|_| LiteratureError::InvalidText)?;
         if raw.len() as u64 > MAX_TEXT_BYTES
             || body.trim().is_empty()

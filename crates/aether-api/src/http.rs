@@ -96,6 +96,9 @@ pub async fn serve(lab: Lab, port: u16, token: String, assets: PathBuf) -> std::
             get(model_comparison),
         )
         .route("/v1/training", get(training_registry))
+        .route("/v1/datasets", get(dataset_registry).post(dataset_build))
+        .route("/v1/datasets/qualify", post(dataset_qualify))
+        .route("/v1/datasets/{digest}", get(dataset_inspect))
         .route("/v1/benchmarks", post(benchmarks))
         .route("/v1/evolution", post(evolution))
         .route("/v1/literature", get(literature))
@@ -417,6 +420,46 @@ async fn model_comparison(
 async fn training_registry(State(app): State<App>) -> ApiResult<Json<Value>> {
     blocking(move || {
         crate::models::training::list(&app.lab).map_err(|error| Error::Storage(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn dataset_registry(State(app): State<App>) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::datasets::list(&app.lab).map_err(|error| Error::Storage(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn dataset_build(State(app): State<App>) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::datasets::build(&app.lab).map_err(|error| Error::Storage(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn dataset_qualify(
+    State(app): State<App>,
+    Json(request): Json<crate::models::datasets::Request>,
+) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::datasets::qualify(&app.lab, request)
+            .map_err(|error| Error::Input(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn dataset_inspect(
+    State(app): State<App>,
+    Path(digest): Path<String>,
+) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::datasets::inspect(&app.lab, &digest)
+            .map_err(|error| Error::Input(error.to_string()))
     })
     .await
     .map(Json)

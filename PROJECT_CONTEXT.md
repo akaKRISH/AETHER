@@ -19,6 +19,7 @@ The [Rust v0.2 design package](docs/archive/v0.2/AETHER/README.md) and [Project 
 - Experimental design turns three archived hypotheses into canonical, unapproved exploratory drafts. Campaign freeze, approval and independent verification keep their existing authority. [ADR-017](docs/decisions/ADR-017.md)
 - The model laboratory indexes local model headers, verifies file identities and checks public development responses under separate inference and evaluation budgets. [ADR-018](docs/decisions/ADR-018.md)
 - Adapter-training manifests pin checked dataset splits and base identity. The current controller only rehearses synthetic checkpoint receipts. [ADR-019](docs/decisions/ADR-019.md)
+- APO-06B creates content-addressed development datasets in Rust from reviewed recipes and rights-cleared archive passages. Provenance and correctness have separate labels, related cases and sources stay in one split group, and independent test data must come from external custody. Dataset qualification grants no training authority. [ADR-020](docs/decisions/ADR-020.md)
 - The workspace host has Windows 11, i5-13420H (8 cores, 12 logical processors), 15.64 GiB observed system RAM and an RTX 3050 Laptop GPU with 6144 MiB reported VRAM. Ubuntu WSL2 is registered. Verify tooling and isolation before any external worker. [Environment snapshot](docs/operations/DEVELOPMENT_ENVIRONMENT.md)
 
 ## Sequence and boundaries
