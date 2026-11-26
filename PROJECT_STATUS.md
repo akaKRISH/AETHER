@@ -1,6 +1,8 @@
 # Project status
 
-26 November 2026 · **Operation Athena.** Rust-first implementation and testing continue under the owner's existing approval boundaries.
+**Operation APOLLO** begins at the verified DAEDALUS checkpoint. [Execution plan](docs/research/APOLLO_EXECUTION_PLAN.md)
+
+APO-01 adds versioned provider metadata and a local passage archive to the Research OS. Exact byte spans remain source quotations with unverified status. [Scope and limits](RESUME.md#apo-01-scientific-literature-intelligence)
 
 ## Discovery
 

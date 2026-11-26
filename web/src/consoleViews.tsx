@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { getFrozenProtocol, getRecord, getReport, isRow, message, proposeResearch, rows, runEvolution, runStudy, type Row, type Snapshot, type StudyReport } from './api'
+import { getFrozenProtocol, getLiteratureWork, getRecord, getReport, isRow, message, proposeResearch, rows, runEvolution, runStudy, type Row, type Snapshot, type StudyReport } from './api'
 import { Empty, Fields, Panel, RecordTable, errorText, externalLink, keyedRows, readableRecord, text } from './components'
 
 export function Hypotheses({ token, snapshot }: { token: string; snapshot: Snapshot }) {
@@ -106,7 +106,7 @@ export function Catalog({ token, kind }: { token: string; kind: 'runtime' | 'lit
     <button type="button" className="button button--quiet" onClick={reload}>Refresh</button>
   }>
     {kind === 'literature' && <form className="toolbar" onSubmit={search}>
-      <label>Search local citations<input name="query" type="search" maxLength={120} /></label>
+      <label>Search citations and extracted passages<input name="query" type="search" maxLength={120} /></label>
       <button className="button" type="submit">Search</button>
     </form>}
     {error ? errorText(error) : data === undefined
@@ -121,11 +121,47 @@ export function Catalog({ token, kind }: { token: string; kind: 'runtime' | 'lit
               return <article className="source-entry" key={key}>
                 <h3>{url ? <a href={url} target="_blank" rel="noopener noreferrer">{title} ↗</a> : title}</h3>
                 <Fields data={entry} omit={['title', 'name', 'url', 'link', 'source_url']} />
+                {typeof entry.url === 'string' && <LiteratureDetails token={token} id={entry.url} />}
               </article>
             })}
           </div>
           : <Empty title="The service returned no literature records." />}
   </Panel>
+}
+
+function LiteratureDetails({ token, id }: { token: string; id: string }) {
+  const [open, setOpen] = useState(false)
+  const [work, setWork] = useState<Row>()
+  const [error, setError] = useState('')
+  useEffect(() => {
+    if (!open) return
+    const controller = new AbortController()
+    getLiteratureWork(token, id, controller.signal).then(
+      (value) => { if (!controller.signal.aborted) setWork(value) },
+      (reason) => { if (!controller.signal.aborted) setError(message(reason)) },
+    )
+    return () => controller.abort()
+  }, [token, id, open])
+  return <details onToggle={(event) => {
+    setWork(undefined)
+    setError('')
+    setOpen(event.currentTarget.open)
+  }}>
+    <summary>Metadata versions and passages</summary>
+    {error ? errorText(error) : !work ? <p role="status">Loading archive record…</p> : <>
+      <RecordTable label="Metadata snapshots" data={rows(work.snapshots).map((item) => ({
+        ...readableRecord(item.citation), sha256: item.sha256, acquisition: item.acquisition,
+      }))} columns={['title', 'arxiv_id', 'doi', 'openalex_id', 'provenance', 'references', 'references_truncated', 'related_doi', 'acquisition', 'sha256']}
+        empty="No later metadata snapshots have been archived." />
+      {work.text_status === 'unavailable' && <Empty title="Full text is unavailable in the local archive." />}
+      {keyedRows(rows(work.documents)).map(({ row: doc, key }) => <section key={key}>
+        <h4>Extracted passages · unverified</h4>
+        <Fields data={doc} omit={['passages', 'status']} />
+        <RecordTable label="Source passages and UTF-8 byte offsets" data={rows(doc.passages)}
+          columns={['kind', 'quote', 'start_byte', 'end_byte']} empty="No supported sections were identified." />
+      </section>)}
+    </>}
+  </details>
 }
 
 export function GpuTelemetry({ token }: { token: string }) {

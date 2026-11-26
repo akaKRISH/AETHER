@@ -93,6 +93,7 @@ pub async fn serve(lab: Lab, port: u16, token: String, assets: PathBuf) -> std::
         .route("/v1/benchmarks", post(benchmarks))
         .route("/v1/evolution", post(evolution))
         .route("/v1/literature", get(literature))
+        .route("/v1/literature/work", get(literature_work))
         .route("/v1/literature/lookup", post(lookup_metadata))
         .route("/v1/proposals", post(proposals))
         .layer(DefaultBodyLimit::max(8192))
@@ -617,33 +618,52 @@ struct MetadataQuery {
     provider: MetadataProvider,
     #[serde(default)]
     save: bool,
+    page: Option<u16>,
+}
+
+#[derive(Deserialize)]
+struct LiteratureWorkQuery {
+    id: String,
+}
+
+async fn literature_work(
+    State(app): State<App>,
+    Query(query): Query<LiteratureWorkQuery>,
+) -> ApiResult<Json<crate::literature::ArchiveWork>> {
+    blocking(move || {
+        app.lab
+            .catalog()?
+            .archive_work(&query.id)
+            .map_err(|error| match error {
+                LiteratureError::MissingCitation => Error::Missing,
+                LiteratureError::InvalidCitation => Error::Input("invalid paper identifier".into()),
+                _ => Error::Storage(error.to_string()),
+            })
+    })
+    .await
+    .map(Json)
 }
 
 async fn lookup_metadata(
     State(app): State<App>,
     Json(query): Json<MetadataQuery>,
 ) -> ApiResult<Response> {
-    let flag = match query.provider {
-        MetadataProvider::Crossref => "AETHER_ALLOW_CROSSREF",
-        MetadataProvider::OpenAlex => "AETHER_ALLOW_OPENALEX",
-        MetadataProvider::Arxiv => "AETHER_ALLOW_ARXIV",
-    };
-    if std::env::var(flag).as_deref() != Ok("1") {
+    if !query.provider.enabled() {
         return Err(Error::Conflict("external citation lookup is disabled".into()).into());
     }
+    let paginated = query.page.is_some();
     let result = blocking(move || {
-        let records = match crate::literature::search_metadata(query.provider, &query.query, 12) {
-            Ok(records) => records,
-            Err(error) => return Ok(Err(error)),
-        };
-        if query.save && !records.is_empty() {
-            app.lab.save_discovered_citations(records.clone())?;
-        }
-        Ok(Ok(records))
+        Ok(app.lab.catalog()?.discover(
+            query.provider,
+            &query.query,
+            query.page.unwrap_or_default(),
+            query.save,
+        ))
     })
     .await?;
     match result {
-        Ok(records) => Ok(Json(records).into_response()),
+        Ok(page) if paginated => Ok(Json(page).into_response()),
+        Ok(page) => Ok(Json(page.records).into_response()),
         Err(LiteratureError::RateLimited { retry_after_secs }) => Ok((
             StatusCode::TOO_MANY_REQUESTS,
             [(header::RETRY_AFTER, retry_after_secs.to_string())],
@@ -651,6 +671,8 @@ async fn lookup_metadata(
         )
             .into_response()),
         Err(LiteratureError::InvalidQuery) => Err(Error::Input("invalid metadata query".into()).into()),
+        Err(error @ (LiteratureError::AliasConflict | LiteratureError::ArchiveLimit | LiteratureError::CatalogLimit)) =>
+            Err(Error::Conflict(error.to_string()).into()),
         Err(_) => Ok((
             StatusCode::SERVICE_UNAVAILABLE,
             Json(json!({"code": "metadata_unavailable", "error": "metadata provider unavailable"})),

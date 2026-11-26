@@ -1,6 +1,8 @@
+mod archive;
 mod discovery;
 
-pub use discovery::{MetadataProvider, search_metadata};
+pub use archive::{ArchiveWork, TextManifest};
+pub use discovery::{MetadataPage, MetadataProvider};
 
 use std::path::Path;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -31,6 +33,12 @@ pub enum LiteratureError {
     Upstream,
     #[error("metadata provider returned invalid or oversized metadata")]
     InvalidResponse,
+    #[error("expected bounded UTF-8 full text with an approved license and HTTPS source")]
+    InvalidText,
+    #[error("literature archive capacity reached")]
+    ArchiveLimit,
+    #[error("literature text could not be read")]
+    TextIo,
     #[error("citation storage: {0}")]
     Storage(#[from] rusqlite::Error),
     #[error("citation JSON: {0}")]
@@ -67,6 +75,11 @@ pub struct Citation {
     /// A different publication named by the source, whose identity remains separate.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub related_doi: Option<String>,
+    /// Source-reported outgoing identifiers. None means coverage is unknown.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub references: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub references_truncated: bool,
     pub title: String,
     #[serde(default)]
     pub authors: Vec<String>,
@@ -95,6 +108,25 @@ pub struct FrozenCitation {
 
 impl Citation {
     fn normalized(mut self) -> Result<Self, LiteratureError> {
+        for doi in self.doi.iter_mut().chain(&mut self.related_doi) {
+            *doi = normalized_doi(doi).ok_or(LiteratureError::InvalidCitation)?;
+        }
+        if let Some(id) = &mut self.arxiv_id {
+            *id = normalize_arxiv(id);
+        }
+        if let Some(id) = &mut self.openalex_id {
+            *id = normalize_openalex(id);
+        }
+        if let Some(references) = &mut self.references {
+            if references.len() > 128 {
+                return Err(LiteratureError::InvalidCitation);
+            }
+            for id in references.iter_mut() {
+                *id = paper_id(id).ok_or(LiteratureError::InvalidCitation)?;
+            }
+            references.sort_unstable();
+            references.dedup();
+        }
         if self.doi.is_none() && self.arxiv_id.is_none() && self.openalex_id.is_none() {
             return Err(LiteratureError::InvalidCitation);
         }
@@ -131,9 +163,6 @@ impl Citation {
         {
             return Err(LiteratureError::InvalidCitation);
         }
-        for doi in self.doi.iter_mut().chain(&mut self.related_doi) {
-            *doi = doi.trim().to_ascii_lowercase();
-        }
         self.title = self.title.trim().to_owned();
         self.authors
             .iter_mut()
@@ -157,6 +186,15 @@ impl Citation {
                 .iter()
                 .map(|value| format!("arxiv:{}", arxiv_root(value))),
         );
+        if let Some(id) = self
+            .doi
+            .as_deref()
+            .and_then(|doi| doi.strip_prefix("10.48550/arxiv."))
+            && valid_arxiv_id(id)
+        {
+            aliases.push(format!("arxiv:{}", arxiv_root(id)));
+        }
+        aliases.dedup();
         aliases.extend(
             self.openalex_id
                 .iter()
@@ -176,6 +214,49 @@ impl Citation {
             String::new()
         }
     }
+}
+
+fn normalized_doi(value: &str) -> Option<String> {
+    let value = value.trim().to_ascii_lowercase();
+    let doi = [
+        "https://doi.org/",
+        "http://doi.org/",
+        "https://dx.doi.org/",
+        "doi:",
+    ]
+    .into_iter()
+    .find_map(|prefix| value.strip_prefix(prefix))
+    .unwrap_or(&value);
+    valid_doi(doi).then(|| doi.to_owned())
+}
+
+fn normalize_arxiv(value: &str) -> String {
+    let value = value.trim().to_ascii_lowercase();
+    ["https://arxiv.org/abs/", "http://arxiv.org/abs/", "arxiv:"]
+        .into_iter()
+        .find_map(|prefix| value.strip_prefix(prefix))
+        .unwrap_or(&value)
+        .to_owned()
+}
+
+fn normalize_openalex(value: &str) -> String {
+    let value = value.trim().to_ascii_lowercase();
+    ["https://openalex.org/", "openalex:"]
+        .into_iter()
+        .find_map(|prefix| value.strip_prefix(prefix))
+        .unwrap_or(&value)
+        .to_ascii_uppercase()
+}
+
+fn paper_id(value: &str) -> Option<String> {
+    if value.len() > 300 {
+        return None;
+    }
+    let arxiv = normalize_arxiv(value);
+    let openalex = normalize_openalex(value);
+    normalized_doi(value)
+        .or_else(|| valid_arxiv_id(&arxiv).then(|| format!("arxiv:{arxiv}")))
+        .or_else(|| valid_openalex_id(&openalex).then(|| format!("openalex:{openalex}")))
 }
 
 fn valid_doi(value: &str) -> bool {
@@ -205,6 +286,9 @@ fn valid_arxiv_id(id: &str) -> bool {
         return false;
     }
     let root = arxiv_root(id);
+    if root != id && id[root.len() + 1..].starts_with('0') {
+        return false;
+    }
     if let Some((category, number)) = root.split_once('/') {
         !category.is_empty()
             && category.as_bytes()[0].is_ascii_alphabetic()
@@ -275,6 +359,7 @@ impl CitationCatalog {
             ) STRICT;
             CREATE INDEX IF NOT EXISTS citation_aliases_work ON citation_aliases(work);",
         )?;
+        archive::initialize(&db)?;
         Ok(Self { db })
     }
 
@@ -295,6 +380,14 @@ impl CitationCatalog {
     /// Import API-observed records after the caller explicitly requests saving them.
     /// Repeated source identifiers preserve the first recorded snapshot.
     pub fn import(&mut self, citations: Vec<Citation>) -> Result<usize, LiteratureError> {
+        self.import_observations(citations, None)
+    }
+
+    fn import_observations(
+        &mut self,
+        citations: Vec<Citation>,
+        page: Option<&MetadataPage>,
+    ) -> Result<usize, LiteratureError> {
         if citations.len() > MAX_IMPORT {
             return Err(LiteratureError::InvalidCitation);
         }
@@ -362,6 +455,7 @@ impl CitationCatalog {
             if alias_count > 12 {
                 return Err(LiteratureError::InvalidCitation);
             }
+            archive::save_snapshot(&tx, work, &citation, page)?;
         }
         tx.commit()?;
         Ok(inserted)
@@ -376,6 +470,17 @@ impl CitationCatalog {
                     SELECT 1 FROM citation_aliases
                     WHERE work = citation.doi AND instr(lower(alias), ?1) > 0
                 )
+                OR EXISTS (
+                    SELECT 1 FROM literature_snapshots
+                    WHERE work = citation.doi AND (
+                        instr(lower(json_extract(record, '$.citation.arxiv_id')), ?1) > 0 OR
+                        instr(lower(json_extract(record, '$.citation.title')), ?1) > 0
+                    )
+                )
+                OR EXISTS (
+                    SELECT 1 FROM literature_texts
+                    WHERE work = citation.doi AND instr(search_text, ?1) > 0
+                )
              ORDER BY year DESC NULLS LAST, doi ASC LIMIT ?2",
         )?;
         statement
@@ -387,35 +492,36 @@ impl CitationCatalog {
     }
 
     pub fn freeze(&self, id: &str) -> Result<FrozenCitation, LiteratureError> {
-        let (alias, version) = if valid_doi(id) {
-            (id.trim().to_ascii_lowercase(), None)
-        } else if let Some(value) = id.strip_prefix("arxiv:").filter(|id| valid_arxiv_id(id)) {
-            (format!("arxiv:{}", arxiv_root(value)), Some(value))
-        } else if id.strip_prefix("openalex:").is_some_and(valid_openalex_id) {
-            (id.into(), None)
-        } else {
-            return Err(LiteratureError::InvalidCitation);
-        };
+        let (id, work) = self.resolve_work(id)?;
+        let version = id
+            .strip_prefix("arxiv:")
+            .filter(|value| *value != arxiv_root(value));
         let record: String = self
             .db
             .query_row(
-                "SELECT record FROM citations WHERE doi =
-                COALESCE((SELECT work FROM citation_aliases WHERE alias = ?1), ?1)",
-                [&alias],
+                "SELECT record FROM citations WHERE doi = ?1",
+                [&work],
                 |row| row.get(0),
             )
             .optional()?
             .ok_or(LiteratureError::MissingCitation)?;
-        let citation = serde_json::from_str::<Citation>(&record)?.normalized()?;
+        let mut citation = serde_json::from_str::<Citation>(&record)?.normalized()?;
         if let Some(requested) = version
-            && requested != arxiv_root(requested)
             && citation.arxiv_id.as_deref() != Some(requested)
         {
-            return Err(LiteratureError::MissingCitation);
+            citation = self
+                .snapshots(&work)?
+                .into_iter()
+                .map(|snapshot| snapshot.citation)
+                .find(|citation| citation.arxiv_id.as_deref() == Some(requested))
+                .ok_or(LiteratureError::MissingCitation)?;
         }
-        let url = citation.source_url();
+        let url = version.map_or_else(
+            || citation.source_url(),
+            |id| format!("https://arxiv.org/abs/{id}"),
+        );
         Ok(FrozenCitation {
-            id: version.map_or(alias, |id| format!("arxiv:{id}")),
+            id,
             title: citation.title,
             url,
             year: citation.published_year,
@@ -445,6 +551,8 @@ mod tests {
             arxiv_id: None,
             openalex_id: None,
             related_doi: None,
+            references: None,
+            references_truncated: false,
             title: title.to_owned(),
             authors: vec!["Model Researcher".into()],
             container_title: None,
@@ -496,12 +604,18 @@ mod tests {
                 "DOI":"10.1234/example", "title":["An example"],
                 "author":[{"given":"Research","family":"Example"}],
                 "published":{"date-parts":[[2025,3,4]]},
-                "license":[{"URL":"javascript:bad"},{"URL":"https://creativecommons.org/licenses/by/4.0/"}]
+                "license":[{"URL":"javascript:bad"},{"URL":"https://creativecommons.org/licenses/by/4.0/"}],
+                "reference":[{"DOI":"https://doi.org/10.1234/OTHER"}, {"unstructured":"no identifier"}]
             }]}
         }"#, 2, 42).unwrap();
         assert_eq!(citations[0].published_year, Some(2025));
         assert_eq!(citations[0].authors, ["Research Example"]);
         assert_eq!(citations[0].license_urls.len(), 1);
+        assert_eq!(
+            citations[0].references.as_deref().unwrap(),
+            ["10.1234/other"]
+        );
+        assert!(citations[0].references_truncated);
         assert_eq!(citations[0].provenance.source, CitationSource::Crossref);
         assert_eq!(citations[0].provenance.observed_at_unix_seconds, 42);
     }
@@ -520,7 +634,8 @@ mod tests {
             r#"{"results":[
             {
                 "id":"https://openalex.org/W101","doi":"https://doi.org/10.1234/EXAMPLE",
-                "title":"A newer snapshot","publication_year":2025
+                "title":"A newer snapshot","publication_year":2025,
+                "referenced_works":["https://openalex.org/W102","https://example.invalid/W103"]
             },
             {
                 "id":"https://openalex.org/W102","doi":null,"display_name":"A DOI-less record",
@@ -536,6 +651,12 @@ mod tests {
         assert_eq!(catalog.import(records.clone()).unwrap(), 1);
         assert_eq!(catalog.import(records).unwrap(), 0);
         let by_identifier = catalog.search("w101", 20).unwrap();
+        let snapshots = catalog.snapshots("10.1234/example").unwrap();
+        assert_eq!(
+            snapshots[0].citation.references.as_deref().unwrap(),
+            ["openalex:W102"]
+        );
+        assert!(snapshots[0].citation.references_truncated);
         assert_eq!(by_identifier[0].title, "A prior work");
         assert_eq!(by_identifier[0].provenance.source, CitationSource::Manual);
         let by_topic = catalog.search("computational methods", 20).unwrap();
@@ -568,6 +689,12 @@ mod tests {
         assert_eq!(records[0].authors, ["Fixture Author"]);
         assert_eq!(records[0].title, "Determinism & experiments");
         assert_eq!(catalog.import(records).unwrap(), 1);
+        assert!(
+            catalog.snapshots("arxiv:2501.01234").unwrap()[0]
+                .citation
+                .references
+                .is_none()
+        );
         let newer_feed = feed.replace("01234v1", "01234v2");
         let newer = discovery::parse_metadata(MetadataProvider::Arxiv, &newer_feed, 1, 11).unwrap();
         assert_eq!(catalog.import(newer).unwrap(), 0);
@@ -576,6 +703,18 @@ mod tests {
         assert_eq!(result[0].provenance.observed_at_unix_seconds, 10);
         assert_eq!(catalog.search("", 20).unwrap().len(), 2);
         assert_eq!(catalog.search("2501.01234v1", 20).unwrap(), result);
+        assert_eq!(catalog.search("2501.01234v2", 20).unwrap(), result);
+        assert_eq!(
+            catalog
+                .freeze("https://arxiv.org/abs/2501.01234v2")
+                .unwrap()
+                .url,
+            "https://arxiv.org/abs/2501.01234v2"
+        );
+        assert!(matches!(
+            catalog.freeze("arxiv:2501.01234v3"),
+            Err(LiteratureError::MissingCitation)
+        ));
     }
 
     #[test]

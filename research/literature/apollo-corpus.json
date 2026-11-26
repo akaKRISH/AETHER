@@ -1,0 +1,20 @@
+[
+  {
+    "arxiv_id": "2003.12206v4",
+    "title": "Improving Reproducibility in Machine Learning Research (A Report from the NeurIPS 2019 Reproducibility Program)",
+    "published_year": 2020,
+    "container_title": "arXiv"
+  },
+  {
+    "arxiv_id": "2308.07832v2",
+    "title": "REFORMS: Reporting Standards for Machine Learning Based Science",
+    "published_year": 2023,
+    "container_title": "arXiv"
+  },
+  {
+    "arxiv_id": "2504.01848v3",
+    "title": "PaperBench: Evaluating AI's Ability to Replicate AI Research",
+    "published_year": 2025,
+    "container_title": "arXiv"
+  }
+]

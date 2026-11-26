@@ -303,7 +303,7 @@ impl Lab {
         Ok(file)
     }
 
-    fn catalog(&self) -> Result<crate::literature::CitationCatalog> {
+    pub fn catalog(&self) -> Result<crate::literature::CitationCatalog> {
         storage(crate::literature::CitationCatalog::open(
             self.root.join("literature.sqlite3"),
         ))
@@ -337,6 +337,8 @@ impl Lab {
                 arxiv_id: None,
                 openalex_id: None,
                 related_doi: None,
+                references: None,
+                references_truncated: false,
                 title: (*title).into(),
                 authors: Vec::new(),
                 published_year: Some(*year),
@@ -356,13 +358,6 @@ impl Lab {
 
     pub fn import_citations(&self, citations: Vec<crate::literature::Citation>) -> Result<usize> {
         storage(self.catalog()?.import_manual(citations))
-    }
-
-    pub fn save_discovered_citations(
-        &self,
-        citations: Vec<crate::literature::Citation>,
-    ) -> Result<usize> {
-        storage(self.catalog()?.import(citations))
     }
 
     pub fn create(&self, plan: &PlanRequest) -> Result<Campaign> {

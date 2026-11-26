@@ -54,6 +54,86 @@ impl Drop for Workspace {
 }
 
 #[test]
+fn literature_ingestion_reopens_exact_source_and_never_creates_evidence() {
+    let work = Workspace::new();
+    let metadata = work.0.join("metadata.json");
+    let manifest = work.0.join("source.json");
+    let source = work.0.join("source.txt");
+    let input = include_str!("fixtures/apollo-extraction.txt");
+    let id = "10.9999/aether-apo01-fixture";
+    fs::write(
+        &metadata,
+        json!([{"doi":id,"title":"Synthetic APOLLO test record"}]).to_string(),
+    )
+    .unwrap();
+    fs::write(&source, input).unwrap();
+    let mut rights = json!({
+        "paper_id": "https://doi.org/10.9999/AETHER-APO01-FIXTURE",
+        "source_url": "https://example.invalid/synthetic-apollo.txt",
+        "license": "CC0-1.0",
+        "rights_confirmed": false
+    });
+    fs::write(&manifest, rights.to_string()).unwrap();
+    work.success(&["import-citations", metadata.to_str().unwrap()]);
+    assert_eq!(
+        work.success(&["literature-work", id])["text_status"],
+        "unavailable"
+    );
+    let ingest = [
+        "literature-ingest",
+        manifest.to_str().unwrap(),
+        source.to_str().unwrap(),
+    ];
+    assert!(!work.invoke(&ingest).status.success());
+    rights["rights_confirmed"] = json!(true);
+    fs::write(&manifest, rights.to_string()).unwrap();
+    let archived = work.success(&ingest);
+    assert_eq!(archived["status"], "extracted_unverified");
+    assert_eq!(
+        archived["source_sha256"],
+        aether_store::artifact_sha256(input.as_bytes())
+    );
+    assert_eq!(archived["missing_sections"], json!([]));
+    let passages = archived["passages"].as_array().unwrap();
+    assert_eq!(passages.len(), 5);
+    for passage in passages {
+        let start = passage["start_byte"].as_u64().unwrap() as usize;
+        let end = passage["end_byte"].as_u64().unwrap() as usize;
+        assert_eq!(passage["quote"], &input[start..end]);
+    }
+    assert_eq!(work.success(&ingest), archived);
+    assert_eq!(
+        work.success(&["literature-text", id, archived["id"].as_str().unwrap()])["text"],
+        input
+    );
+    assert_eq!(
+        work.success(&["literature-work", id])["documents"],
+        json!([archived])
+    );
+    assert_eq!(
+        work.success(&["bibliography", "digests match"])
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    assert_eq!(work.success(&["list"]), json!([]));
+    let catalog = rusqlite::Connection::open(work.0.join("literature.sqlite3")).unwrap();
+    catalog
+        .execute(
+            "UPDATE literature_texts SET body = CAST('tampered' AS BLOB)",
+            [],
+        )
+        .unwrap();
+    assert!(
+        !work
+            .invoke(&["literature-text", id, archived["id"].as_str().unwrap()])
+            .status
+            .success()
+    );
+}
+
+#[test]
 fn discovery_persists_replayable_content_addressed_evidence() {
     let work = Workspace::new();
     let args = ["discover", "19", "8"];
@@ -707,4 +787,23 @@ fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
             .unwrap_or_default()
             .contains("CAVEAT")
     }));
+    let path = "/v1/literature/work?id=10.21203%2Frs.3.rs-11035327%2Fv1";
+    assert_eq!(
+        agent
+            .get(format!("{origin}{path}"))
+            .call()
+            .unwrap()
+            .status()
+            .as_u16(),
+        401
+    );
+    let detail: Value = get(path).body_mut().read_json().unwrap();
+    assert_eq!(detail["text_status"], "unavailable");
+    assert_eq!(detail["snapshots"].as_array().unwrap().len(), 1);
+    assert_eq!(
+        get("/v1/literature/work?id=10.9999%2Fabsent")
+            .status()
+            .as_u16(),
+        404
+    );
 }

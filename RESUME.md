@@ -1,5 +1,15 @@
 # Resume AETHER
 
+## APO-01 scientific literature intelligence
+
+Started from `a18c1b8` (`daedalus-engineering-verified`). APOLLO extends the existing Rust provider adapters and SQLite catalog with bounded page caching, persisted provider cooldowns, deduplicated metadata snapshots, explicit arXiv revisions and source-reported citation identifiers. The first planning citation remains stable. The Research OS Literature view shows snapshots, source links, and extracted prose with byte offsets when a local text is present.
+
+The CLI accepts authorized UTF-8 text under the rights manifest in [ADR-014](docs/decisions/ADR-014.md). It archives exact bytes and uses deterministic heading recognition for questions, methods, claims, results and limitations. The archive records missing sections and truncation. Extracted passages carry unverified status and cannot affect approvals, execution or trusted evidence. The [starter corpus](research/literature/README.md) contains three real metadata records and a separate synthetic full-text fixture.
+
+Provider behavior is checked through deterministic fixtures. Upstream index changes can shift offset pages after cache expiry. PDF conversion, larger corpora with reviewed rights, and extraction quality measurement are follow-up work in the [APOLLO execution plan](docs/research/APOLLO_EXECUTION_PLAN.md).
+
+Validation passed 18 API unit tests, 12 platform tests, strict API Clippy, the offline release build, five frontend tests, TypeScript, lint, the web build, and desktop/mobile browser smoke against the release binary. Documentation and schema checks passed. Fresh CLI processes reopened all three starter metadata revisions and resolved PaperBench through its existing DOI alias. Frozen research records, Rune and the workspace lockfile matched the DAEDALUS checkpoint.
+
 ## DAE-10 final DAEDALUS engineering release
 
 Release candidate began at `3af6dbd`, the separate Rune probe checkpoint. Rune remains optional, unqualified and outside the default Cargo workspace and release gates. The starter build and host memory interruption are recorded in `experiments/rune-native/README.md`; the probe is not an AETHER interface.

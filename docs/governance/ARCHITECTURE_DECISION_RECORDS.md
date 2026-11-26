@@ -17,5 +17,6 @@ An architecture decision record documents the decision, alternatives considered,
 | [ADR-011](../decisions/ADR-011.md) | Transactional SQLite BLOBs for bounded workbench artifacts | Implemented local scope |
 | [ADR-012](../decisions/ADR-012.md) | Reviewed optimization task and optional provider adapters | Authorized local engineering scope |
 | [ADR-013](../decisions/ADR-013.md) | Cited objective drafts with qualified local model provenance | Athena implementation |
+| [ADR-014](../decisions/ADR-014.md) | Versioned literature archive and exact source passages | APOLLO local scope |
 
 Preserve historic reasoning. Record changes with a superseding ADR and update relevant requirements, contract versions and diagrams in the same review. Document areas where the executable acceptance criterion still needs refinement. [v0.2 ADR and traceability](../archive/v0.2/AETHER/19_ADR_TRACEABILITY.md)

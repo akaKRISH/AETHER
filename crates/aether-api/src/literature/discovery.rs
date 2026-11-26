@@ -1,23 +1,18 @@
-use std::sync::Mutex;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use roxmltree::{Document, Node, ParsingOptions};
 use serde::{Deserialize, Serialize};
 
 use super::{
-    Citation, CitationProvenance, CitationSource, LiteratureError, observed_now, valid_doi,
-    valid_license_url, valid_text, validate_query,
+    Citation, CitationProvenance, CitationSource, LiteratureError, normalized_doi, observed_now,
+    paper_id, valid_doi, valid_license_url, valid_text, validate_query,
 };
 
 const MAX_RESPONSE_BYTES: u64 = 2 * 1024 * 1024;
 const ATOM: &str = "http://www.w3.org/2005/Atom";
 const ARXIV_NS: &str = "http://arxiv.org/schemas/atom";
 
-type LookupSlot = Mutex<Option<(Instant, Duration)>>;
-
-static CROSSREF_SLOT: LookupSlot = Mutex::new(None);
-static OPENALEX_SLOT: LookupSlot = Mutex::new(None);
-static ARXIV_SLOT: LookupSlot = Mutex::new(None);
+pub(super) const PAGE_LIMIT: u16 = 50;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -29,60 +24,86 @@ pub enum MetadataProvider {
     Arxiv,
 }
 
+impl MetadataProvider {
+    pub(super) fn settings(self) -> (&'static str, &'static str, u64) {
+        match self {
+            Self::Crossref => ("crossref", "https://api.crossref.org/works", 1),
+            Self::OpenAlex => ("openalex", "https://api.openalex.org/works", 3),
+            Self::Arxiv => ("arxiv", "https://export.arxiv.org/api/query", 3),
+        }
+    }
+
+    pub fn enabled(self) -> bool {
+        let flag = match self {
+            Self::Crossref => "AETHER_ALLOW_CROSSREF",
+            Self::OpenAlex => "AETHER_ALLOW_OPENALEX",
+            Self::Arxiv => "AETHER_ALLOW_ARXIV",
+        };
+        std::env::var(flag).as_deref() == Ok("1")
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MetadataPage {
+    pub provider: MetadataProvider,
+    pub endpoint: String,
+    pub query: String,
+    pub page: u16,
+    pub page_size: usize,
+    pub response_sha256: String,
+    pub observed_at_unix_seconds: u64,
+    pub next_page: Option<u16>,
+    pub capped: bool,
+    pub received: usize,
+    pub records: Vec<Citation>,
+    #[serde(default)]
+    pub cached: bool,
+}
+
 /// Make one bounded request to a fixed metadata origin. The caller authorizes
 /// the exact bibliographic query. Returned links are never requested here.
-pub fn search_metadata(
+pub(super) fn fetch_page(
     provider: MetadataProvider,
     query: &str,
     limit: usize,
-) -> Result<Vec<Citation>, LiteratureError> {
+    page: u16,
+) -> Result<MetadataPage, LiteratureError> {
     validate_query(query, limit, false)?;
-    let (slot, cooldown) = match provider {
-        MetadataProvider::Crossref => (&CROSSREF_SLOT, 1),
-        MetadataProvider::OpenAlex => (&OPENALEX_SLOT, 3),
-        MetadataProvider::Arxiv => (&ARXIV_SLOT, 3),
-    };
-    let mut slot = slot.try_lock().map_err(|_| LiteratureError::RateLimited {
-        retry_after_secs: cooldown,
-    })?;
-    if let Some((started, delay)) = *slot
-        && let Some(wait) = delay.checked_sub(started.elapsed())
-        && !wait.is_zero()
-    {
-        return Err(LiteratureError::RateLimited {
-            retry_after_secs: wait.as_secs().saturating_add(1),
-        });
-    }
-
+    let (_, endpoint, _) = provider.settings();
     let agent: ureq::Agent = ureq::Agent::config_builder()
         .https_only(true)
         .max_redirects(0)
         .http_status_as_error(false)
+        .proxy(None)
         .timeout_global(Some(Duration::from_secs(8)))
         .build()
         .into();
     let query = query.trim();
     let count = limit.to_string();
+    let offset = usize::from(page) * limit;
     let request = match provider {
         MetadataProvider::Crossref => agent
-            .get("https://api.crossref.org/works")
+            .get(endpoint)
             .query("query.bibliographic", query)
             .query("rows", &count)
+            .query("offset", offset.to_string())
             .query(
                 "select",
-                "DOI,title,author,container-title,published,license",
+                "DOI,title,author,container-title,published,license,reference",
             ),
         MetadataProvider::OpenAlex => agent
-            .get("https://api.openalex.org/works")
+            .get(endpoint)
             .query("search", query)
             .query("per_page", &count)
+            .query("page", (page + 1).to_string())
             .query(
                 "select",
-                "id,doi,display_name,authorships,publication_year,primary_location,topics",
+                "id,doi,display_name,authorships,publication_year,primary_location,topics,referenced_works",
             ),
         MetadataProvider::Arxiv => agent
-            .get("https://export.arxiv.org/api/query")
+            .get(endpoint)
             .query("search_query", format!("all:{query}"))
+            .query("start", offset.to_string())
             .query("max_results", &count),
     };
     let response = request
@@ -91,7 +112,6 @@ pub fn search_metadata(
             "AETHER-Research-Laboratory/0.1 (explicit bibliographic lookup)",
         )
         .call();
-    *slot = Some((Instant::now(), Duration::from_secs(cooldown)));
     let mut response = response.map_err(|_| LiteratureError::Upstream)?;
     if response.status().as_u16() == 429 {
         let wait = retry_after_seconds(
@@ -100,7 +120,6 @@ pub fn search_metadata(
                 .get("retry-after")
                 .and_then(|value| value.to_str().ok()),
         );
-        *slot = Some((Instant::now(), Duration::from_secs(wait)));
         return Err(LiteratureError::RateLimited {
             retry_after_secs: wait,
         });
@@ -108,15 +127,15 @@ pub fn search_metadata(
     if !response.status().is_success() {
         return Err(LiteratureError::Upstream);
     }
-    let body = response
+    let bytes = response
         .body_mut()
         .with_config()
         .limit(MAX_RESPONSE_BYTES)
-        .read_to_string()
+        .read_to_vec()
         .map_err(|_| LiteratureError::InvalidResponse)?;
-    *slot = Some((Instant::now(), Duration::from_secs(cooldown)));
+    let body = std::str::from_utf8(&bytes).map_err(|_| LiteratureError::InvalidResponse)?;
     let timestamp = observed_now(CitationSource::from(provider)).observed_at_unix_seconds;
-    parse_metadata(provider, &body, limit, timestamp)
+    decoded_page(provider, body, limit, timestamp, query, page)
 }
 
 impl From<MetadataProvider> for CitationSource {
@@ -129,12 +148,32 @@ impl From<MetadataProvider> for CitationSource {
     }
 }
 
+#[cfg(test)]
 pub(super) fn parse_metadata(
     provider: MetadataProvider,
     body: &str,
     limit: usize,
     observed_at_unix_seconds: u64,
 ) -> Result<Vec<Citation>, LiteratureError> {
+    Ok(decoded_page(
+        provider,
+        body,
+        limit,
+        observed_at_unix_seconds,
+        "fixture",
+        0,
+    )?
+    .records)
+}
+
+pub(super) fn decoded_page(
+    provider: MetadataProvider,
+    body: &str,
+    limit: usize,
+    observed_at_unix_seconds: u64,
+    query: &str,
+    page: u16,
+) -> Result<MetadataPage, LiteratureError> {
     if body.len() as u64 > MAX_RESPONSE_BYTES {
         return Err(LiteratureError::InvalidResponse);
     }
@@ -142,11 +181,33 @@ pub(super) fn parse_metadata(
         source: provider.into(),
         observed_at_unix_seconds,
     };
-    match provider {
-        MetadataProvider::Crossref => crossref_citations(decode_json(body)?, limit, provenance),
-        MetadataProvider::OpenAlex => openalex_citations(decode_json(body)?, limit, provenance),
-        MetadataProvider::Arxiv => arxiv_citations(body, limit, provenance),
-    }
+    let (records, received) = match provider {
+        MetadataProvider::Crossref => {
+            let envelope: CrossrefEnvelope = decode_json(body)?;
+            let received = envelope.message.items.len();
+            (crossref_citations(envelope, limit, provenance)?, received)
+        }
+        MetadataProvider::OpenAlex => {
+            let envelope: OpenAlexEnvelope = decode_json(body)?;
+            let received = envelope.results.len();
+            (openalex_citations(envelope, limit, provenance)?, received)
+        }
+        MetadataProvider::Arxiv => arxiv_citations(body, limit, provenance)?,
+    };
+    Ok(MetadataPage {
+        provider,
+        endpoint: provider.settings().1.into(),
+        query: query.into(),
+        page,
+        page_size: limit,
+        response_sha256: aether_store::artifact_sha256(body.as_bytes()),
+        observed_at_unix_seconds,
+        received,
+        records,
+        cached: false,
+        next_page: (received == limit && page + 1 < PAGE_LIMIT).then_some(page + 1),
+        capped: received == limit && page + 1 == PAGE_LIMIT,
+    })
 }
 
 fn decode_json<T: serde::de::DeserializeOwned>(body: &str) -> Result<T, LiteratureError> {
@@ -184,6 +245,13 @@ struct CrossrefItem {
     published: Option<CrossrefDate>,
     #[serde(default)]
     license: Vec<CrossrefLicense>,
+    reference: Option<Vec<CrossrefReference>>,
+}
+
+#[derive(Deserialize)]
+struct CrossrefReference {
+    #[serde(rename = "DOI")]
+    doi: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -251,11 +319,18 @@ fn crossref_citations(
                 .filter(|link| valid_license_url(link))
                 .take(8)
                 .collect();
+            let (references, references_truncated) =
+                bounded_references(item.reference.map(|list| {
+                    list.into_iter()
+                        .map(|reference| reference.doi.and_then(|doi| normalized_doi(&doi)))
+                }));
             Citation {
                 doi: Some(item.doi),
                 arxiv_id: None,
                 openalex_id: None,
                 related_doi: None,
+                references,
+                references_truncated,
                 topics: Vec::new(),
                 title,
                 authors,
@@ -287,6 +362,7 @@ struct OpenAlexWork {
     primary_location: Option<OpenAlexLocation>,
     #[serde(default)]
     topics: Vec<OpenAlexLabel>,
+    referenced_works: Option<Vec<String>>,
 }
 
 #[derive(Deserialize)]
@@ -317,15 +393,19 @@ fn openalex_citations(
         .into_iter()
         .filter_map(|item| {
             let id = item.id.strip_prefix("https://openalex.org/")?;
-            let doi = item.doi.and_then(|doi| {
-                let normalized = doi.strip_prefix("https://doi.org/").unwrap_or(&doi);
-                valid_doi(normalized).then(|| normalized.to_owned())
-            });
+            let doi = item.doi.and_then(|doi| normalized_doi(&doi));
+            let (references, references_truncated) =
+                bounded_references(item.referenced_works.map(|list| {
+                    list.into_iter()
+                        .map(|id| paper_id(&id).filter(|id| id.starts_with("openalex:")))
+                }));
             Citation {
                 doi,
                 arxiv_id: None,
                 openalex_id: Some(id.to_owned()),
                 related_doi: None,
+                references,
+                references_truncated,
                 title: item.title?,
                 authors: item
                     .authorships
@@ -359,7 +439,7 @@ fn arxiv_citations(
     body: &str,
     limit: usize,
     provenance: CitationProvenance,
-) -> Result<Vec<Citation>, LiteratureError> {
+) -> Result<(Vec<Citation>, usize), LiteratureError> {
     let options = ParsingOptions {
         nodes_limit: 25_000,
         ..ParsingOptions::default()
@@ -379,6 +459,7 @@ fn arxiv_citations(
         return Err(LiteratureError::InvalidResponse);
     }
     let mut records = Vec::new();
+    let received = entries.len();
     for entry in entries {
         let raw_id = xml_child_text(entry, ATOM, "id").ok_or(LiteratureError::InvalidResponse)?;
         let id = raw_id
@@ -389,7 +470,7 @@ fn arxiv_citations(
             records.push(record);
         }
     }
-    Ok(records)
+    Ok((records, received))
 }
 
 fn arxiv_record(
@@ -407,6 +488,8 @@ fn arxiv_record(
         related_doi: xml_child_text(entry, ARXIV_NS, "doi")
             .filter(|doi| valid_doi(doi))
             .map(str::to_owned),
+        references: None,
+        references_truncated: false,
         title: title.split_whitespace().collect::<Vec<_>>().join(" "),
         authors: entry
             .children()
@@ -431,6 +514,21 @@ fn arxiv_record(
     }
     .normalized()
     .ok()
+}
+
+fn bounded_references(
+    ids: Option<impl Iterator<Item = Option<String>>>,
+) -> (Option<Vec<String>>, bool) {
+    let Some(ids) = ids else { return (None, false) };
+    let mut incomplete = false;
+    let mut saved = Vec::new();
+    for id in ids {
+        match id {
+            Some(id) if saved.len() < 128 => saved.push(id),
+            _ => incomplete = true,
+        }
+    }
+    (Some(saved), incomplete)
 }
 
 fn xml_child_text<'a>(node: Node<'a, '_>, ns: &str, name: &str) -> Option<&'a str> {

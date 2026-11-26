@@ -44,6 +44,10 @@ Commands
   aether-lab propose-provider <request.json> <provider> <model>  Plan with explicit provider provenance
   aether-lab bibliography [query]   Search the local citation catalog
   aether-lab import-citations <json> Import bounded DOI citation metadata
+  aether-lab literature-discover <crossref|openalex|arxiv> <query> <page>  Cache and save one page
+  aether-lab literature-work <paper-id>  Inspect metadata versions and extracted passages
+  aether-lab literature-ingest <manifest.json> <full-text.txt>  Archive approved local UTF-8 text
+  aether-lab literature-text <paper-id> <document-id>  Read exact archived source text
   aether-lab recover <id>           Reconcile an interrupted campaign
   aether-lab serve [port]           Start authenticated loopback API and built workspace
 
@@ -181,6 +185,32 @@ fn execute(args: &[String]) -> Result<()> {
         [command, path] if command == "import-citations" => {
             let citations = read_json_file(&PathBuf::from(path))?;
             print_json(&json!({"imported": lab.import_citations(citations)?}))
+        }
+        [command, provider, query, page] if command == "literature-discover" => {
+            use literature::MetadataProvider::{Arxiv, Crossref, OpenAlex};
+            let provider = match provider.as_str() {
+                "crossref" => Crossref,
+                "openalex" => OpenAlex,
+                "arxiv" => Arxiv,
+                _ => return Err("unknown literature provider".into()),
+            };
+            if !provider.enabled() {
+                return Err("external citation lookup is disabled".into());
+            }
+            print_json(
+                &lab.catalog()?
+                    .discover(provider, query, page.parse()?, true)?,
+            )
+        }
+        [command, id] if command == "literature-work" => {
+            print_json(&lab.catalog()?.archive_work(id)?)
+        }
+        [command, path, text] if command == "literature-ingest" => {
+            let manifest: literature::TextManifest = read_json_file(&PathBuf::from(path))?;
+            print_json(&lab.catalog()?.ingest_text(manifest, &PathBuf::from(text))?)
+        }
+        [command, id, digest] if command == "literature-text" => {
+            print_json(&lab.catalog()?.source_text(id, digest)?)
         }
         [command] if command == "serve" => serve(lab, 8080),
         [command, port] if command == "serve" => serve(lab, port.parse()?),

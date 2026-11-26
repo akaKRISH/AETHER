@@ -205,6 +205,14 @@ export async function getRecord(token: string, path: 'runtime' | 'literature' | 
   return json(token, `/${path}${search}`, { signal })
 }
 
+export async function getLiteratureWork(token: string, id: string, signal: AbortSignal): Promise<Row> {
+  const value = await json(token, `/literature/work?${new URLSearchParams({ id })}`, { signal })
+  if (!isRow(value) || !Array.isArray(value.snapshots) || !Array.isArray(value.documents)) {
+    throw new Error('Invalid literature archive response.')
+  }
+  return value
+}
+
 export async function runStudy(token: string): Promise<StudyReport> {
   const result = await json(token, '/benchmarks', { method: 'POST' })
   const report = isRow(result) && isRow(result.report) ? result.report : result
