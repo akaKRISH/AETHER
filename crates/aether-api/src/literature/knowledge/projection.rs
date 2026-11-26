@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use super::*;
 use crate::literature::{Citation, archive::arxiv_alias};
 
-fn edge(
+pub(super) fn edge(
     origin: &str,
     to: &str,
     relation: Relation,

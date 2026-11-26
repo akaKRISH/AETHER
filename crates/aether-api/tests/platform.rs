@@ -270,6 +270,52 @@ fn graph_archives_two_rights_cleared_scientific_excerpts_offline() {
 }
 
 #[test]
+fn hypothesis_archive_preserves_exact_pairs_across_processes() {
+    let work = Workspace::new();
+    let indexed = work.success(&["hypothesis-index"]);
+    let id = indexed["root"].as_str().unwrap();
+    let first = work.invoke(&["hypothesis-discover", id]);
+    assert!(first.status.success());
+    assert_eq!(
+        first.stdout,
+        work.invoke(&["hypothesis-discover", id]).stdout
+    );
+    assert_eq!(indexed, work.success(&["hypothesis-index"]));
+    let report: Value = serde_json::from_slice(&first.stdout).unwrap();
+    let bytes = include_bytes!("../../../research/results/dae-hybrid-development.json");
+    let artifact: Value = serde_json::from_slice(bytes).unwrap();
+    let proposals = report["proposals"].as_array().unwrap();
+    assert!(proposals.len() >= 3);
+    for proposal in proposals {
+        assert_eq!(proposal["status"], "unverified");
+        for reference in proposal["supports"].as_array().unwrap() {
+            let source = &reference["source"];
+            assert_eq!(
+                source["artifact_sha256"],
+                aether_store::artifact_sha256(bytes)
+            );
+            let record = artifact
+                .pointer(source["pointer"].as_str().unwrap())
+                .unwrap();
+            if reference["kind"] == "metric" {
+                let comparison: Value =
+                    serde_json::from_str(reference["statement"].as_str().unwrap()).unwrap();
+                let records = record["records"].as_array().unwrap();
+                for (arm, gap) in [
+                    ("adaptive_hybrid", "treatment_gap"),
+                    ("greedy", "control_gap"),
+                ] {
+                    assert!(records.iter().any(|row| row["arm"] == arm
+                        && row["evaluation_budget"] == 8
+                        && row["optimality_gap"] == comparison[gap]));
+                }
+            }
+        }
+    }
+    assert_eq!(work.success(&["list"]), json!([]));
+}
+
+#[test]
 fn discovery_persists_replayable_content_addressed_evidence() {
     let work = Workspace::new();
     let args = ["discover", "19", "8"];
@@ -978,6 +1024,19 @@ fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
     let entities: Value = get(search).body_mut().read_json().unwrap();
     let node = entities["nodes"][0]["id"].as_str().unwrap();
     let graph = format!("/v1/knowledge/{node}");
+    let hypotheses = format!("{graph}/hypotheses");
+    assert_eq!(
+        agent
+            .get(format!("{origin}{hypotheses}"))
+            .call()
+            .unwrap()
+            .status()
+            .as_u16(),
+        401
+    );
+    let sparse: Value = get(&hypotheses).body_mut().read_json().unwrap();
+    assert_eq!(sparse["schema"], "aether.hypotheses/1");
+    assert_eq!(sparse["proposals"], json!([]));
     assert_eq!(
         agent
             .get(format!("{origin}{graph}"))

@@ -53,6 +53,8 @@ Commands
   aether-lab graph-report <paper-id> <document-id> <start-byte> <end-byte>  Mark a source span as a reported claim
   aether-lab graph-campaign <id>      Capture trusted campaign records in the research graph
   aether-lab graph-export <node-id> [depth]  Export a bounded graph and its digest
+  aether-lab hypothesis-index               Index the pinned DAE-04 observations
+  aether-lab hypothesis-discover <node-id>  Rank advisory hypotheses for a bounded graph slice
   aether-lab recover <id>           Reconcile an interrupted campaign
   aether-lab serve [port]           Start authenticated loopback API and built workspace
 
@@ -234,6 +236,12 @@ fn execute(args: &[String]) -> Result<()> {
         }
         [command, id, depth] if command == "graph-export" => {
             print_json(&lab.catalog()?.graph_export(id, depth.parse()?)?)
+        }
+        [command] if command == "hypothesis-index" => {
+            print_json(&lab.catalog()?.index_hypothesis_archive()?)
+        }
+        [command, id] if command == "hypothesis-discover" => {
+            print_json(&lab.catalog()?.discover_hypotheses(id)?)
         }
         [command] if command == "serve" => serve(lab, 8080),
         [command, port] if command == "serve" => serve(lab, port.parse()?),

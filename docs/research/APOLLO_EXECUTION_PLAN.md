@@ -37,6 +37,14 @@ To enter a local proposal, save this example as a JSON file and run `aether-lab 
 
 The [graph decision](../decisions/ADR-015.md) describes projection, versioning and limits. The [two reviewed excerpts](../../research/literature/README.md#apo-02-reviewed-excerpts) test source grounding separately from synthetic contradictory and adversarial cases.
 
+### APO-03 hypothesis discovery
+
+Run `aether-lab hypothesis-index` to index all 20 matched cases from the pinned DAE-04 archive at eight candidate evaluations per arm. Use the returned graph root with `aether-lab hypothesis-discover <node-id>`. Alternatively, search for **DAE-04 matched** in the Research OS Knowledge Graph and select **Discover hypotheses**. The same read path works from a literature, claim, method, or experiment node. Inspect the exact source references and scope before evaluating a proposal.
+
+The annotated comparison path accepts a local `metric` whose statement is a JSON object with numeric `treatment_gap` and `control_gap`, where smaller is better, and a `scope` object. The scope includes `task`, `case_sha256`, `profile`, `size`, `metric`, `treatment`, `control` and `budget`. Link the metric to a grounded claim or evidence revision with `derived_from`. The declared scope is an annotation and must be checked against the original. For transfer candidates, a dataset can declare a domain with a statement like `{"domain":"scheduling"}`. A shared grounded method and explicit dataset links are required on both sides.
+
+Synthetic fixtures cover false conflicts, copied evidence, unsupported claims, misleading associations, proposal deduplication and incomplete local coverage. DAE-04 provides the separate measured development cases. Any proposed test needs a reviewed protocol, resource decision and the existing approval workflow. [Ranking and limits](../decisions/ADR-016.md)
+
 ### Pending literature work
 
 1. Review the starter corpus and expand it with authorized full-text copies. Label conversion methods and record version-specific rights before importing a new format.

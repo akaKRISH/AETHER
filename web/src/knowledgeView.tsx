@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { getKnowledge, message, rows, searchKnowledge, type Row } from './api'
+import { getGraphHypotheses, getKnowledge, message, rows, searchKnowledge, type Row } from './api'
 import { Empty, Fields, Panel, RecordTable, errorText, pretty, readableRecord, text } from './components'
 
 const kinds = ['paper', 'claim', 'method', 'dataset', 'metric', 'experiment', 'model', 'evidence',
@@ -110,8 +110,47 @@ export function KnowledgeGraph({ token }: { token: string }) {
             ]} columns={[{ key: 'id', label: 'Entity', render: nodeLink }, 'match']} empty="No matching peers." />
           </details>
           <Fields data={{ graph_sha256: snapshot.graph_sha256 }} />
+          <GraphHypotheses key={selected} token={token} id={selected} />
         </>}
       </>}
     </Panel>
   </div>
+}
+
+function GraphHypotheses({ token, id }: { token: string; id: string }) {
+  const [requested, setRequested] = useState(false)
+  const [report, setReport] = useState<Row>()
+  const [error, setError] = useState('')
+  useEffect(() => {
+    if (!requested) return
+    const controller = new AbortController()
+    getGraphHypotheses(token, id, controller.signal).then(
+      (value) => { if (!controller.signal.aborted) setReport(value) },
+      (reason) => { if (!controller.signal.aborted) setError(message(reason)) },
+    )
+    return () => controller.abort()
+  }, [token, id, requested])
+  if (!requested) return <div className="toolbar">
+    <button className="button" type="button" onClick={() => setRequested(true)}>Discover hypotheses</button>
+  </div>
+  return <section aria-label="Hypothesis discovery">
+    <h3>Ranked hypotheses</h3>
+    {error ? errorText(error) : !report ? <p role="status">Scanning local evidence…</p> : <>
+      <p className="panel-note">{text(report.coverage)}</p>
+      <Fields data={{ graph_sha256: report.graph_sha256, ranking_formula: report.ranking_formula }} />
+      {rows(report.proposals).length === 0 && <Empty title="No grounded hypothesis qualified in this graph slice." />}
+      {rows(report.proposals).map((proposal) => <details key={text(proposal.id)}>
+        <summary>{pretty(text(proposal.generator))} · Unverified · Score {text(readableRecord(proposal.ranking).score)}</summary>
+        <p className="panel-note">{text(proposal.proposition)}</p>
+        <Fields data={proposal} omit={['proposition', 'status', 'generator', 'supports', 'contradictory_evidence', 'context']} />
+        <RecordTable label="Supporting evidence" data={rows(proposal.supports)}
+          columns={['node', 'revision_sha256', 'status', 'source', 'statement']} />
+        <RecordTable label="Counterevidence and opposing assertions" data={rows(proposal.contradictory_evidence)}
+          columns={['node', 'revision_sha256', 'status', 'source', 'statement']} empty="No applicable counterevidence in this slice." />
+        <RecordTable label="Scope and design context" data={rows(proposal.context)}
+          columns={['node', 'revision_sha256', 'status', 'source', 'statement']} empty="No additional graph context." />
+      </details>)}
+      <details><summary>Scan diagnostics</summary><Fields data={readableRecord(report.diagnostics)} /></details>
+    </>}
+  </section>
 }

@@ -1,3 +1,4 @@
+pub(super) mod hypotheses;
 pub(super) mod projection;
 #[cfg(test)]
 mod tests;
@@ -44,7 +45,7 @@ graph_enum!(Relation {
     DependsOn => "depends_on", Supports => "supports", Contradicts => "contradicts",
     UsesMethod => "uses_method", UsesDataset => "uses_dataset", UsesModel => "uses_model",
     Measures => "measures", Tests => "tests", Records => "records",
-    Includes => "includes", Evaluates => "evaluates",
+    Includes => "includes", Evaluates => "evaluates", DerivedFrom => "derived_from",
 });
 
 impl Relation {
@@ -70,6 +71,7 @@ impl Relation {
             Self::Tests => (from, to) == (Experiment, Hypothesis),
             Self::Records => (from, to) == (Experiment, Evidence),
             Self::Evaluates => (from, to) == (Evidence, Claim),
+            Self::DerivedFrom => from == Metric && matches!(to, Claim | Evidence),
             Self::Includes => {
                 from == Campaign
                     && matches!(to, Claim | Hypothesis | Experiment | Metric | Evidence)
@@ -112,6 +114,11 @@ enum Source {
         campaign: String,
         protocol_sha256: String,
         record: String,
+    },
+    Archive {
+        artifact: String,
+        artifact_sha256: String,
+        pointer: String,
     },
 }
 
@@ -297,6 +304,9 @@ fn save_node(
             Some(sha256(observation.statement.as_bytes())),
         ),
         Source::Campaign { campaign, .. } => (format!("campaign:{campaign}"), None),
+        Source::Archive {
+            artifact_sha256, ..
+        } => (format!("archive:{artifact_sha256}"), None),
         Source::Operator => (format!("operator:{id}"), None),
     };
     let revision = Revision {

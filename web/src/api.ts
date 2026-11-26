@@ -229,6 +229,14 @@ export async function getKnowledge(token: string, id: string, depth: string, sig
   return value
 }
 
+export async function getGraphHypotheses(token: string, id: string, signal: AbortSignal): Promise<Row> {
+  const value = await json(token, `/knowledge/${encodeURIComponent(id)}/hypotheses`, { signal })
+  if (!isRow(value) || value.schema !== 'aether.hypotheses/1' || !Array.isArray(value.proposals)) {
+    throw new Error('Invalid hypothesis report.')
+  }
+  return value
+}
+
 export async function runStudy(token: string): Promise<StudyReport> {
   const result = await json(token, '/benchmarks', { method: 'POST' })
   const report = isRow(result) && isRow(result.report) ? result.report : result

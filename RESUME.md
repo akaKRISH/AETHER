@@ -1,5 +1,17 @@
 # Resume AETHER
 
+## APO-03 evidence-grounded hypothesis discovery
+
+Started from `bed6758`. The CLI and authenticated Research OS read a bounded graph slice and return deterministic, ranked unverified proposals. The six generators cover comparable conflicts, evidence gaps, profile boundaries, negative results, method composition and candidate transfers between declared domains. Proposals carry pinned source revisions, counterevidence when found, alternatives, assumptions, limitations, a falsification test, suggested metrics and checked planning costs. The [ranking decision](docs/decisions/ADR-016.md) and [commands](docs/research/APOLLO_EXECUTION_PLAN.md#apo-03-hypothesis-discovery) describe their use.
+
+The DAE-04 adapter indexes all 20 matched development cases at eight evaluations per arm from the digest-checked archive. Adaptive hybrid won 2, tied 13 and lost 5 against greedy. The polarity changes occurred across distinct cases. The engine treats them as boundary and negative-result leads and also proposes a factorial method test. The archive is one provenance group. These findings provide no confirmed contradiction, equivalence claim or estimate for a broader population.
+
+The fixture scanned 23 nodes and 22 links and returned three proposals in order. Negative-result review scored 15 and estimates 320 candidate evaluations. The boundary test scored 12 and estimates 384 evaluations. Method composition scored 11 and estimates 48 benchmark trials. Two fresh CLI processes produced byte-identical JSON with SHA-256 `db6a5053cdd4fd4901edf0ca3cbb75f287c724f96530b80a3725b662d4aff541`. The graph digest matched the corresponding export. The counts and scores describe the frozen development input and advisory rubric, not measured performance on a new experiment.
+
+Fixtures exercise mismatched scopes, dependent copies, conflicting annotations, unsupported text, duplicate designs, misleading domain associations and incomplete literature coverage. Ranking is a prioritization heuristic. Runtime costs and scientific validity require a separately reviewed test plan. PDF ingestion and live provider qualification remain pending.
+
+Validation passed 27 API unit tests, 14 platform tests, strict API Clippy, formatting, the offline release build, five frontend tests, type checking, lint, production web build, desktop and mobile browser smoke, and documentation and schema checks. The browser opened a ranked proposal and its source and counterevidence panels. Frozen research artifacts and the held-out protocol match the APO-02 checkpoint.
+
 ## APO-02 persistent scientific knowledge graph
 
 Built from `3bac54c` using the existing literature SQLite database and typed campaign snapshot. Canonical paper aliases and normalized keys identify entities. Revisions and opposing assertions are retained. Edges pin both endpoint revisions. Literature imports project metadata and exact passages atomically. The operator can classify a checked passage as a reported claim. Qualified verification receipts are copied only from the trusted campaign store and marked at capture.
