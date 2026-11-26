@@ -8,6 +8,8 @@ DAE-01 adds a bounded native search over the reviewed knapsack fixture and retai
 
 DAE-07 adds a dependency-free native release performance suite spanning ECAR scheduling, evidence snapshots, evolutionary discovery, adaptive action decisions, durable SQLite, reviewed worker startup, loopback API, report generation and four-way bounded concurrency. The first Windows run records raw samples and host telemetry; it does not establish cross-system performance or a regression threshold. [Measurements](research/results/dae-native-performance.json) · [Method and limitations](RESUME.md#dae-07-native-performance-laboratory)
 
+DAE-08 reorganizes the local React workbench as a scientific command centre while retaining campaign and lab flows. The protected research archive serves frozen historical records as exact bytes and the client checks their SHA-256 before download. Historical benchmarks and local inference are labeled by provenance; no live telemetry or held-out result is implied. [Pages, validation and constraints](RESUME.md#dae-08-aether-research-os)
+
 ## Athena
 
 - Qualified the locally installed Qwen 3.5 4B Q4_K_M model in a dedicated Ollama 0.40.17 process with cloud disabled. On the RTX 3050, the follow-up measured 224–232 ms median warm time to first text and 3,775 MiB sampled peak device-wide VRAM across two confirmed context lengths. [Inference record](docs/operations/ATHENA_INFERENCE.md)

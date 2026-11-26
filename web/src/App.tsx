@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
-import { campaignPath, getSnapshot, listCampaigns, message, post, type Campaign, type NewCampaign, type Snapshot } from './api'
+import { campaignPath, getResearchArchive, getSnapshot, listCampaigns, message, post, type Campaign, type NewCampaign, type ResearchArchive, type Snapshot } from './api'
 import { Budgets, Decisions, Events, EvidenceGraph, Experiments, Overview, Verification } from './campaignViews'
 import { Benchmarks, Catalog, Evolution, GpuTelemetry, Hypotheses, Report } from './consoleViews'
 import { Badge, Empty, Modal, Panel, errorText, integer, readNumber } from './components'
+import { ComputeObservatory, DiscoveryLaboratory, IntelligenceObservatory, MissionControl, ResearchArchiveView, SecurityCentre } from './researchViews'
 
+const commandViews = [
+  ['mission-control', 'Mission Control'], ['evidence', 'Evidence Explorer'],
+  ['discovery', 'Discovery Laboratory'], ['intelligence', 'Intelligence Observatory'],
+  ['compute', 'Compute Observatory'], ['archive', 'Research Archive'], ['security', 'Security Centre'],
+] as const
 const campaignViews = [
   ['overview', 'Overview'],
   ['hypotheses', 'Hypotheses'],
@@ -24,7 +30,8 @@ const labViews = [
   ['settings', 'Security settings'],
 ] as const
 
-type View = (typeof campaignViews)[number][0] | (typeof labViews)[number][0]
+type View = (typeof commandViews)[number][0] | (typeof campaignViews)[number][0] | (typeof labViews)[number][0]
+type NavEntry = readonly [View, string]
 type DialogName = 'connect' | 'create' | 'approve' | 'cancel'
 
 function ConnectionForm({ connect, close }: { connect: (token: string) => Promise<void>; close: () => void }) {
@@ -130,7 +137,7 @@ function Sidebar({ campaigns, selected, select, view, navigate, connected }: {
   campaigns: Campaign[]; selected: string; select: (id: string) => void; view: View;
   navigate: (view: View) => void; connected: boolean
 }) {
-  function navigation(entries: typeof campaignViews | typeof labViews, label: string) {
+  function navigation(entries: readonly NavEntry[], label: string) {
     return <nav className="rail-nav" aria-label={label}>
       <p>{label}</p>
       {entries.map(([id, title]) => <button type="button" key={id} aria-current={view === id ? 'page' : undefined}
@@ -146,7 +153,8 @@ function Sidebar({ campaigns, selected, select, view, navigate, connected }: {
         {campaigns.map((campaign) => <option key={campaign.id} value={campaign.id}>{campaign.title}</option>)}
       </select>
     </div>
-    {navigation(campaignViews, 'Campaign workspace')}
+    {navigation(commandViews, 'Research command')}
+    {navigation(campaignViews, 'Campaign records')}
     {navigation(labViews, 'Laboratory')}
   </aside>
 }
@@ -170,13 +178,15 @@ export function App() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [selected, setSelected] = useState('')
   const [snapshot, setSnapshot] = useState<Snapshot>()
-  const [view, setView] = useState<View>('overview')
+  const [view, setView] = useState<View>('mission-control')
   const [dialog, setDialog] = useState<DialogName>()
   const [snapshotError, setSnapshotError] = useState('')
   const [actionError, setActionError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const [refresh, setRefresh] = useState(0)
+  const [archive, setArchive] = useState<ResearchArchive>()
+  const [archiveError, setArchiveError] = useState('')
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: A mutation increments refresh to restart the poll immediately.
   useEffect(() => {
@@ -202,9 +212,19 @@ export function App() {
     return () => { controller.abort(); window.clearTimeout(timer) }
   }, [token, selected, refresh])
 
+  useEffect(() => {
+    if (!token || !['discovery', 'intelligence', 'compute', 'archive'].includes(view) || archive || archiveError) return
+    const controller = new AbortController()
+    getResearchArchive(token, controller.signal).then(
+      (value) => { if (!controller.signal.aborted) { setArchive(value); setArchiveError('') } },
+      (error) => { if (!controller.signal.aborted) setArchiveError(message(error)) },
+    )
+    return () => controller.abort()
+  }, [token, view, archive, archiveError])
+
   function select(id: string) {
     setSelected(id)
-    setView('overview')
+    setView('mission-control')
     setSnapshot(undefined)
     setSnapshotError('')
     setActionError('')
@@ -213,6 +233,8 @@ export function App() {
 
   async function connect(secret: string) {
     const list = await listCampaigns(secret)
+    setArchive(undefined)
+    setArchiveError('')
     setCampaigns(list)
     select(list[0]?.id ?? '')
     setToken(secret)
@@ -221,6 +243,8 @@ export function App() {
   function disconnect() {
     setToken('')
     setCampaigns([])
+    setArchive(undefined)
+    setArchiveError('')
     select('')
   }
 
@@ -234,8 +258,10 @@ export function App() {
   const current = snapshot?.campaign?.id === selected ? snapshot : undefined
   const campaign = current?.campaign ?? campaigns.find((item) => item.id === selected)
   const state = campaign?.state.toLowerCase()
-  const isLab = labViews.some(([id]) => id === view)
-  const title = isLab ? labViews.find(([id]) => id === view)?.[1] : campaign?.title ?? 'Research workspace'
+  const isCampaignContext = campaignViews.some(([id]) => id === view) || view === 'mission-control' || view === 'evidence'
+  const title = commandViews.find(([id]) => id === view)?.[1]
+    ?? campaignViews.find(([id]) => id === view)?.[1]
+    ?? labViews.find(([id]) => id === view)?.[1] ?? 'Research workspace'
 
   async function mutate(action: 'approve' | 'start' | 'cancel') {
     if (!current || busy || snapshotError) return
@@ -261,10 +287,26 @@ export function App() {
     content = <section className="welcome">
       <div className="welcome-copy">
         <h2>Connect your research console</h2>
-        <p>Load campaigns, inspect evidence, and track execution from your local AETHER API.</p>
+        <p>Connect to the local Rust API to inspect campaign evidence, run reviewed development studies and read pinned research records.</p>
         <button type="button" className="button button--primary" onClick={() => setDialog('connect')}>Connect API</button>
       </div>
     </section>
+  } else if (view === 'mission-control') {
+    content = <MissionControl campaigns={campaigns} snapshot={current} select={select} />
+  } else if (view === 'evidence') {
+    content = current ? <EvidenceGraph key={current.campaign.id} snapshot={current} /> : <Panel title="Evidence Explorer">
+      {snapshotError ? errorText(snapshotError) : <Empty title={selected ? 'Loading claim dependencies…' : 'Select or create a campaign to inspect evidence.'} />}
+    </Panel>
+  } else if (view === 'security') {
+    content = <SecurityCentre />
+  } else if (['discovery', 'intelligence', 'compute', 'archive'].includes(view)) {
+    content = archive ? view === 'discovery' ? <DiscoveryLaboratory token={token} archive={archive} />
+      : view === 'intelligence' ? <IntelligenceObservatory archive={archive} />
+        : view === 'compute' ? <ComputeObservatory archive={archive} />
+          : <ResearchArchiveView archive={archive} token={token} />
+      : <Panel title={title}>{archiveError ? <>{errorText(archiveError)}<div className="toolbar">
+        <button className="button" type="button" onClick={() => setArchiveError('')}>Retry archive load</button>
+      </div></> : <p className="loading" role="status">Loading pinned research records…</p>}</Panel>
   } else if (view === 'benchmarks') {
     content = <Benchmarks token={token} />
   } else if (view === 'evolution') {
@@ -297,7 +339,8 @@ export function App() {
   return <div className="console">
     <a className="skip-link" href="#workspace">Skip to workspace</a>
     <header className="topbar">
-      <div className="brand"><span className="brand-mark" aria-hidden="true" /><div><strong>AETHER</strong><span>Research console</span></div></div>
+      <div className="brand"><span className="brand-mark" aria-hidden="true" /><div><strong>AETHER</strong><span>Research operating system</span></div></div>
+      <p className="topbar-scope">LOCAL / REVIEWED TASKS / HUMAN APPROVAL</p>
       <div className="connection">
         <Badge value={token ? snapshotError ? 'stale' : 'connected' : 'disconnected'} />
         {token && <button className="button button--quiet" type="button" onClick={disconnect}>Disconnect</button>}
@@ -310,10 +353,10 @@ export function App() {
         <div className="stage-header">
           <div>
             <h1>{title}</h1>
-            {!isLab && campaign && <div className="campaign-meta"><code>{campaign.id}</code><Badge value={campaign.state} /></div>}
-            {!isLab && campaign?.objective && <p className="objective">{campaign.objective}</p>}
+            {isCampaignContext && campaign && <div className="campaign-meta"><code>{campaign.id}</code><Badge value={campaign.state} /></div>}
+            {isCampaignContext && campaign?.objective && <p className="objective">{campaign.objective}</p>}
           </div>
-          {token && !isLab && <div className="actions">
+          {token && isCampaignContext && <div className="actions">
             {(state === 'draft' || state === 'approved' || state === 'running' || state === 'paused') && current && <>
               {state === 'draft' && <button className="button button--primary" type="button" disabled={busy || Boolean(snapshotError)}
                 onClick={() => { setActionError(''); setDialog('approve') }}>Approve protocol</button>}

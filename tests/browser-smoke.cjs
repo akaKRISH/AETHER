@@ -133,6 +133,25 @@ async function main() {
     await desktop.getByRole('table', { name: 'Observed devices' })
       .or(desktop.getByText('NVIDIA driver telemetry is unavailable.')).waitFor()
 
+    await desktop.getByRole('button', { name: 'Mission Control', exact: true }).click()
+    await desktop.getByRole('heading', { name: 'Mission Control', exact: true }).waitFor()
+    await desktop.getByRole('heading', { name: 'Campaign register', exact: true }).waitFor()
+    await desktop.getByRole('button', { name: 'Discovery Laboratory', exact: true }).click()
+    await desktop.getByRole('heading', { name: 'Search, inspect, replay.' }).waitFor()
+    await desktop.getByRole('table', { name: 'Archived hybrid discovery comparison' }).waitFor()
+    await desktop.getByRole('button', { name: 'Intelligence Observatory', exact: true }).click()
+    await desktop.getByRole('heading', { name: 'Inference is advisory. Verification decides.' }).waitFor()
+    await desktop.getByRole('table', { name: 'Local model inference strategies' }).waitFor()
+    await desktop.getByRole('button', { name: 'Compute Observatory', exact: true }).click()
+    await desktop.getByRole('heading', { name: 'Measure the control plane.' }).waitFor()
+    await desktop.getByRole('table', { name: 'DAE-07 component measurements' }).waitFor()
+    await desktop.getByRole('button', { name: 'Research Archive', exact: true }).click()
+    await desktop.getByRole('heading', { name: 'Keep the negative results visible.' }).waitFor()
+    await desktop.getByText('0.1731350994365088').waitFor()
+    await desktop.getByRole('button', { name: 'Security Centre', exact: true }).click()
+    await desktop.getByRole('heading', { name: 'Boundaries are part of the result.' }).waitFor()
+    await desktop.getByText(/does not deny filesystem access or network egress/).waitFor()
+
     await desktop.getByRole('button', { name: 'Overview', exact: true }).click()
     await desktop.getByRole('button', { name: 'New campaign', exact: true }).click()
     await desktop.getByLabel('Campaign ID').fill('opt-browser')
@@ -157,13 +176,13 @@ async function main() {
     const phone = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
     phone.on('pageerror', error => browserErrors.push(error.message))
     await connect(phone, origin, token)
-    await phone.getByRole('heading', { name: 'Seeded sorting verification', exact: true }).waitFor()
+    await phone.getByRole('heading', { name: 'Mission Control', exact: true }).waitFor()
     assert.equal(await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true)
     if (process.env.AETHER_SCREENSHOT_DIR) {
       await phone.screenshot({ path: join(process.env.AETHER_SCREENSHOT_DIR, 'aether-mobile.png'), fullPage: true })
     }
     assert.deepEqual(browserErrors, [])
-    console.log('Browser smoke passed: keyboard authentication, sorting and optimization campaigns, verified and rejected claims, evidence, planner, report, metadata gates, benchmark, GPU panel, and mobile layout.')
+    console.log('Browser smoke passed: existing campaign workflows, all seven research command pages, archived pilot data, API-backed benchmark views, security limits, and mobile layout.')
   } finally {
     await browser?.close()
     if (server.exitCode === null && server.signalCode === null) {

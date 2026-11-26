@@ -88,6 +88,8 @@ pub async fn serve(lab: Lab, port: u16, token: String, assets: PathBuf) -> std::
         .route("/v1/campaigns/{id}/report", get(report))
         .route("/v1/campaigns/{id}/protocol", get(protocol))
         .route("/v1/artifacts/{sha256}", get(artifact))
+        .route("/v1/research/archive", get(research_archive))
+        .route("/v1/research/archive/{id}", get(research_artifact))
         .route("/v1/benchmarks", post(benchmarks))
         .route("/v1/evolution", post(evolution))
         .route("/v1/literature", get(literature))
@@ -376,6 +378,167 @@ async fn artifact(State(app): State<App>, Path(hash): Path<String>) -> ApiResult
         data,
     )
         .into_response())
+}
+
+async fn research_archive() -> ApiResult<Json<Value>> {
+    let performance = embedded(include_str!(
+        "../../../research/results/dae-native-performance.json"
+    ))?;
+    let inference_fixture = embedded(include_str!(
+        "../../../research/results/dae-inference-fixture.json"
+    ))?;
+    let inference_local = embedded(include_str!(
+        "../../../research/results/dae-inference-local-qwen.json"
+    ))?;
+    let reliability = embedded(include_str!(
+        "../../../research/results/dae-ecar-reliability-ablation.json"
+    ))?;
+    let ecar_pilot = embedded(include_str!(
+        "../../../research/results/athena-ecar-summary.json"
+    ))?;
+    let baseline = embedded(include_str!(
+        "../../../research/results/dae-knapsack-development.json"
+    ))?;
+    let hybrid = embedded(include_str!(
+        "../../../research/results/dae-hybrid-development.json"
+    ))?;
+    let artifacts = [
+        (
+            "dae-knapsack-development",
+            "DAE-02/03 matched search",
+            include_bytes!("../../../research/results/dae-knapsack-development.json").as_slice(),
+        ),
+        (
+            "dae-hybrid-development",
+            "DAE-04 adaptive hybrid",
+            include_bytes!("../../../research/results/dae-hybrid-development.json").as_slice(),
+        ),
+        (
+            "dae-ecar-reliability-ablation",
+            "DAE-05B reliability ablation",
+            include_bytes!("../../../research/results/dae-ecar-reliability-ablation.json")
+                .as_slice(),
+        ),
+        (
+            "athena-ecar-summary",
+            "Athena ECAR pilot summary",
+            include_bytes!("../../../research/results/athena-ecar-summary.json").as_slice(),
+        ),
+        (
+            "dae-inference-fixture",
+            "DAE-06 deterministic inference fixture",
+            include_bytes!("../../../research/results/dae-inference-fixture.json").as_slice(),
+        ),
+        (
+            "dae-inference-local-qwen",
+            "DAE-06 local Qwen pilot",
+            include_bytes!("../../../research/results/dae-inference-local-qwen.json").as_slice(),
+        ),
+        (
+            "dae-native-performance",
+            "DAE-07 native performance run",
+            include_bytes!("../../../research/results/dae-native-performance.json").as_slice(),
+        ),
+    ];
+    Ok(Json(json!({
+        "schema":"aether.research-archive/1",
+        "recorded_on":"2026-11-26",
+        "performance":performance,
+        "inference_fixture":inference_fixture,
+        "inference_local":inference_local,
+        "reliability_ablation":{
+            "scope":reliability["scope"],
+            "outcomes_sha256":reliability["outcomes_sha256"],
+            "prior_study_trace_changes":reliability["prior_study_trace_changes"],
+            "cells":reliability["cells"],
+            "contrasts":reliability["contrasts"]
+        },
+        "ecar_pilot":ecar_pilot,
+        "discovery":{"baseline":discovery_summary(&baseline),"hybrid":discovery_summary(&hybrid)},
+        "artifacts":artifacts.map(|(id,title,bytes)| json!({
+            "id":id,"title":title,"sha256":aether_runner::sha256(bytes),"size_bytes":bytes.len()
+        }))
+    })))
+}
+
+async fn research_artifact(Path(id): Path<String>) -> ApiResult<Response> {
+    let bytes: &'static [u8] = match id.as_str() {
+        "dae-knapsack-development" => {
+            include_bytes!("../../../research/results/dae-knapsack-development.json")
+        }
+        "dae-hybrid-development" => {
+            include_bytes!("../../../research/results/dae-hybrid-development.json")
+        }
+        "dae-ecar-reliability-ablation" => {
+            include_bytes!("../../../research/results/dae-ecar-reliability-ablation.json")
+        }
+        "athena-ecar-summary" => {
+            include_bytes!("../../../research/results/athena-ecar-summary.json")
+        }
+        "dae-inference-fixture" => {
+            include_bytes!("../../../research/results/dae-inference-fixture.json")
+        }
+        "dae-inference-local-qwen" => {
+            include_bytes!("../../../research/results/dae-inference-local-qwen.json")
+        }
+        "dae-native-performance" => {
+            include_bytes!("../../../research/results/dae-native-performance.json")
+        }
+        _ => return Err(Error::Missing.into()),
+    };
+    let mut response = Body::from(bytes).into_response();
+    response.headers_mut().insert(
+        header::CONTENT_TYPE,
+        header::HeaderValue::from_static("application/json"),
+    );
+    response.headers_mut().insert(
+        header::X_CONTENT_TYPE_OPTIONS,
+        header::HeaderValue::from_static("nosniff"),
+    );
+    let digest = aether_runner::sha256(bytes);
+    response.headers_mut().insert(
+        "x-content-sha256",
+        digest.parse().expect("SHA-256 is a valid header value"),
+    );
+    Ok(response)
+}
+
+fn embedded(source: &str) -> Result<Value, Error> {
+    Ok(serde_json::from_str(source)?)
+}
+
+fn discovery_summary(report: &Value) -> Value {
+    let mut arms = BTreeMap::<String, (u64, u64, f64, u64, u64)>::new();
+    if let Some(cases) = report["evidence"].as_array() {
+        for record in cases
+            .iter()
+            .flat_map(|case| case["records"].as_array().into_iter().flatten())
+        {
+            let Some(arm) = record["arm"].as_str() else {
+                continue;
+            };
+            let values = arms.entry(arm.to_owned()).or_default();
+            values.0 += 1;
+            values.1 += u64::from(record["optimality_gap"].as_u64() == Some(0));
+            values.2 += record["optimality_gap"].as_f64().unwrap_or_default();
+            values.3 += record["trial"]["candidate_evaluations"]
+                .as_u64()
+                .unwrap_or_default();
+            values.4 += record["trial"]["feasible_evaluations"]
+                .as_u64()
+                .unwrap_or_default();
+        }
+    }
+    let arms = arms
+        .into_iter()
+        .map(|(name, (n, optimal, gap, evaluations, feasible))| {
+            json!({
+                "arm":name,"trials":n,"optimal":optimal,"mean_optimality_gap":gap/n.max(1) as f64,
+                "candidate_evaluations":evaluations,"feasible_evaluations":feasible
+            })
+        })
+        .collect::<Vec<_>>();
+    json!({"scope":report["scope"],"evidence_sha256":report["evidence_sha256"],"cases":report["evidence"].as_array().map_or(0,Vec::len),"arms":arms})
 }
 
 async fn benchmarks() -> ApiResult<Json<Value>> {

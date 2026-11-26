@@ -87,6 +87,18 @@ export interface StudyReport {
   campaigns: Row[]
 }
 
+export interface ResearchArchive extends Row {
+  schema: 'aether.research-archive/1'
+  recorded_on: string
+  performance: Row
+  inference_fixture: Row
+  inference_local: Row
+  reliability_ablation: Row
+  ecar_pilot: Row
+  discovery: { baseline: Row; hybrid: Row }
+  artifacts: Row[]
+}
+
 export class ApiError extends Error {
   readonly status: number
 
@@ -223,4 +235,24 @@ export async function getReport(token: string, id: string): Promise<string> {
     return JSON.stringify(value, null, 2)
   }
   return response.text()
+}
+
+export async function getResearchArchive(token: string, signal?: AbortSignal): Promise<ResearchArchive> {
+  const value = await json(token, '/research/archive', { signal })
+  if (!isRow(value) || value.schema !== 'aether.research-archive/1'
+    || typeof value.recorded_on !== 'string' || !isRow(value.performance)
+    || !isRow(value.discovery) || !isRow(value.discovery.baseline) || !isRow(value.discovery.hybrid)) {
+    throw new Error('Invalid research archive returned by the API.')
+  }
+  return value as ResearchArchive
+}
+
+export async function getResearchArtifact(token: string, id: string): Promise<ArrayBuffer> {
+  if (!/^[a-z0-9-]{1,64}$/.test(id)) throw new Error('Invalid research artifact ID.')
+  const response = await request(token, `/research/archive/${encodeURIComponent(id)}`)
+  const bytes = await response.arrayBuffer()
+  const digest = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))]
+    .map((byte) => byte.toString(16).padStart(2, '0')).join('')
+  if (response.headers.get('x-content-sha256') !== digest) throw new Error('Research artifact integrity check failed.')
+  return bytes
 }

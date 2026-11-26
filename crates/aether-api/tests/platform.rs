@@ -1,6 +1,6 @@
 use serde_json::{Value, json};
 use std::fs;
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Read};
 use std::path::PathBuf;
 use std::process::{Child, Command, Output, Stdio};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -526,6 +526,44 @@ fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
     };
     let unauthenticated = agent.get(format!("{origin}/v1/campaigns")).call().unwrap();
     assert_eq!(unauthenticated.status().as_u16(), 401);
+    assert_eq!(
+        agent
+            .get(format!("{origin}/v1/research/archive"))
+            .call()
+            .unwrap()
+            .status()
+            .as_u16(),
+        401
+    );
+    let archive: Value = get("/v1/research/archive").body_mut().read_json().unwrap();
+    assert_eq!(archive["schema"], "aether.research-archive/1");
+    assert_eq!(
+        archive["performance"]["schema"],
+        "aether.native-performance/1"
+    );
+    let artifact = get("/v1/research/archive/dae-native-performance");
+    assert_eq!(artifact.status().as_u16(), 200);
+    let digest = artifact
+        .headers()
+        .get("x-content-sha256")
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_owned();
+    let mut bytes = Vec::new();
+    artifact
+        .into_body()
+        .into_reader()
+        .read_to_end(&mut bytes)
+        .unwrap();
+    assert_eq!(aether_runner::sha256(&bytes), digest);
+    assert_eq!(
+        digest,
+        aether_runner::sha256(include_bytes!(
+            "../../../research/results/dae-native-performance.json"
+        ))
+    );
+    assert_eq!(get("/v1/research/archive/unknown").status().as_u16(), 404);
     assert_eq!(
         post("/v1/literature/lookup", json!({"query":"sorting"}))
             .status()
