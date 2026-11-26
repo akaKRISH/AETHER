@@ -2,6 +2,8 @@
 
 ## APO-09 bounded skill execution kernel
 
+Kernel implementation checkpoint: `6c507e5b271c6baebf9558bcc00282f190ce942e`.
+
 Started from `b400904`. Added executable `/2` definitions for the five APO-07 skills while retaining existing `/1` records as immutable, inert versions. Each `/2` definition binds one closed native `OperationId` to exact typed input/output schemas and its exact required capability set. The registry rejects mismatched operation contracts and capability changes. The Rust dispatch table implements local literature search, hypothesis discovery, experimental-design draft lookup, development dataset-manifest inspection and reading an existing model evaluation report; it does not evaluate a model or contact a provider.
 
 `skill-execute` and authenticated `POST /v1/skills/execute` accept the exact `(id, version, sha256)` pin, one-operation budget, dependency-depth limit, typed input, resource bounds and optional evidence references. The kernel validates the root and pinned dependency closure, trust, approval and revocation receipts, schemas, payload limits and the intersection of declared, approved and operation-supported capabilities. It validates dependencies but executes only the requested root operation. Local `skill-approve` and terminal `skill-revoke` receipts are content-addressed local consent, not cryptographic proof or a security boundary. No approval/revocation endpoint is exposed by the API.
