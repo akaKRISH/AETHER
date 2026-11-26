@@ -1303,6 +1303,62 @@ fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
             .unwrap()["executions"][0]["execution_sha256"],
         execution["execution_sha256"]
     );
+    assert_eq!(
+        agent
+            .get(format!("{origin}/v1/workflows"))
+            .call()
+            .unwrap()
+            .status()
+            .as_u16(),
+        401
+    );
+    let workflows: Value = get("/v1/workflows").body_mut().read_json().unwrap();
+    assert_eq!(workflows["schema"], "aether.workflow-registry/1");
+    assert_eq!(workflows["workflows"].as_array().unwrap().len(), 3);
+    let workflow = workflows["workflows"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|entry| entry["id"] == "literature-hypothesis-design")
+        .unwrap();
+    let workflow_pin = workflow["sha256"].as_str().unwrap();
+    let workflow_detail: Value = get(&format!("/v1/workflows/{workflow_pin}"))
+        .body_mut()
+        .read_json()
+        .unwrap();
+    assert_eq!(workflow_detail["approval"], "unapproved");
+    assert_eq!(
+        workflow_detail["execution"],
+        "sequential_via_approved_skill_kernel"
+    );
+    assert_eq!(
+        post(&format!("/v1/workflows/{workflow_pin}/approve"), json!({}))
+            .status()
+            .as_u16(),
+        404
+    );
+    let workflow_run: Value = post(
+        "/v1/workflows/execute",
+        json!({
+            "workflow":{"id":workflow["id"],"version":workflow["version"],"sha256":workflow_pin},
+            "input":{"question":"CAVEAT development fixture","root_id":"f".repeat(64)},
+            "budget":workflow["maximum_budget"]
+        }),
+    )
+    .body_mut()
+    .read_json()
+    .unwrap();
+    assert_eq!(workflow_run["receipt"]["failure"], "approval_required");
+    assert_eq!(workflow_run["receipt"]["execution_order"], json!([]));
+    let workflow_receipts: Value = get("/v1/workflows/executions")
+        .body_mut()
+        .read_json()
+        .unwrap();
+    assert_eq!(workflow_receipts["executions"].as_array().unwrap().len(), 1);
+    assert_eq!(
+        workflow_receipts["executions"][0]["workflow_execution_sha256"],
+        workflow_run["workflow_execution_sha256"]
+    );
     let stored: Value = get("/v1/datasets").body_mut().read_json().unwrap();
     assert_eq!(stored["datasets"], json!([]));
     let qualified: Value = post(

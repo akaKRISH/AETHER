@@ -62,7 +62,7 @@ enum EvidenceKind {
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
-enum JsonShape {
+pub(crate) enum JsonShape {
     String,
     StringEnum {
         values: BTreeSet<String>,
@@ -216,6 +216,30 @@ struct SkillRecord {
     approval_receipt_sha256: Option<String>,
     #[serde(default)]
     revocation_receipt_sha256: Option<String>,
+}
+
+pub(crate) struct WorkflowSkillContract {
+    pub id: String,
+    pub version: String,
+    pub sha256: String,
+    pub input_schema: JsonShape,
+    pub output_schema: JsonShape,
+    pub required_capabilities: BTreeSet<Capability>,
+    pub declared_capabilities: BTreeSet<Capability>,
+    pub approval_receipt_sha256: Option<String>,
+    pub trusted: bool,
+    pub executable: bool,
+    pub approved: bool,
+    pub revoked: bool,
+}
+
+pub(crate) struct WorkflowNodeRequest {
+    pub skill_id: String,
+    pub skill_version: String,
+    pub skill_sha256: String,
+    pub input: Value,
+    pub dependency_depth: u8,
+    pub output_bytes: u64,
 }
 
 #[derive(Deserialize)]
@@ -465,6 +489,14 @@ fn matches_shape(shape: &JsonShape, value: &Value, depth: usize) -> bool {
             })
         }),
     }
+}
+
+pub(crate) fn matches_workflow_shape(shape: &JsonShape, value: &Value) -> bool {
+    matches_shape(shape, value, 0)
+}
+
+pub(crate) fn valid_workflow_shape(shape: &JsonShape) -> bool {
+    valid_shape(shape, 0, &mut 0)
 }
 
 fn bounded_json_value(value: &Value, depth: usize, nodes: &mut usize) -> bool {
@@ -1874,6 +1906,60 @@ fn execution_closure(
     Ok(result)
 }
 
+pub(crate) fn workflow_skill_closure(
+    lab: &Lab,
+    pins: &[(String, String, String)],
+) -> Result<Vec<WorkflowSkillContract>> {
+    let records = seed_builtins(lab)?;
+    let mut closure = BTreeMap::new();
+    for (id, version, sha) in pins {
+        let root = records
+            .iter()
+            .find(|record| {
+                record.definition.id == *id
+                    && record.definition.version == *version
+                    && record.sha256 == *sha
+            })
+            .ok_or("workflow references an unknown pinned skill")?;
+        for record in execution_closure(root, &records, MAX_DEPENDENCY_DEPTH as u8)
+            .map_err(|failure| format!("workflow skill dependency invalid: {failure:?}"))?
+        {
+            closure.insert(record.sha256.clone(), record);
+        }
+    }
+    Ok(closure
+        .into_values()
+        .map(|record| {
+            let approved = record.approval_receipt_sha256.is_some()
+                && record
+                    .definition
+                    .required_capabilities
+                    .is_subset(&record.approved_capabilities);
+            let declared_capabilities = record
+                .definition
+                .required_capabilities
+                .union(&record.definition.optional_capabilities)
+                .copied()
+                .collect();
+            WorkflowSkillContract {
+                id: record.definition.id,
+                version: record.definition.version,
+                sha256: record.sha256,
+                input_schema: record.definition.input_schema,
+                output_schema: record.definition.output_schema,
+                required_capabilities: record.definition.required_capabilities,
+                declared_capabilities,
+                approval_receipt_sha256: record.approval_receipt_sha256,
+                trusted: !matches!(record.trust, TrustStatus::UntrustedImported),
+                executable: record.definition.schema == EXECUTABLE_DEFINITION_SCHEMA
+                    && record.definition.operation_id.is_some(),
+                approved,
+                revoked: record.revocation_receipt_sha256.is_some(),
+            }
+        })
+        .collect())
+}
+
 fn valid_graph_node_id(id: &str) -> bool {
     id.len() == 64
         && id
@@ -2276,6 +2362,32 @@ pub(crate) fn execute(
     Ok(saved)
 }
 
+pub(crate) fn execute_workflow_node(
+    lab: &Lab,
+    node: WorkflowNodeRequest,
+    cancel: &std::sync::atomic::AtomicBool,
+) -> Result<Value> {
+    let request = ExecutionRequest {
+        skill: SkillPin {
+            id: node.skill_id,
+            version: node.skill_version,
+            sha256: node.skill_sha256,
+        },
+        input: node.input,
+        budget: ExecutionBudget {
+            operations: 1,
+            dependency_depth: node.dependency_depth,
+        },
+        resources: ResourceLimits {
+            timeout_ms: 30_000,
+            memory_bytes: 256 * 1024 * 1024,
+            output_bytes: node.output_bytes.min(MAX_OUTPUT_BYTES),
+        },
+        evidence: Vec::new(),
+    };
+    execute(lab, request, cancel)
+}
+
 pub(crate) fn executions(lab: &Lab) -> Result<Value> {
     let registry = lab.model_registry()?;
     let mut statement = registry.0.prepare(
@@ -2302,6 +2414,26 @@ pub(crate) fn executions(lab: &Lab) -> Result<Value> {
         );
     }
     Ok(json!({"schema":"aether.skill-executions/1","executions":records,"truncated":false}))
+}
+
+pub(crate) fn execution_receipt(lab: &Lab, digest: &str) -> Result<Value> {
+    if !valid_digest(digest) {
+        return Err("skill execution receipt digest is invalid".into());
+    }
+    let registry = lab.model_registry()?;
+    let raw = registry
+        .0
+        .query_row(
+            "SELECT record FROM model_registry WHERE kind='skill-execution' AND sha256=?1 LIMIT 1",
+            [digest],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()?
+        .ok_or("skill execution receipt is missing")?;
+    if sha256(raw.as_bytes()) != digest || lab.artifact(digest)? != raw.as_bytes() {
+        return Err("skill execution receipt failed its content integrity check".into());
+    }
+    Ok(serde_json::from_str(&raw)?)
 }
 
 #[cfg(test)]

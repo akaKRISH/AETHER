@@ -108,6 +108,10 @@ pub async fn serve(lab: Lab, port: u16, token: String, assets: PathBuf) -> std::
         .route("/v1/skills/execute", post(skill_execute))
         .route("/v1/skills/compose", post(skill_compose))
         .route("/v1/skills/{sha256}", get(skill_inspect))
+        .route("/v1/workflows", get(workflow_registry))
+        .route("/v1/workflows/executions", get(workflow_executions))
+        .route("/v1/workflows/execute", post(workflow_execute))
+        .route("/v1/workflows/{sha256}", get(workflow_inspect))
         .route("/v1/benchmarks", post(benchmarks))
         .route("/v1/evolution", post(evolution))
         .route("/v1/literature", get(literature))
@@ -540,6 +544,48 @@ async fn skill_compose(
 ) -> ApiResult<Json<Value>> {
     blocking(move || {
         crate::models::skills::compose(&app.lab, request)
+            .map_err(|error| Error::Input(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn workflow_registry(State(app): State<App>) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::workflows::list(&app.lab).map_err(|error| Error::Storage(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn workflow_inspect(
+    State(app): State<App>,
+    Path(sha): Path<String>,
+) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::workflows::inspect(&app.lab, &sha)
+            .map_err(|error| Error::Input(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn workflow_executions(State(app): State<App>) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::workflows::executions(&app.lab)
+            .map_err(|error| Error::Storage(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn workflow_execute(
+    State(app): State<App>,
+    Json(request): Json<crate::models::workflows::WorkflowRequest>,
+) -> ApiResult<Json<Value>> {
+    let cancel = app.shutdown.clone();
+    blocking(move || {
+        crate::models::workflows::execute(&app.lab, request, &cancel)
             .map_err(|error| Error::Input(error.to_string()))
     })
     .await

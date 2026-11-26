@@ -1,5 +1,17 @@
 # Resume AETHER
 
+## APO-08 deterministic research workflow orchestrator
+
+Started from `ef4f5bfcba83c9e801c3e757da830278680809a5`. Added immutable, content-addressed workflow definitions to the existing SQLite/artifact registry and three fixture DAGs: literature review → hypothesis criticism; hypothesis criticism → experimental design; and the three-step sequence. Definitions pin exact skill IDs, versions and digests, strict typed schemas, field mappings, dependencies and aggregate limits. Validation rejects modified pins, duplicate or missing nodes, cycles, excessive graph depth, non-ancestor output bindings, incompatible mapping types, invalid schemas and undeclared capabilities or instructions. Stable Kahn ordering executes sequentially.
+
+The local CLI lists and inspects workflows, records approval bound to the exact workflow digest and current skill approval receipts, supports terminal revocation, executes an exact request, and lists integrity-checked run receipts. Authenticated API routes expose registry, definition, execution and receipt data; API approval/revocation routes are intentionally absent. The Research OS displays fixtures and historical receipts as read-only data. Every node goes through APO-09, which revalidates the exact skill pin, current trust/approval/revocation, schemas, effective capabilities and limits. Aggregate operation, input, output and graph-depth budgets are checked in addition to APO-09 limits. Workflow receipts bind pins, input/output digests, ordered kernel receipts, budgets and completed, partial, failed, cancelled or abstained outcome. Evidence stays `unverified`.
+
+Validation actually run: the full locked offline workspace suite passed **136 tests**; nine Windows containment tests remain ignored by the default list (the existing harness-driven containment checks also ran). Workspace strict Clippy and formatting passed. The optimized workspace release build passed. Frontend lint, TypeScript checking, five tests and production build passed. Desktop/mobile browser smoke and documentation validation passed; detailed counts are in [APO-08 validation](docs/testing/TEST_RESULTS.md#apo-08-deterministic-research-workflow-orchestrator). The only test-run regression observed during validation was an intermittent dataset API `503`; after removing an unnecessary write from the workflow receipt-list read path, the authenticated platform regression and browser smoke passed. This adjustment does not change dataset behavior.
+
+Workflow receipts demonstrate deterministic local operations only. They do not establish research correctness, independent evidence verification or approval to run a campaign. Local approvals are consent receipts, not signatures. Cancellation is cooperative at synchronous operation boundaries, with no hard preemption, OS-level isolation or sandbox claim. No held-out study, model/provider call, training or external campaign ran. Frozen research result and archive paths are unchanged. See [ADR-023](docs/decisions/ADR-023.md), [implementation](crates/aether-api/src/models/workflows.rs), [API](crates/aether-api/src/http.rs) and [traceability](docs/testing/REQUIREMENTS_TRACEABILITY.md#apo-08-workflow-orchestration-requirements).
+
+Next action: define the next owner-authorized APOLLO milestone. Keep APO-06C–F resource-blocked and live training deferred.
+
 ## APO-09 bounded skill execution kernel
 
 Kernel implementation checkpoint: `6c507e5b271c6baebf9558bcc00282f190ce942e`.
@@ -14,7 +26,7 @@ Validation actually run: the full locked offline workspace suite passed **127 te
 
 All 136 tracked files under `research/results` and `docs/archive` match HEAD by Git-filtered content identity. Five research JSON worktree files have CRLF line endings because Windows `core.autocrlf=true`; their normalized identities match exactly. No held-out data, models, providers, training, shell/Python/JavaScript, downloaded code or plugin binaries were executed. The native operations are synchronous and cancellation is cooperative at operation boundaries; there is no hard timeout preemption, OS isolation or secure-sandbox claim. See [ADR-022](docs/decisions/ADR-022.md), [APOLLO instructions](docs/research/APOLLO_EXECUTION_PLAN.md#apo-09-bounded-skill-execution-kernel), [source](crates/aether-api/src/models/skills.rs) and [traceability](docs/testing/REQUIREMENTS_TRACEABILITY.md#apo-09-bounded-skill-execution-requirements).
 
-Next action: define APO-08 orchestration on top of this typed kernel. Keep APO-06C–F resource-blocked and live training deferred.
+APO-08 composes reviewed native operations through this kernel without changing its authority boundary. Keep APO-06C–F resource-blocked and live training deferred.
 
 ## APO-07 scientific research skills and plugin architecture
 

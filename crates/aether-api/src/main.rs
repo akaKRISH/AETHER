@@ -64,6 +64,12 @@ Commands
   aether-lab skill-compose <request.json>      Validate pinned dependencies and aggregate budgets
   aether-lab skills-invocations                List deterministic preflight records
   aether-lab skills-executions                 List integrity-checked native execution receipts
+  aether-lab workflows-list                    List immutable workflow definitions
+  aether-lab workflow-inspect <workflow-sha>    Inspect a pinned workflow definition
+  aether-lab workflow-approve <workflow-sha>    Approve an exact workflow and skill closure
+  aether-lab workflow-revoke <workflow-sha>     Revoke local workflow consent
+  aether-lab workflow-execute <request.json>    Execute sequentially through the APO-09 kernel
+  aether-lab workflows-executions               List integrity-checked workflow receipts
   aether-lab hardware               Read local NVIDIA driver telemetry, when available
   aether-lab propose <request.json> Produce deterministic reviewed-task proposals
   aether-lab propose-local <request.json> <model>  Use an existing local Ollama model
@@ -283,6 +289,27 @@ fn execute(args: &[String]) -> Result<()> {
         }
         [command] if command == "skills-executions" => {
             print_json(&models::skills::executions(&lab)?)
+        }
+        [command] if command == "workflows-list" => print_json(&models::workflows::list(&lab)?),
+        [command, pin] if command == "workflow-inspect" => {
+            print_json(&models::workflows::inspect(&lab, pin)?)
+        }
+        [command, pin] if command == "workflow-approve" => {
+            print_json(&models::workflows::approve(&lab, pin)?)
+        }
+        [command, pin] if command == "workflow-revoke" => {
+            print_json(&models::workflows::revoke(&lab, pin)?)
+        }
+        [command, path] if command == "workflow-execute" => {
+            let request = serde_json::from_value(read_json_file(&PathBuf::from(path))?)?;
+            print_json(&models::workflows::execute(
+                &lab,
+                request,
+                &AtomicBool::new(false),
+            )?)
+        }
+        [command] if command == "workflows-executions" => {
+            print_json(&models::workflows::executions(&lab)?)
         }
         [command, seed, evaluations] if command == "discover" => {
             let report = aether_engine::discover(seed.parse()?, evaluations.parse()?)?;

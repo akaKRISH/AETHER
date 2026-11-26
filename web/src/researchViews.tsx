@@ -5,6 +5,7 @@ import { Evolution } from './consoleViews'
 import { ModelLaboratory, TrainingProposals } from './modelView'
 import { DatasetLaboratory } from './datasetView'
 import { ResearchSkills } from './skillView'
+import { ResearchWorkflows } from './workflowView'
 
 const numeric = (value: unknown) => typeof value === 'number' && Number.isFinite(value) ? value : null
 const fmt = (value: unknown, digits = 2) => numeric(value)?.toLocaleString(undefined, { maximumFractionDigits: digits }) ?? '—'
@@ -80,6 +81,7 @@ export function IntelligenceObservatory({ archive, token }: { archive: ResearchA
     <TrainingProposals token={token} />
     <DatasetLaboratory token={token} />
     <ResearchSkills token={token} />
+    <ResearchWorkflows token={token} />
     <div className="dashboard-columns">
       <Panel title="Local model pilot" aside={<Badge value="historical" />}>
         {liveRows.length ? <RecordTable label="Local model inference strategies" data={liveRows}

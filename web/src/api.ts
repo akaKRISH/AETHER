@@ -344,6 +344,30 @@ export async function getSkillManifest(token: string, hash: string, signal: Abor
   return value
 }
 
+export async function getWorkflowRegistry(token: string, signal: AbortSignal): Promise<Row> {
+  const value = await json(token, '/workflows', { signal })
+  if (!isRow(value) || value.schema !== 'aether.workflow-registry/1' || !Array.isArray(value.workflows)) {
+    throw new Error('Invalid research workflow registry response.')
+  }
+  return value
+}
+
+export async function getWorkflowManifest(token: string, hash: string, signal: AbortSignal): Promise<Row> {
+  if (!/^[a-f0-9]{64}$/.test(hash)) throw new Error('Invalid workflow digest.')
+  const value = await json(token, `/workflows/${encodeURIComponent(hash)}`, { signal })
+  if (!isRow(value) || !isRow(value.workflow) || value.workflow.sha256 !== hash
+    || value.execution !== 'sequential_via_approved_skill_kernel') throw new Error('Invalid workflow manifest.')
+  return value
+}
+
+export async function getWorkflowExecutions(token: string, signal: AbortSignal): Promise<Row> {
+  const value = await json(token, '/workflows/executions', { signal })
+  if (!isRow(value) || value.schema !== 'aether.workflow-executions/1' || !Array.isArray(value.executions)) {
+    throw new Error('Invalid workflow execution receipts.')
+  }
+  return value
+}
+
 export async function getModelReport(token: string, hash: string, signal: AbortSignal): Promise<Row> {
   if (!/^[a-f0-9]{64}$/.test(hash)) throw new Error('Invalid model artifact digest.')
   const bytes = await (await request(token, `/artifacts/${hash}`, { signal })).arrayBuffer()

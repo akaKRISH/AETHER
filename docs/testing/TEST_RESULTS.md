@@ -159,3 +159,19 @@ Tests used local synthetic fixtures only. Imported hostile instructions were ret
 | Frozen artifacts | Compared all 136 tracked files under `research/results` and `docs/archive` against HEAD using Git-filtered content identities; zero mismatches and no changed paths. On this Windows checkout, five result JSON files are CRLF in the working tree under `core.autocrlf=true`; normalized Git blob identities match. |
 
 The authenticated API exposes execution and receipt listing, but approval and revocation remain local CLI operations. Local approvals are not cryptographic proofs. The synchronous Rust operations have bounded inputs and outputs and cooperative cancellation at operation boundaries; they do not provide hard timeout preemption or OS-level isolation. No skill instructions, arbitrary code, model/provider calls, held-out data or training ran. [Resume](../../RESUME.md#apo-09-bounded-skill-execution-kernel) · [ADR-022](../decisions/ADR-022.md)
+
+## APO-08 deterministic research workflow orchestrator
+
+| Check | Actual result |
+|---|---|
+| `cargo test --locked --offline --workspace --jobs 1` | Passed: 136 tests; nine existing runner containment tests remain ignored by the default list. AETHER API: 66 unit and 20 platform tests. The existing harness also ran its invoked containment checks. |
+| Focused workflow tests | Nine passed, covering content identity, deterministic topology, duplicate/missing/cyclic/deep graphs, type and dependency validation, typed output mapping, exact approval, stale/revoked consent, budget exhaustion, dependency failure, abstention, cooperative cancellation, replay, input bounds and receipt tampering. |
+| `cargo clippy --locked --offline --workspace --all-targets -- -D warnings` | Exit 0. |
+| `cargo fmt --all -- --check` | Exit 0. |
+| `cargo build --locked --offline --workspace --release --jobs 1` | Passed on native Windows x64. The final runtime change (read-only workflow receipt listing no longer reseeds definitions) built in 5m47s; the later source change was test-only. |
+| Frontend lint, TypeScript check, tests and production build | Passed; all five frontend tests passed. |
+| `npm run test:browser` | Passed against the optimized executable, including workflow inspection and receipt empty state, the existing desktop research paths, and mobile layout. An earlier run returned 503 from dataset qualification; after removing an unnecessary registry write in the workflow receipt-list read path, the authenticated platform test and browser smoke both passed. |
+| Documentation validation | Passed: 13 JSON Schema metaschemas, 67 JSON files, 282 Markdown files, 21 SVG views, 29 planned test IDs, 1,408 relative destinations, 41 mapped requirements, 102 source fingerprints, five accepted examples and five negative examples. |
+| Frozen research/archive artifacts | No changed paths under `research/results` or `docs/archive`. |
+
+All workflow executions used local fixture data. Local approvals are consent records, not cryptographic proofs. Every node passed through APO-09; no model/provider, cloud, arbitrary code, campaign or held-out work ran. Evidence stayed unverified. Cancellation was tested cooperatively after a native operation returned; synchronous operations are not preempted. No OS-level isolation or research-correctness claim is made. [Resume](../../RESUME.md#apo-08-deterministic-research-workflow-orchestrator) · [ADR-023](../decisions/ADR-023.md)

@@ -79,6 +79,14 @@ async function main() {
       .getByRole('button', { name: 'Inspect skill', exact: true }).click()
     await desktop.getByText('Inspection only. No model call, tool execution, approval, or verification occurred.', { exact: true }).waitFor()
     assert.equal(await desktop.locator('pre').filter({ hasText: /Search the local catalog only/ }).count(), 1)
+    await desktop.getByRole('heading', { name: 'Research workflow registry', exact: true }).waitFor()
+    const workflows = desktop.getByRole('table', { name: 'Registered research workflows' })
+    await workflows.waitFor()
+    assert.equal(await workflows.getByRole('row').count(), 4)
+    await workflows.getByRole('row').filter({ hasText: 'literature-hypothesis-design' })
+      .getByRole('button', { name: 'Inspect workflow', exact: true }).click()
+    await desktop.getByText('Inspection only. No workflow was approved, executed, or scientifically verified.', { exact: true }).waitFor()
+    await desktop.getByText('No workflow executions have been recorded.', { exact: true }).waitFor()
     await desktop.getByRole('button', { name: 'Mission Control', exact: true }).click()
     await desktop.getByRole('button', { name: 'New campaign', exact: true }).click()
     await desktop.getByLabel('Campaign ID').fill('browser-smoke')
@@ -227,7 +235,11 @@ async function main() {
     await desktop.getByText('QLoRA · aether-fixture · Unapproved', { exact: true }).click()
     await desktop.getByRole('heading', { name: 'Feasibility and blockers' }).waitFor()
     await desktop.getByRole('table', { name: 'Synthetic training rehearsals' }).getByText('cancelled', { exact: true }).waitFor()
+    const datasetQualification = desktop.waitForResponse(response =>
+      response.url().endsWith('/v1/datasets') && response.request().method() === 'POST')
     await desktop.getByRole('button', { name: 'Qualify development corpus' }).click()
+    const datasetResponse = await datasetQualification
+    assert.equal(datasetResponse.status(), 200, await datasetResponse.text())
     await desktop.getByRole('table', { name: 'Dataset coverage' }).waitFor()
     assert.equal(await desktop.getByRole('table', { name: 'Dataset evidence sources' }).getByText('CC-BY-4.0').count(), 2)
     const datasetDownload = desktop.waitForEvent('download')
@@ -282,6 +294,9 @@ async function main() {
     await phone.getByRole('table', { name: 'Design provenance' }).waitFor()
     assert.equal(await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true)
     await phone.getByRole('button', { name: 'Intelligence Observatory', exact: true }).click()
+    await phone.getByRole('heading', { name: 'Research workflow registry', exact: true }).scrollIntoViewIfNeeded()
+    await phone.getByRole('table', { name: 'Registered research workflows' }).waitFor()
+    assert.equal(await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true)
     await phone.getByRole('table', { name: 'Saved model evaluations' })
       .getByRole('button', { name: 'Read report' }).first().click()
     await phone.getByRole('table', { name: 'Model evaluation cases' }).waitFor()
@@ -290,7 +305,7 @@ async function main() {
       await phone.screenshot({ path: join(process.env.AETHER_SCREENSHOT_DIR, 'aether-mobile.png'), fullPage: true })
     }
     assert.deepEqual(browserErrors, [])
-    console.log('Browser smoke passed: campaigns, knowledge and design review, model inspection and comparison, archived results, security limits, and mobile layout.')
+    console.log('Browser smoke passed: workflows, campaigns, knowledge and design review, model inspection and comparison, archived results, security limits, and mobile layout.')
   } finally {
     await browser?.close()
     if (server.exitCode === null && server.signalCode === null) {
