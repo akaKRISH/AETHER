@@ -1,5 +1,17 @@
 # Resume AETHER
 
+## APO-07 scientific research skills and plugin architecture
+
+Started from `5f30f71`. Added a native, versioned declarative skill registry in the existing SQLite model registry and content-addressed store. Five built-ins cover literature review, hypothesis criticism, experimental design, development dataset qualification and model evaluation. Each definition pins typed strict JSON schemas, local model requirements, budgets/resources, evidence-reference rules and exact skill dependencies. Definition digests identify serialized bytes; a version cannot be republished with changed content. Composition checks dependency cycles and missing pins and aggregates budgets with checked arithmetic.
+
+Capabilities are a closed allowlist for local reads, proposals, development-data qualification and optional use of the existing local Ollama model. There is no shell, Python, network, plugin-binary, training, verdict or approval capability. Imported declarations are inert and untrusted. Local CLI review and exact declared-capability approval produce content-addressed receipts; no approval route is exposed by the authenticated API. Protected routes list/inspect skills, validate compositions, and persist deterministic invocation preflight records. The Research OS Intelligence Observatory displays the registry and instruction text as untrusted content. [Commands, routes and scope](docs/research/APOLLO_EXECUTION_PLAN.md#apo-07-declarative-research-skills) · [Decision](docs/decisions/ADR-021.md) · [Source](crates/aether-api/src/models/skills.rs) · [Browser and API checks](tests/browser-smoke.cjs) · [Traceability](docs/testing/REQUIREMENTS_TRACEABILITY.md#apo-07-research-skill-requirements)
+
+Validation: `cargo test --locked --offline -p aether-api --jobs 1` passed 47 unit and 20 platform tests. The focused suite covers schema rejection, cycle/missing dependencies, per-skill evidence composition, checked budget overflow, immutable-version and content tampering, attempted shell-capability escalation, malicious imported instructions, deterministic replay, auth-protected discovery/inspection, denied unapproved preflight and invocation artifact integrity. API crate strict Clippy, workspace format check, API release build, frontend lint/type/tests/build, desktop/mobile browser smoke and documentation validation are recorded in [test results](docs/testing/TEST_RESULTS.md#apo-07-scientific-research-skills-and-plugin-architecture).
+
+The invocation path validates request shape, declared references, budget, resources and trust/approval state only; evidence source lookup, model calls, skill output, independent verification and execution are explicitly absent. Local review receipts identify `local_operator` but are not externally signed. No new dependencies, held-out work, training, model download or research-artifact changes were made.
+
+Next action: define APO-08 scope and acceptance criteria; APO-08/09 remain ahead of live training, while APO-06C–F remain resource-blocked.
+
 ## APO-06B scientific dataset engineering laboratory
 
 Started from `0fb3662`. The native Rust pipeline adds deterministic `dataset-build` and bounded `dataset-qualify` commands, content-addressed manifests and JSONL exports, an authenticated API, and a Research OS dataset review. It reuses the APOLLO archive, trusted task evaluator, SQLite artifact store and APO-06A split validator. [Execution steps](docs/research/APOLLO_EXECUTION_PLAN.md#apo-06b-scientific-dataset-engineering) · [Dataset and authority decision](docs/decisions/ADR-020.md)

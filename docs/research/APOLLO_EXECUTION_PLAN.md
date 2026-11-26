@@ -69,9 +69,17 @@ Run `aether-lab dataset-build` to qualify the small development corpus. It creat
 
 Task families, related cases, source documents and exact or near prompts are assigned to connected groups before a deterministic seeded train/validation split. These are development splits only; the manifest declares `independent_test: external_custody_required` and does not export test data. Provenance distinguishes synthetic, extracted and self-attested human-authored answers from independently verified correctness. None of these records authorizes training. [Dataset policy and limits](../decisions/ADR-020.md)
 
+### APO-07 declarative research skills
+
+`aether-lab skills-list` seeds and lists the five built-in versioned declarations. `skill-inspect <sha256>` checks an immutable manifest and its artifact digest. To import, supply a JSON envelope with a `definition` and its matching definition `sha256`; imported instructions are inert, bounded text. `skill-review <sha256>` records local review, then `skill-approve <sha256> <capability-list>` grants only explicitly declared capabilities and always includes required capabilities. `skill-compose <request.json>` resolves exact dependency versions and checks aggregate budgets. `skill-invoke <sha256> <request.json>` validates the typed request and records a deterministic preflight; it never executes instructions, calls a model, verifies evidence, or approves the skill. Each invocation binds skill/dependency pins, input digest, evidence references, requested budgets/resources and approval receipts.
+
+The allowlist contains only local literature/graph/evidence/model reads, proposal requests, development dataset qualification, and optional use of an existing local Ollama model. It has no shell, Python, network, downloaded-code, binary-plugin, training, verdict or approval capability. Schemas reject unknown fields and are depth/size bounded. Dependencies pin `(id, version)` and must form an acyclic graph. Checked sums bound composed token, timeout and output budgets; sequential composition uses the maximum child memory limit. Imported manifests remain untrusted until local CLI review and exact capability approval. Review/approval are not exposed over the authenticated read-only API.
+
+Protected `GET /v1/skills`, `/v1/skills/{sha256}` and `/v1/skills/invocations` support discovery and inspection. Protected `POST /v1/skills/compose` and `/v1/skills/invocations` only validate proposals and append preflight receipts. The Intelligence Observatory displays definitions and their untrusted instructions as text, with an explicit no-execution status. Invocation records label evidence checks as reference-shape-only; evidence source lookup, independent verification and actual skill output are not performed. [Trust, permission and execution boundary](../decisions/ADR-021.md)
+
 ### Training priority and resource gate
 
-APO-06C through APO-06F are resource-blocked and not started. No live training or fine-tuning is authorized by dataset qualification. APO-07, APO-08 and APO-09 are prioritized before any live training; their briefs must define scope and acceptance criteria. Live training remains last and requires qualified resources, an exact approved manifest, a reviewed worker and independent test custody.
+APO-06C through APO-06F are resource-blocked and not started. No live training or fine-tuning is authorized by dataset qualification or by the skill registry. APO-08 and APO-09 remain ahead of live training; their briefs must define scope and acceptance criteria. Live training remains last and requires qualified resources, an exact approved manifest, a reviewed worker and independent test custody.
 
 ### Pending literature work
 

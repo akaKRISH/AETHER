@@ -1,6 +1,7 @@
 pub(crate) mod datasets;
 mod evaluation;
 mod metadata;
+pub(crate) mod skills;
 pub(crate) mod training;
 
 use std::fs::{self, File};

@@ -128,3 +128,18 @@ Cause: the prior global `jsonschema` installation lacked `jsonschema[format]`, s
 | Historical artifacts | No tracked changes under frozen research results or archived source documents. |
 
 The similarity check is lexical and does not establish semantic paraphrase or pretraining independence. Human authorship is self-attested in the input record. The corpus is development-only. APO-06C–F are resource-blocked; APO-07/08/09 are prioritized before live training. [Resume](../../RESUME.md#apo-06b-scientific-dataset-engineering-laboratory)
+
+## APO-07 scientific research skills and plugin architecture
+
+| Check | Actual result |
+|---|---|
+| `cargo test --locked --offline -p aether-api --jobs 1` | 47 unit tests and 20 platform tests passed, including eight new skill registry tests and protected skill API assertions. |
+| `cargo clippy --locked --offline -p aether-api --all-targets -- -D warnings` | Exit 0. |
+| `cargo fmt --all -- --check` | Exit 0. |
+| `cargo build --locked --offline --release -p aether-api --jobs 1` | Exit 0 on final source, optimized Windows x64 build completed in 7m38s. |
+| Frontend lint, type check, tests and production build | All passed; five frontend tests passed. |
+| `node tests/browser-smoke.cjs` | Passed on the final release binary. Desktop inspected all five registered skills and the inert literature instructions, then completed campaign, knowledge/design and archive flows; mobile layout passed. |
+| Documentation validation | Passed: 13 JSON Schema metaschemas, 67 JSON files, 280 Markdown files, 1,388 relative destinations, 41 mapped requirements, five accepted examples and five negative cases. |
+| Frozen research artifacts | No changed paths under `research/results` or `docs/archive`; final diff check also clean. |
+
+Tests used local synthetic fixtures only. Imported hostile instructions were retained as inert text; the invocation record states reference-shape-only evidence validation and `never_executed`. No model calls, held-out experiment, training, dependency installation or changes to frozen scientific artifacts were made.

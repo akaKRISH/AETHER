@@ -1211,6 +1211,65 @@ fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
     assert_eq!(unauthenticated.status().as_u16(), 401);
     let anonymous = agent.get(format!("{origin}/v1/datasets")).call().unwrap();
     assert_eq!(anonymous.status().as_u16(), 401);
+    assert_eq!(
+        agent
+            .get(format!("{origin}/v1/skills"))
+            .call()
+            .unwrap()
+            .status()
+            .as_u16(),
+        401
+    );
+    let skills: Value = get("/v1/skills").body_mut().read_json().unwrap();
+    assert_eq!(skills["execution"], "declarative_only");
+    assert_eq!(skills["skills"].as_array().unwrap().len(), 5);
+    let dataset_skill = skills["skills"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|skill| skill["id"] == "dataset-qualification")
+        .unwrap();
+    let skill_pin = dataset_skill["sha256"].as_str().unwrap();
+    let inspection: Value = get(&format!("/v1/skills/{skill_pin}"))
+        .body_mut()
+        .read_json()
+        .unwrap();
+    assert_eq!(inspection["skill"]["sha256"], skill_pin);
+    assert_eq!(inspection["execution"], "declarative_only");
+    let composition: Value = post("/v1/skills/compose", json!({"skills":[skill_pin]}))
+        .body_mut()
+        .read_json()
+        .unwrap();
+    assert_eq!(
+        composition["state"],
+        "requires_review_or_capability_approval"
+    );
+    assert_eq!(composition["execution"], "not_performed");
+    let mut invocation_response = post(
+        "/v1/skills/invocations",
+        json!({
+            "sha256":skill_pin,"input":{"dataset_sha256":"d".repeat(64)},"budget":{},
+            "resources":{"timeout_ms":1000,"memory_bytes":1024,"output_bytes":1024},
+            "evidence":[{"sha256":"e".repeat(64),"kind":"dataset_manifest","provenance":"development fixture"}]
+        }),
+    );
+    let invocation_status = invocation_response.status().as_u16();
+    let invocation_body = invocation_response.body_mut().read_to_string().unwrap();
+    assert_eq!(invocation_status, 200, "{invocation_body}");
+    let invocation: Value = serde_json::from_str(&invocation_body).unwrap();
+    assert_eq!(invocation["invocation"]["failure"], "approval_required");
+    assert_eq!(invocation["invocation"]["execution"], "never_executed");
+    assert_eq!(
+        invocation["invocation"]["resolved_skills"][0]["approval"],
+        "unapproved"
+    );
+    assert_eq!(
+        get("/v1/skills/invocations")
+            .body_mut()
+            .read_json::<Value>()
+            .unwrap()["invocations"][0]["invocation_sha256"],
+        invocation["invocation_sha256"]
+    );
     let stored: Value = get("/v1/datasets").body_mut().read_json().unwrap();
     assert_eq!(stored["datasets"], json!([]));
     let qualified: Value = post(

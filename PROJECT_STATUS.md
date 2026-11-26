@@ -16,6 +16,8 @@ APO-06A adds deterministic adapter-training proposals and synthetic checkpoint r
 
 APO-06B is implemented and validated as a bounded native dataset qualification path using the two already reviewed CC BY 4.0 excerpts and deterministic computational or synthetic cases. It separates origin from correctness, groups related sources and tasks before a development-only split, and requires external custody for any independent test set. This does not authorize training. APO-06C–F remain resource-blocked; the owner-prioritized APO-07/08/09 tracks precede live training. [Dataset checkpoint](RESUME.md#apo-06b-scientific-dataset-engineering-laboratory)
 
+APO-07 implements a versioned, content-addressed registry for five declarative research skills, strict JSON contracts, closed default-deny capabilities, pinned dependency composition and deterministic preflight records. Imported declarations stay inert and untrusted; only local CLI review/approval can change their status. Protected APIs and the Research OS provide discovery, inspection and preflight without executing instructions, calling models or verifying evidence. APO-08 and APO-09 remain ahead of any live training. [Skill registry and actual validation](RESUME.md#apo-07-scientific-research-skills-and-plugin-architecture)
+
 ## Discovery
 
 DAE-01 adds a bounded native search over the reviewed knapsack fixture and retains its independently checked result and lineage in the local evidence store. [Results](RESUME.md#dae-01-constrained-discovery) · [Execution queue](EXECUTION_QUEUE.md)

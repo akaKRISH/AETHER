@@ -99,6 +99,13 @@ pub async fn serve(lab: Lab, port: u16, token: String, assets: PathBuf) -> std::
         .route("/v1/datasets", get(dataset_registry).post(dataset_build))
         .route("/v1/datasets/qualify", post(dataset_qualify))
         .route("/v1/datasets/{digest}", get(dataset_inspect))
+        .route("/v1/skills", get(skill_registry))
+        .route(
+            "/v1/skills/invocations",
+            get(skill_invocations).post(skill_invoke),
+        )
+        .route("/v1/skills/compose", post(skill_compose))
+        .route("/v1/skills/{sha256}", get(skill_inspect))
         .route("/v1/benchmarks", post(benchmarks))
         .route("/v1/evolution", post(evolution))
         .route("/v1/literature", get(literature))
@@ -459,6 +466,56 @@ async fn dataset_inspect(
 ) -> ApiResult<Json<Value>> {
     blocking(move || {
         crate::models::datasets::inspect(&app.lab, &digest)
+            .map_err(|error| Error::Input(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn skill_registry(State(app): State<App>) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::skills::list(&app.lab).map_err(|error| Error::Storage(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn skill_inspect(State(app): State<App>, Path(sha): Path<String>) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::skills::inspect(&app.lab, &sha)
+            .map_err(|error| Error::Input(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn skill_invocations(State(app): State<App>) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::skills::invocations(&app.lab)
+            .map_err(|error| Error::Storage(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn skill_invoke(
+    State(app): State<App>,
+    Json(request): Json<crate::models::skills::InvocationRequest>,
+) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::skills::invoke(&app.lab, request, "authenticated_local_api")
+            .map_err(|error| Error::Input(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn skill_compose(
+    State(app): State<App>,
+    Json(request): Json<crate::models::skills::ComposeRequest>,
+) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::skills::compose(&app.lab, request)
             .map_err(|error| Error::Input(error.to_string()))
     })
     .await

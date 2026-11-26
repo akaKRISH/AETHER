@@ -93,3 +93,14 @@ These rows map the authorized A–N work to runnable evidence and outstanding sc
 | Readiness and learning | [Remaining gates](../../NEXT_ACTIONS.md) and [Prometheus curriculum](../learning/IMPLEMENTATION_PROMETHEUS.md) |
 
 Sources: [PRD](../product/FUNCTIONAL_REQUIREMENTS.md), [v0.2 technical requirements](../archive/v0.2/AETHER/04_TRD_SRS.md), [threat model](../security/THREAT_MODEL.md), [M1 acceptance](../roadmap/MILESTONE_01_NATIVE_FIXTURE.md) and [test plan](TEST_PLAN.md).
+
+## APO-07 research skill requirements
+
+| Requirement | Verification | Evidence and limit |
+|---|---|---|
+| APO-07-01 · immutable identity | `same_skill_version_cannot_be_republished_with_changed_content`, registry integrity checks | Definition version is pinned by SHA-256; registry and content-addressed artifact must agree. |
+| APO-07-02 · strict typed contract | `typed_schemas_reject_missing_unknown_and_wrongly_typed_values` | Bounded input/output schema validation; output is not produced in this milestone. |
+| APO-07-03 · default-deny permissions | `imported_malicious_instructions_stay_inert_and_cannot_escalate_permissions` | Closed capability enum; imported declarations require local review and exact CLI approval; no execution capability exists. |
+| APO-07-04 · safe composition and budgets | `dependency_validation_rejects_cycles_and_unpinned_missing_versions`, `budgets_use_checked_arithmetic_and_reject_overflow` | Pinned acyclic dependencies and checked aggregate limits; composition remains preflight-only. |
+| APO-07-05 · reproducible invocation | `invocation_replay_is_deterministic_and_never_executes` | Content-addressed request and approval provenance; evidence references are shape-checked, not independently verified. |
+| APO-07-06 · protected discovery | `authenticated_loopback_api_runs_a_campaign_and_serves_evidence`, Research OS browser smoke | Bearer-protected read/compose/preflight endpoints and read-only UI; review/approval remain local CLI operations. |
