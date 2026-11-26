@@ -2,6 +2,7 @@
 
 mod hardware;
 mod http;
+mod inference;
 mod lab;
 mod literature;
 mod planning;
@@ -34,6 +35,7 @@ Commands
   aether-lab benchmark-native       Measure bounded native sorting variants
   aether-lab evolve <seed> <evaluation-slots>  Compare four bounded knapsack search policies
   aether-lab discover <seed> <evaluation-slots>  Store and report one bounded knapsack search
+  aether-lab inference-study <fixture|ollama>   Compare bounded inference strategies on development tasks
   aether-lab hardware               Read local NVIDIA driver telemetry, when available
   aether-lab propose <request.json> Produce deterministic reviewed-task proposals
   aether-lab propose-local <request.json> <model>  Use an existing local Ollama model
@@ -126,6 +128,25 @@ fn execute(args: &[String]) -> Result<()> {
         .map_or_else(|| PathBuf::from(".aether/lab"), PathBuf::from);
     let lab = Lab::open(root)?;
     match args {
+        [command, provider] if command == "inference-study" => {
+            let live = match provider.as_str() {
+                "fixture" => false,
+                "ollama" => true,
+                _ => return Err("inference-study accepts fixture or local ollama".into()),
+            };
+            let runtime = tokio::runtime::Builder::new_multi_thread()
+                .worker_threads(1)
+                .enable_all()
+                .build()?;
+            let cancelled = std::sync::Arc::new(AtomicBool::new(false));
+            let signal = cancelled.clone();
+            runtime.spawn(async move {
+                if tokio::signal::ctrl_c().await.is_ok() {
+                    signal.store(true, std::sync::atomic::Ordering::Release);
+                }
+            });
+            print_json(&inference::compare(&lab, live, &cancelled)?)
+        }
         [command, seed, evaluations] if command == "discover" => {
             let report = aether_engine::discover(seed.parse()?, evaluations.parse()?)?;
             let digest = lab.record_discovery(&report)?;

@@ -105,6 +105,38 @@ Each contrast pools 360 matched cases and excludes the duplicate histories. All 
 
 The [compact sensitivity results](research/results/dae-ecar-reliability-ablation.json) retain all settings, paired contrasts, calibration, false verification, resource use and scheduler timings. Two release processes reproduced all 9,600 outcomes. Their canonical outcomes SHA-256 is `cd1bcfb1513abc9d0a201324f7403d66da400a7fc5041b0017af05da8101441a` using UTF-8 JSON with sorted object keys and separators `,` and `:`. The unflagged run reproduced all 2,880 DAE-05 rows. Twenty-five targeted tests, strict Clippy, formatting and the release build passed. The experiment uses synthetic receipts and exact copies. A future development grid should include partial dependence and independently selected task families before choosing an information bonus. [Execution queue](EXECUTION_QUEUE.md)
 
+## DAE-06 adaptive test-time compute
+
+DAE-05B is frozen at `170d354`. Its compact results retain SHA-256 `7b013fcc37704818bc25c4d23f56df9cda35ebd68586223fe8679a2ee17823ee`. Partially dependent evidence sources remain future research.
+
+`aether-lab inference-study fixture` compares single-response, best-of-three, fixed refinement and adaptive inference on six-element development maximum-subarray inputs. `inference-study ollama` runs one matched input with the pinned local Qwen model and checks that Ollama reports cloud disabled before submitting a prompt. The model receives the public list and, for critique or refinement, the previous typed interval. The prompt has no reference score, trusted verdict or final-test data. A reviewed worker supplies the baseline and the independent evaluator checks model bounds and the exact optimum. Only a passing authoritative check selects an answer.
+
+Each trial has separate checked limits of three model calls, 6,336 model tokens, three verifier calls and one native execution. Model requests cap generation at 64 tokens with a 2,048-token context. Each trace records prompt and output counts and a reasoning subset when available. The fixture uses scripted usage, while Ollama reports prompt and output counts with thinking disabled and no separate reasoning-token counter. Unknown usage and failed requests charge their full reservation. The controller discards over-limit responses, deduplicates intervals, and keeps candidate lineage. Adaptive inference checks new candidates before spending more inference and stops on success, repeated non-progress, cancellation or exhaustion.
+
+Every completed trial, including abstentions, is stored by SHA-256 as development evidence in the existing SQLite store. Ctrl-C cancels at controller boundaries and the reviewed worker observes the cancellation flag. A blocking local request can finish or time out before cancellation is recorded. Provider failures recover within the remaining call budget. An abruptly terminated process can be rerun from the original fixture, with prior completed trials retained. The interrupted in-flight trial is not resumed.
+
+Two release fixture processes reproduced the decisions, lineage and verdicts across 12 trials. The fixture reports 80 prompt and 24 output tokens per call by construction.
+
+| Fixture strategy | Verified / 3 | Model calls | Prompt / output tokens | Independent checks | Native execution ms |
+|---|---:|---:|---:|---:|---:|
+| Single response | 0 | 3 | 240 / 72 | 3 | 145 |
+| Best-of-three | 1 | 9 | 720 / 216 | 3 | 115 |
+| Fixed refinement | 0 | 9 | 720 / 216 | 3 | 126 |
+| Adaptive | 1 | 8 | 640 / 192 | 7 | 112 |
+
+[Raw fixture traces](research/results/dae-inference-fixture.json)
+
+The owned Ollama service qualified with cloud disabled and the existing Qwen 3.5 4B Q4_K_M manifest `e0b8c85c75aad2573ff49bec177ebb1013772fba665a53d64c04266439a2222d`. All four strategies saw the same seed-19 list. All ten calls returned the same distinct interval, with sum −65 against an exact optimum of 84. The verifier rejected every strategy. Adaptive stopped after two repeated proposals. The pilot used 821 prompt tokens and 210 output tokens. The provider did not report a separate reasoning count. Inference times include preflight and the first cold load, so they do not establish a timing ranking.
+
+| Live strategy | Verified / 1 | Calls | Prompt / output tokens | Inference ms | Verify / execution ms |
+|---|---:|---:|---:|---:|---:|
+| Single response | 0 | 1 | 77 / 21 | 13,112 | 1 / 85 |
+| Best-of-three | 0 | 3 | 231 / 63 | 3,420 | 1 / 59 |
+| Fixed refinement | 0 | 3 | 253 / 63 | 3,229 | 1 / 44 |
+| Adaptive | 0 | 3 | 260 / 63 | 3,251 | 1 / 47 |
+
+The 16 saved report digests resolved to their exact evidence bytes in SQLite. The raw fixture and [local Qwen traces](research/results/dae-inference-local-qwen.json) have SHA-256 `e44d0d8d2d92b838aaa940b0f1d26d51ba8c9dc2b2381dbf5c49c334b096c636` and `16df85c7226ee8deca8de870da895ac85710b742b622f4444cabee27ac2cd447`. Twenty-six API tests, strict API Clippy, formatting and the release build passed. One local model, one live task and one strategy order limit the pilot. Before comparing policies again, define a larger development grid and rotate order to separate cold-load effects. [Execution queue](EXECUTION_QUEUE.md)
+
 ## Latest verification
 
 Baseline passed 33 Rust and three frontend tests. The final Windows run passed 50 Rust and three frontend tests, format, strict Clippy, release build, frontend lint/type/build, browser smoke, advisory checks, and evidence validation. The release re-exported three prior reports byte for byte and completed a new objective-derived campaign with advice frozen under protocol v3. The hardware CLI observed the physical NVIDIA device. Crossref, OpenAlex and arXiv public probes returned 200. The recovery drill reconciled one interrupted lease. [Tests](docs/testing/TEST_RESULTS.md) · [Measurements](docs/research/BENCHMARK_RESULTS.md)

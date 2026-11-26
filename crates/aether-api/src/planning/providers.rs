@@ -91,25 +91,11 @@ impl OllamaModel {
             port: local_port("AETHER_OLLAMA_PORT", 11434)?,
         })
     }
-}
 
-fn valid_model_component(value: &str) -> bool {
-    value
-        .as_bytes()
-        .first()
-        .is_some_and(u8::is_ascii_alphanumeric)
-        && value
-            .bytes()
-            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-' | b'.'))
-}
-
-impl ModelAdapter for OllamaModel {
-    fn rank(
+    fn local_profile(
         &self,
-        request: &PlanningRequest,
         cancelled: &AtomicBool,
-    ) -> Result<Ranking, PlanningError> {
-        let _slot = PROVIDER_SLOT.try_lock().map_err(|_| PlanningError::Busy)?;
+    ) -> Result<(String, String, OllamaModelInfo), PlanningError> {
         let origin = format!("http://127.0.0.1:{}", self.port);
         let preflight = agent(METADATA_TIMEOUT);
         let disabled = match metadata::<CloudStatus>(
@@ -164,6 +150,70 @@ impl ModelAdapter for OllamaModel {
             return Err(PlanningError::Unsupported);
         }
         check_cancelled(cancelled)?;
+        Ok((origin, digest, capabilities))
+    }
+
+    pub(crate) fn interval(
+        &self,
+        prompt: &str,
+        seed: u32,
+        cancelled: &AtomicBool,
+    ) -> Result<crate::inference::ModelReply, PlanningError> {
+        use crate::inference::{ModelReply, OUTPUT_TOKENS, Usage};
+        const QWEN_PIN: &str = "e0b8c85c75aad2573ff49bec177ebb1013772fba665a53d64c04266439a2222d";
+        let _slot = PROVIDER_SLOT.try_lock().map_err(|_| PlanningError::Busy)?;
+        let (origin, digest, _) = self.local_profile(cancelled)?;
+        if digest != QWEN_PIN || prompt.len() > 512 {
+            return Err(PlanningError::InvalidInput);
+        }
+        let response: OllamaCompletion = decode(
+            agent(GENERATION_TIMEOUT).post(format!("{origin}/api/generate")).send_json(json!({
+                "model": self.model, "prompt": prompt, "stream": false, "think": false, "keep_alive": "45s",
+                "options": { "temperature": 0.2, "seed": seed, "num_predict": OUTPUT_TOKENS, "num_ctx": OLLAMA_CONTEXT_TOKENS },
+                "format": { "type": "object", "properties": {"start": {"type":"integer"}, "end_exclusive": {"type":"integer"}}, "required":["start","end_exclusive"], "additionalProperties":false },
+            })),
+            MAX_RESPONSE_BYTES,
+        )?;
+        let usage = response.prompt_eval_count.zip(response.eval_count).map(
+            |(prompt_tokens, output_tokens)| Usage {
+                prompt_tokens,
+                output_tokens,
+                reasoning_tokens: None,
+            },
+        );
+        let accepted = response.done
+            && response.done_reason.as_deref() == Some("stop")
+            && response.model == self.model
+            && response.remote_host.is_empty()
+            && response.remote_model.is_empty()
+            && response.tool_calls.is_empty()
+            && response.thinking.is_empty();
+        Ok(ModelReply {
+            text: accepted.then_some(response.response),
+            usage,
+            model_digest: Some(digest),
+        })
+    }
+}
+
+fn valid_model_component(value: &str) -> bool {
+    value
+        .as_bytes()
+        .first()
+        .is_some_and(u8::is_ascii_alphanumeric)
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-' | b'.'))
+}
+
+impl ModelAdapter for OllamaModel {
+    fn rank(
+        &self,
+        request: &PlanningRequest,
+        cancelled: &AtomicBool,
+    ) -> Result<Ranking, PlanningError> {
+        let _slot = PROVIDER_SLOT.try_lock().map_err(|_| PlanningError::Busy)?;
+        let (origin, digest, capabilities) = self.local_profile(cancelled)?;
         let prompt = prompt_input(request)?;
         let prompt_sha256 = aether_runner::sha256(
             &serde_json::to_vec(&[OLLAMA_SYSTEM, &prompt])
@@ -274,6 +324,8 @@ struct OllamaCompletion {
     response: String,
     prompt_eval_count: Option<u64>,
     eval_count: Option<u64>,
+    #[serde(default)]
+    thinking: String,
     #[serde(default)]
     remote_model: String,
     #[serde(default)]

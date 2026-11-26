@@ -1,0 +1,2010 @@
+{
+  "complete": true,
+  "scope": "development",
+  "trials": [
+    {
+      "artifact_sha256": "f8af21270e6d40c1e48a18eb96d2cdd7a97e8fc184fcc27f0a1a1867349a4c8d",
+      "report": {
+        "candidates": [
+          {
+            "bounds": {
+              "end_exclusive": 1,
+              "start": 0
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 1,
+              "start": 0,
+              "sum": -66
+            },
+            "parent": null
+          }
+        ],
+        "execution_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 221,
+          "paid_microusd": 0,
+          "wall_ms": 54
+        },
+        "limits": {
+          "execution": {
+            "attempts": 1,
+            "model_tokens": 0,
+            "output_bytes": 4096,
+            "paid_microusd": 0,
+            "wall_ms": 1000
+          },
+          "model": {
+            "attempts": 3,
+            "model_tokens": 6336,
+            "output_bytes": 768,
+            "paid_microusd": 0,
+            "wall_ms": 105000
+          },
+          "verifier": {
+            "attempts": 3,
+            "model_tokens": 0,
+            "output_bytes": 0,
+            "paid_microusd": 0,
+            "wall_ms": 300
+          }
+        },
+        "model_digest": null,
+        "model_used": {
+          "attempts": 1,
+          "model_tokens": 104,
+          "output_bytes": 29,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        },
+        "provider": "scripted-fixture",
+        "schema": "aether.inference-development/1",
+        "seed": 19,
+        "steps": [
+          {
+            "action": "GENERATE",
+            "candidate": 0,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 1
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "576140191cf4a831e5bddac2703e2f2b9fd1135acb8bf8326b1f721f90135578",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 1
+          },
+          {
+            "action": "VERIFY",
+            "artifact_sha256": "adb2ef0e8e987c3e10be166aca96a6ccb3cf7b5d86feaeb9a3100b5ac28636b3",
+            "phase": "native_preparation",
+            "wall_ms": 54,
+            "within_limits": true
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 0,
+            "passed": false,
+            "phase": "authoritative_check",
+            "wall_ms": 1
+          },
+          {
+            "action": "STOP",
+            "reason": "verification_rejected"
+          }
+        ],
+        "stop": "verification_rejected",
+        "strategy": "single",
+        "values": [
+          -66,
+          -128,
+          84,
+          -33,
+          -116,
+          84
+        ],
+        "verified_candidate": null,
+        "verifier_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 0,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        }
+      }
+    },
+    {
+      "artifact_sha256": "364e56d37a8a0b113a7a598225e6c529980252d95fc33e5dc8f4ac33d8fab594",
+      "report": {
+        "candidates": [
+          {
+            "bounds": {
+              "end_exclusive": 1,
+              "start": 0
+            },
+            "checked": false,
+            "interval": {
+              "end_exclusive": 1,
+              "start": 0,
+              "sum": -66
+            },
+            "parent": null
+          },
+          {
+            "bounds": {
+              "end_exclusive": 3,
+              "start": 2
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 3,
+              "start": 2,
+              "sum": 84
+            },
+            "parent": null
+          },
+          {
+            "bounds": {
+              "end_exclusive": 6,
+              "start": 0
+            },
+            "checked": false,
+            "interval": {
+              "end_exclusive": 6,
+              "start": 0,
+              "sum": -175
+            },
+            "parent": null
+          }
+        ],
+        "execution_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 221,
+          "paid_microusd": 0,
+          "wall_ms": 37
+        },
+        "limits": {
+          "execution": {
+            "attempts": 1,
+            "model_tokens": 0,
+            "output_bytes": 4096,
+            "paid_microusd": 0,
+            "wall_ms": 1000
+          },
+          "model": {
+            "attempts": 3,
+            "model_tokens": 6336,
+            "output_bytes": 768,
+            "paid_microusd": 0,
+            "wall_ms": 105000
+          },
+          "verifier": {
+            "attempts": 3,
+            "model_tokens": 0,
+            "output_bytes": 0,
+            "paid_microusd": 0,
+            "wall_ms": 300
+          }
+        },
+        "model_digest": null,
+        "model_used": {
+          "attempts": 3,
+          "model_tokens": 312,
+          "output_bytes": 87,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        },
+        "provider": "scripted-fixture",
+        "schema": "aether.inference-development/1",
+        "seed": 19,
+        "steps": [
+          {
+            "action": "GENERATE",
+            "candidate": 0,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 1
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "576140191cf4a831e5bddac2703e2f2b9fd1135acb8bf8326b1f721f90135578",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 1
+          },
+          {
+            "action": "GENERATE",
+            "candidate": 1,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 0
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "abc6c6f56ac044b9796e682995ce61645f30d13bb5a03ebacd3654a10c8562e8",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 0
+          },
+          {
+            "action": "GENERATE",
+            "candidate": 2,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 0
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "112276e3b8dfed8c6d2bb73b75f55cd03fe207cccc079cd8471835d3129d61c0",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 0
+          },
+          {
+            "action": "VERIFY",
+            "artifact_sha256": "adb2ef0e8e987c3e10be166aca96a6ccb3cf7b5d86feaeb9a3100b5ac28636b3",
+            "phase": "native_preparation",
+            "wall_ms": 37,
+            "within_limits": true
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 1,
+            "passed": true,
+            "phase": "authoritative_check",
+            "wall_ms": 1
+          },
+          {
+            "action": "STOP",
+            "reason": "verified"
+          }
+        ],
+        "stop": "verified",
+        "strategy": "best_of_n",
+        "values": [
+          -66,
+          -128,
+          84,
+          -33,
+          -116,
+          84
+        ],
+        "verified_candidate": 1,
+        "verifier_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 0,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        }
+      }
+    },
+    {
+      "artifact_sha256": "de948e61e3b539b41831d05e120ab5f9e15f5534104ebf15eb7c194ebd8a3b86",
+      "report": {
+        "candidates": [
+          {
+            "bounds": {
+              "end_exclusive": 1,
+              "start": 0
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 1,
+              "start": 0,
+              "sum": -66
+            },
+            "parent": null
+          },
+          {
+            "bounds": {
+              "end_exclusive": 2,
+              "start": 0
+            },
+            "checked": false,
+            "interval": {
+              "end_exclusive": 2,
+              "start": 0,
+              "sum": -194
+            },
+            "parent": 0
+          },
+          {
+            "bounds": {
+              "end_exclusive": 3,
+              "start": 0
+            },
+            "checked": false,
+            "interval": {
+              "end_exclusive": 3,
+              "start": 0,
+              "sum": -110
+            },
+            "parent": 1
+          }
+        ],
+        "execution_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 221,
+          "paid_microusd": 0,
+          "wall_ms": 40
+        },
+        "limits": {
+          "execution": {
+            "attempts": 1,
+            "model_tokens": 0,
+            "output_bytes": 4096,
+            "paid_microusd": 0,
+            "wall_ms": 1000
+          },
+          "model": {
+            "attempts": 3,
+            "model_tokens": 6336,
+            "output_bytes": 768,
+            "paid_microusd": 0,
+            "wall_ms": 105000
+          },
+          "verifier": {
+            "attempts": 3,
+            "model_tokens": 0,
+            "output_bytes": 0,
+            "paid_microusd": 0,
+            "wall_ms": 300
+          }
+        },
+        "model_digest": null,
+        "model_used": {
+          "attempts": 3,
+          "model_tokens": 312,
+          "output_bytes": 87,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        },
+        "provider": "scripted-fixture",
+        "schema": "aether.inference-development/1",
+        "seed": 19,
+        "steps": [
+          {
+            "action": "GENERATE",
+            "candidate": 0,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 1
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "576140191cf4a831e5bddac2703e2f2b9fd1135acb8bf8326b1f721f90135578",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 1
+          },
+          {
+            "action": "REFINE",
+            "candidate": 1,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 0
+            },
+            "outcome": "candidate",
+            "parent": 0,
+            "prompt_sha256": "e788c06d5d8f57a5a86692e2235d0d33b5690bb908f645f879d4ebcf399d9985",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 0
+          },
+          {
+            "action": "REFINE",
+            "candidate": 2,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 0
+            },
+            "outcome": "candidate",
+            "parent": 1,
+            "prompt_sha256": "fa64c95386e369658bf548b74548992fb246b881efca47e0b35a7c68175d7b23",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 0
+          },
+          {
+            "action": "VERIFY",
+            "artifact_sha256": "adb2ef0e8e987c3e10be166aca96a6ccb3cf7b5d86feaeb9a3100b5ac28636b3",
+            "phase": "native_preparation",
+            "wall_ms": 40,
+            "within_limits": true
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 0,
+            "passed": false,
+            "phase": "authoritative_check",
+            "wall_ms": 1
+          },
+          {
+            "action": "STOP",
+            "reason": "verification_rejected"
+          }
+        ],
+        "stop": "verification_rejected",
+        "strategy": "fixed_refinement",
+        "values": [
+          -66,
+          -128,
+          84,
+          -33,
+          -116,
+          84
+        ],
+        "verified_candidate": null,
+        "verifier_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 0,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        }
+      }
+    },
+    {
+      "artifact_sha256": "c4cbe1dbc24a02e6933269f53f1529dae976683eb5dcbcb3c3cbd9a21a4080a4",
+      "report": {
+        "candidates": [
+          {
+            "bounds": {
+              "end_exclusive": 1,
+              "start": 0
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 1,
+              "start": 0,
+              "sum": -66
+            },
+            "parent": null
+          },
+          {
+            "bounds": {
+              "end_exclusive": 3,
+              "start": 2
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 3,
+              "start": 2,
+              "sum": 84
+            },
+            "parent": 0
+          }
+        ],
+        "execution_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 221,
+          "paid_microusd": 0,
+          "wall_ms": 37
+        },
+        "limits": {
+          "execution": {
+            "attempts": 1,
+            "model_tokens": 0,
+            "output_bytes": 4096,
+            "paid_microusd": 0,
+            "wall_ms": 1000
+          },
+          "model": {
+            "attempts": 3,
+            "model_tokens": 6336,
+            "output_bytes": 768,
+            "paid_microusd": 0,
+            "wall_ms": 105000
+          },
+          "verifier": {
+            "attempts": 3,
+            "model_tokens": 0,
+            "output_bytes": 0,
+            "paid_microusd": 0,
+            "wall_ms": 300
+          }
+        },
+        "model_digest": null,
+        "model_used": {
+          "attempts": 2,
+          "model_tokens": 208,
+          "output_bytes": 58,
+          "paid_microusd": 0,
+          "wall_ms": 2
+        },
+        "provider": "scripted-fixture",
+        "schema": "aether.inference-development/1",
+        "seed": 19,
+        "steps": [
+          {
+            "action": "GENERATE",
+            "candidate": 0,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 1
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "576140191cf4a831e5bddac2703e2f2b9fd1135acb8bf8326b1f721f90135578",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 1
+          },
+          {
+            "action": "VERIFY",
+            "artifact_sha256": "adb2ef0e8e987c3e10be166aca96a6ccb3cf7b5d86feaeb9a3100b5ac28636b3",
+            "phase": "native_preparation",
+            "wall_ms": 37,
+            "within_limits": true
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 0,
+            "passed": false,
+            "phase": "authoritative_check",
+            "wall_ms": 1
+          },
+          {
+            "action": "CRITIQUE",
+            "candidate": 1,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 1
+            },
+            "outcome": "candidate",
+            "parent": 0,
+            "prompt_sha256": "9f516026b20dd28d23c3d4a0254c0c59a726b6d8b57161bd6fb15ea9f16d52a6",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 1
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 1,
+            "passed": true,
+            "phase": "authoritative_check",
+            "wall_ms": 0
+          },
+          {
+            "action": "STOP",
+            "reason": "verified"
+          }
+        ],
+        "stop": "verified",
+        "strategy": "adaptive",
+        "values": [
+          -66,
+          -128,
+          84,
+          -33,
+          -116,
+          84
+        ],
+        "verified_candidate": 1,
+        "verifier_used": {
+          "attempts": 2,
+          "model_tokens": 0,
+          "output_bytes": 0,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        }
+      }
+    },
+    {
+      "artifact_sha256": "7e21d75d1a38ce6d8ee6bcd14e4fcfadcae69a636a7f220439569e2720d9c203",
+      "report": {
+        "candidates": [
+          {
+            "bounds": {
+              "end_exclusive": 1,
+              "start": 0
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 1,
+              "start": 0,
+              "sum": -40
+            },
+            "parent": null
+          }
+        ],
+        "execution_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 222,
+          "paid_microusd": 0,
+          "wall_ms": 46
+        },
+        "limits": {
+          "execution": {
+            "attempts": 1,
+            "model_tokens": 0,
+            "output_bytes": 4096,
+            "paid_microusd": 0,
+            "wall_ms": 1000
+          },
+          "model": {
+            "attempts": 3,
+            "model_tokens": 6336,
+            "output_bytes": 768,
+            "paid_microusd": 0,
+            "wall_ms": 105000
+          },
+          "verifier": {
+            "attempts": 3,
+            "model_tokens": 0,
+            "output_bytes": 0,
+            "paid_microusd": 0,
+            "wall_ms": 300
+          }
+        },
+        "model_digest": null,
+        "model_used": {
+          "attempts": 1,
+          "model_tokens": 104,
+          "output_bytes": 29,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        },
+        "provider": "scripted-fixture",
+        "schema": "aether.inference-development/1",
+        "seed": 281,
+        "steps": [
+          {
+            "action": "GENERATE",
+            "candidate": 0,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 1
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "73378ad7fa6f940ba39026cf5f51f7b7f8037537a89aa393a2ef74a8e686584b",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 1
+          },
+          {
+            "action": "VERIFY",
+            "artifact_sha256": "e4db3c5f88336081e483be07bd5f72bd45c12fc94b1b688fc2a83aa520aaa3cc",
+            "phase": "native_preparation",
+            "wall_ms": 46,
+            "within_limits": true
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 0,
+            "passed": false,
+            "phase": "authoritative_check",
+            "wall_ms": 1
+          },
+          {
+            "action": "STOP",
+            "reason": "verification_rejected"
+          }
+        ],
+        "stop": "verification_rejected",
+        "strategy": "single",
+        "values": [
+          -40,
+          68,
+          -72,
+          -111,
+          41,
+          58
+        ],
+        "verified_candidate": null,
+        "verifier_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 0,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        }
+      }
+    },
+    {
+      "artifact_sha256": "8304f1047e00fab9c4c513e4bef0870b5d29ddc71f3ed47ad469cf3547f8b920",
+      "report": {
+        "candidates": [
+          {
+            "bounds": {
+              "end_exclusive": 1,
+              "start": 0
+            },
+            "checked": false,
+            "interval": {
+              "end_exclusive": 1,
+              "start": 0,
+              "sum": -40
+            },
+            "parent": null
+          },
+          {
+            "bounds": {
+              "end_exclusive": 2,
+              "start": 1
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 2,
+              "start": 1,
+              "sum": 68
+            },
+            "parent": null
+          },
+          {
+            "bounds": {
+              "end_exclusive": 6,
+              "start": 0
+            },
+            "checked": false,
+            "interval": {
+              "end_exclusive": 6,
+              "start": 0,
+              "sum": -56
+            },
+            "parent": null
+          }
+        ],
+        "execution_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 222,
+          "paid_microusd": 0,
+          "wall_ms": 40
+        },
+        "limits": {
+          "execution": {
+            "attempts": 1,
+            "model_tokens": 0,
+            "output_bytes": 4096,
+            "paid_microusd": 0,
+            "wall_ms": 1000
+          },
+          "model": {
+            "attempts": 3,
+            "model_tokens": 6336,
+            "output_bytes": 768,
+            "paid_microusd": 0,
+            "wall_ms": 105000
+          },
+          "verifier": {
+            "attempts": 3,
+            "model_tokens": 0,
+            "output_bytes": 0,
+            "paid_microusd": 0,
+            "wall_ms": 300
+          }
+        },
+        "model_digest": null,
+        "model_used": {
+          "attempts": 3,
+          "model_tokens": 312,
+          "output_bytes": 87,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        },
+        "provider": "scripted-fixture",
+        "schema": "aether.inference-development/1",
+        "seed": 281,
+        "steps": [
+          {
+            "action": "GENERATE",
+            "candidate": 0,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 1
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "73378ad7fa6f940ba39026cf5f51f7b7f8037537a89aa393a2ef74a8e686584b",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 1
+          },
+          {
+            "action": "GENERATE",
+            "candidate": 1,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 0
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "873f212d090691358aaf5f358016db0a4c9d240884e8569b00f1959117e048d5",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 0
+          },
+          {
+            "action": "GENERATE",
+            "candidate": 2,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 0
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "36c3d93fe4a951279cf333aeecfe6dba8e192daffe91fc695c6bb4b1ed6c3360",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 0
+          },
+          {
+            "action": "VERIFY",
+            "artifact_sha256": "e4db3c5f88336081e483be07bd5f72bd45c12fc94b1b688fc2a83aa520aaa3cc",
+            "phase": "native_preparation",
+            "wall_ms": 40,
+            "within_limits": true
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 1,
+            "passed": false,
+            "phase": "authoritative_check",
+            "wall_ms": 1
+          },
+          {
+            "action": "STOP",
+            "reason": "verification_rejected"
+          }
+        ],
+        "stop": "verification_rejected",
+        "strategy": "best_of_n",
+        "values": [
+          -40,
+          68,
+          -72,
+          -111,
+          41,
+          58
+        ],
+        "verified_candidate": null,
+        "verifier_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 0,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        }
+      }
+    },
+    {
+      "artifact_sha256": "ce9c6727331275e91682432633985f3650bb2abccc86f1f0049d412b9b8dfdfa",
+      "report": {
+        "candidates": [
+          {
+            "bounds": {
+              "end_exclusive": 1,
+              "start": 0
+            },
+            "checked": false,
+            "interval": {
+              "end_exclusive": 1,
+              "start": 0,
+              "sum": -40
+            },
+            "parent": null
+          },
+          {
+            "bounds": {
+              "end_exclusive": 2,
+              "start": 0
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 2,
+              "start": 0,
+              "sum": 28
+            },
+            "parent": 0
+          },
+          {
+            "bounds": {
+              "end_exclusive": 3,
+              "start": 0
+            },
+            "checked": false,
+            "interval": {
+              "end_exclusive": 3,
+              "start": 0,
+              "sum": -44
+            },
+            "parent": 1
+          }
+        ],
+        "execution_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 222,
+          "paid_microusd": 0,
+          "wall_ms": 41
+        },
+        "limits": {
+          "execution": {
+            "attempts": 1,
+            "model_tokens": 0,
+            "output_bytes": 4096,
+            "paid_microusd": 0,
+            "wall_ms": 1000
+          },
+          "model": {
+            "attempts": 3,
+            "model_tokens": 6336,
+            "output_bytes": 768,
+            "paid_microusd": 0,
+            "wall_ms": 105000
+          },
+          "verifier": {
+            "attempts": 3,
+            "model_tokens": 0,
+            "output_bytes": 0,
+            "paid_microusd": 0,
+            "wall_ms": 300
+          }
+        },
+        "model_digest": null,
+        "model_used": {
+          "attempts": 3,
+          "model_tokens": 312,
+          "output_bytes": 87,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        },
+        "provider": "scripted-fixture",
+        "schema": "aether.inference-development/1",
+        "seed": 281,
+        "steps": [
+          {
+            "action": "GENERATE",
+            "candidate": 0,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 1
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "73378ad7fa6f940ba39026cf5f51f7b7f8037537a89aa393a2ef74a8e686584b",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 1
+          },
+          {
+            "action": "REFINE",
+            "candidate": 1,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 0
+            },
+            "outcome": "candidate",
+            "parent": 0,
+            "prompt_sha256": "46222349a2e7ec22f4d8a4b36cb88dd672217156438f81239a79379995b016f2",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 0
+          },
+          {
+            "action": "REFINE",
+            "candidate": 2,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 0
+            },
+            "outcome": "candidate",
+            "parent": 1,
+            "prompt_sha256": "fc5b01639164f841b0cbd3bd9815eeea177b666002221cc1e3d22c149f412173",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 0
+          },
+          {
+            "action": "VERIFY",
+            "artifact_sha256": "e4db3c5f88336081e483be07bd5f72bd45c12fc94b1b688fc2a83aa520aaa3cc",
+            "phase": "native_preparation",
+            "wall_ms": 41,
+            "within_limits": true
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 1,
+            "passed": false,
+            "phase": "authoritative_check",
+            "wall_ms": 1
+          },
+          {
+            "action": "STOP",
+            "reason": "verification_rejected"
+          }
+        ],
+        "stop": "verification_rejected",
+        "strategy": "fixed_refinement",
+        "values": [
+          -40,
+          68,
+          -72,
+          -111,
+          41,
+          58
+        ],
+        "verified_candidate": null,
+        "verifier_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 0,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        }
+      }
+    },
+    {
+      "artifact_sha256": "bf4179dcae351d9c15494d366904000aabb9bb0bb0bafac57cd1b51cb50d0f89",
+      "report": {
+        "candidates": [
+          {
+            "bounds": {
+              "end_exclusive": 1,
+              "start": 0
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 1,
+              "start": 0,
+              "sum": -40
+            },
+            "parent": null
+          },
+          {
+            "bounds": {
+              "end_exclusive": 2,
+              "start": 1
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 2,
+              "start": 1,
+              "sum": 68
+            },
+            "parent": 0
+          },
+          {
+            "bounds": {
+              "end_exclusive": 3,
+              "start": 1
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 3,
+              "start": 1,
+              "sum": -4
+            },
+            "parent": 1
+          }
+        ],
+        "execution_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 222,
+          "paid_microusd": 0,
+          "wall_ms": 37
+        },
+        "limits": {
+          "execution": {
+            "attempts": 1,
+            "model_tokens": 0,
+            "output_bytes": 4096,
+            "paid_microusd": 0,
+            "wall_ms": 1000
+          },
+          "model": {
+            "attempts": 3,
+            "model_tokens": 6336,
+            "output_bytes": 768,
+            "paid_microusd": 0,
+            "wall_ms": 105000
+          },
+          "verifier": {
+            "attempts": 3,
+            "model_tokens": 0,
+            "output_bytes": 0,
+            "paid_microusd": 0,
+            "wall_ms": 300
+          }
+        },
+        "model_digest": null,
+        "model_used": {
+          "attempts": 3,
+          "model_tokens": 312,
+          "output_bytes": 87,
+          "paid_microusd": 0,
+          "wall_ms": 2
+        },
+        "provider": "scripted-fixture",
+        "schema": "aether.inference-development/1",
+        "seed": 281,
+        "steps": [
+          {
+            "action": "GENERATE",
+            "candidate": 0,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 1
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "73378ad7fa6f940ba39026cf5f51f7b7f8037537a89aa393a2ef74a8e686584b",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 1
+          },
+          {
+            "action": "VERIFY",
+            "artifact_sha256": "e4db3c5f88336081e483be07bd5f72bd45c12fc94b1b688fc2a83aa520aaa3cc",
+            "phase": "native_preparation",
+            "wall_ms": 37,
+            "within_limits": true
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 0,
+            "passed": false,
+            "phase": "authoritative_check",
+            "wall_ms": 1
+          },
+          {
+            "action": "CRITIQUE",
+            "candidate": 1,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 1
+            },
+            "outcome": "candidate",
+            "parent": 0,
+            "prompt_sha256": "66993a6a7cdda62cea6d4d026f98fc06e3e84a9e52d45331759e0ef30cea930d",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 1
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 1,
+            "passed": false,
+            "phase": "authoritative_check",
+            "wall_ms": 0
+          },
+          {
+            "action": "REFINE",
+            "candidate": 2,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 0
+            },
+            "outcome": "candidate",
+            "parent": 1,
+            "prompt_sha256": "a9f43e4aa7cb5977d9e94898ec973185fec0b9c2846dcae8356304bae4a25cfd",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 0
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 2,
+            "passed": false,
+            "phase": "authoritative_check",
+            "wall_ms": 0
+          },
+          {
+            "action": "STOP",
+            "reason": "abstained"
+          }
+        ],
+        "stop": "abstained",
+        "strategy": "adaptive",
+        "values": [
+          -40,
+          68,
+          -72,
+          -111,
+          41,
+          58
+        ],
+        "verified_candidate": null,
+        "verifier_used": {
+          "attempts": 3,
+          "model_tokens": 0,
+          "output_bytes": 0,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        }
+      }
+    },
+    {
+      "artifact_sha256": "daad01f9eab023de4b845ef45347bbd9303ceedcf0eb56771cd00b7f472bd080",
+      "report": {
+        "candidates": [
+          {
+            "bounds": {
+              "end_exclusive": 1,
+              "start": 0
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 1,
+              "start": 0,
+              "sum": -7
+            },
+            "parent": null
+          }
+        ],
+        "execution_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 224,
+          "paid_microusd": 0,
+          "wall_ms": 45
+        },
+        "limits": {
+          "execution": {
+            "attempts": 1,
+            "model_tokens": 0,
+            "output_bytes": 4096,
+            "paid_microusd": 0,
+            "wall_ms": 1000
+          },
+          "model": {
+            "attempts": 3,
+            "model_tokens": 6336,
+            "output_bytes": 768,
+            "paid_microusd": 0,
+            "wall_ms": 105000
+          },
+          "verifier": {
+            "attempts": 3,
+            "model_tokens": 0,
+            "output_bytes": 0,
+            "paid_microusd": 0,
+            "wall_ms": 300
+          }
+        },
+        "model_digest": null,
+        "model_used": {
+          "attempts": 1,
+          "model_tokens": 104,
+          "output_bytes": 29,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        },
+        "provider": "scripted-fixture",
+        "schema": "aether.inference-development/1",
+        "seed": 617,
+        "steps": [
+          {
+            "action": "GENERATE",
+            "candidate": 0,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 1
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "fced8bb211e967977136d62c4c1ebcce8ec0710a3b6296e5df494bfba06ab59e",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 1
+          },
+          {
+            "action": "VERIFY",
+            "artifact_sha256": "9d29c7df94b9ab4666a512c9d4f521d2a9673b9c65fb8356470f68552bf538d3",
+            "phase": "native_preparation",
+            "wall_ms": 45,
+            "within_limits": true
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 0,
+            "passed": false,
+            "phase": "authoritative_check",
+            "wall_ms": 1
+          },
+          {
+            "action": "STOP",
+            "reason": "verification_rejected"
+          }
+        ],
+        "stop": "verification_rejected",
+        "strategy": "single",
+        "values": [
+          -7,
+          -66,
+          -56,
+          1,
+          24,
+          117
+        ],
+        "verified_candidate": null,
+        "verifier_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 0,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        }
+      }
+    },
+    {
+      "artifact_sha256": "996c7e1c66b57b07d542ac94c39e978b8502ceda855343ac01ede283061f276b",
+      "report": {
+        "candidates": [
+          {
+            "bounds": {
+              "end_exclusive": 1,
+              "start": 0
+            },
+            "checked": false,
+            "interval": {
+              "end_exclusive": 1,
+              "start": 0,
+              "sum": -7
+            },
+            "parent": null
+          },
+          {
+            "bounds": {
+              "end_exclusive": 6,
+              "start": 5
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 6,
+              "start": 5,
+              "sum": 117
+            },
+            "parent": null
+          },
+          {
+            "bounds": {
+              "end_exclusive": 6,
+              "start": 0
+            },
+            "checked": false,
+            "interval": {
+              "end_exclusive": 6,
+              "start": 0,
+              "sum": 13
+            },
+            "parent": null
+          }
+        ],
+        "execution_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 224,
+          "paid_microusd": 0,
+          "wall_ms": 38
+        },
+        "limits": {
+          "execution": {
+            "attempts": 1,
+            "model_tokens": 0,
+            "output_bytes": 4096,
+            "paid_microusd": 0,
+            "wall_ms": 1000
+          },
+          "model": {
+            "attempts": 3,
+            "model_tokens": 6336,
+            "output_bytes": 768,
+            "paid_microusd": 0,
+            "wall_ms": 105000
+          },
+          "verifier": {
+            "attempts": 3,
+            "model_tokens": 0,
+            "output_bytes": 0,
+            "paid_microusd": 0,
+            "wall_ms": 300
+          }
+        },
+        "model_digest": null,
+        "model_used": {
+          "attempts": 3,
+          "model_tokens": 312,
+          "output_bytes": 87,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        },
+        "provider": "scripted-fixture",
+        "schema": "aether.inference-development/1",
+        "seed": 617,
+        "steps": [
+          {
+            "action": "GENERATE",
+            "candidate": 0,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 1
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "fced8bb211e967977136d62c4c1ebcce8ec0710a3b6296e5df494bfba06ab59e",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 1
+          },
+          {
+            "action": "GENERATE",
+            "candidate": 1,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 0
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "05a3fd8c482d45cc49e9b38e506d946092c6631a8bbbccdf38c4bc4060c4cf81",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 0
+          },
+          {
+            "action": "GENERATE",
+            "candidate": 2,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 0
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "7aa89a254cca8d7e74e9e62fd956fb3d4eb0f92ceeabb53efb70d542b38c414e",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 0
+          },
+          {
+            "action": "VERIFY",
+            "artifact_sha256": "9d29c7df94b9ab4666a512c9d4f521d2a9673b9c65fb8356470f68552bf538d3",
+            "phase": "native_preparation",
+            "wall_ms": 38,
+            "within_limits": true
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 1,
+            "passed": false,
+            "phase": "authoritative_check",
+            "wall_ms": 1
+          },
+          {
+            "action": "STOP",
+            "reason": "verification_rejected"
+          }
+        ],
+        "stop": "verification_rejected",
+        "strategy": "best_of_n",
+        "values": [
+          -7,
+          -66,
+          -56,
+          1,
+          24,
+          117
+        ],
+        "verified_candidate": null,
+        "verifier_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 0,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        }
+      }
+    },
+    {
+      "artifact_sha256": "9678951689591298be877b01adf77a672ccb1eeb3bd6be64286d47258bf1e6e8",
+      "report": {
+        "candidates": [
+          {
+            "bounds": {
+              "end_exclusive": 1,
+              "start": 0
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 1,
+              "start": 0,
+              "sum": -7
+            },
+            "parent": null
+          },
+          {
+            "bounds": {
+              "end_exclusive": 2,
+              "start": 0
+            },
+            "checked": false,
+            "interval": {
+              "end_exclusive": 2,
+              "start": 0,
+              "sum": -73
+            },
+            "parent": 0
+          },
+          {
+            "bounds": {
+              "end_exclusive": 3,
+              "start": 0
+            },
+            "checked": false,
+            "interval": {
+              "end_exclusive": 3,
+              "start": 0,
+              "sum": -129
+            },
+            "parent": 1
+          }
+        ],
+        "execution_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 224,
+          "paid_microusd": 0,
+          "wall_ms": 45
+        },
+        "limits": {
+          "execution": {
+            "attempts": 1,
+            "model_tokens": 0,
+            "output_bytes": 4096,
+            "paid_microusd": 0,
+            "wall_ms": 1000
+          },
+          "model": {
+            "attempts": 3,
+            "model_tokens": 6336,
+            "output_bytes": 768,
+            "paid_microusd": 0,
+            "wall_ms": 105000
+          },
+          "verifier": {
+            "attempts": 3,
+            "model_tokens": 0,
+            "output_bytes": 0,
+            "paid_microusd": 0,
+            "wall_ms": 300
+          }
+        },
+        "model_digest": null,
+        "model_used": {
+          "attempts": 3,
+          "model_tokens": 312,
+          "output_bytes": 87,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        },
+        "provider": "scripted-fixture",
+        "schema": "aether.inference-development/1",
+        "seed": 617,
+        "steps": [
+          {
+            "action": "GENERATE",
+            "candidate": 0,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 1
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "fced8bb211e967977136d62c4c1ebcce8ec0710a3b6296e5df494bfba06ab59e",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 1
+          },
+          {
+            "action": "REFINE",
+            "candidate": 1,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 0
+            },
+            "outcome": "candidate",
+            "parent": 0,
+            "prompt_sha256": "313d010f338582f42d12c9a7cd1e9dba35922877ca21454e8104c56348c068ea",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 0
+          },
+          {
+            "action": "REFINE",
+            "candidate": 2,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 0
+            },
+            "outcome": "candidate",
+            "parent": 1,
+            "prompt_sha256": "dab0dcbc1cac6562065410e687ccdc9b61dea8a58d221eba451f452af27ab461",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 0
+          },
+          {
+            "action": "VERIFY",
+            "artifact_sha256": "9d29c7df94b9ab4666a512c9d4f521d2a9673b9c65fb8356470f68552bf538d3",
+            "phase": "native_preparation",
+            "wall_ms": 45,
+            "within_limits": true
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 0,
+            "passed": false,
+            "phase": "authoritative_check",
+            "wall_ms": 1
+          },
+          {
+            "action": "STOP",
+            "reason": "verification_rejected"
+          }
+        ],
+        "stop": "verification_rejected",
+        "strategy": "fixed_refinement",
+        "values": [
+          -7,
+          -66,
+          -56,
+          1,
+          24,
+          117
+        ],
+        "verified_candidate": null,
+        "verifier_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 0,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        }
+      }
+    },
+    {
+      "artifact_sha256": "102549de8d6f4d1680ec0e7475474fa2846420768648fa1b014f1623998e113e",
+      "report": {
+        "candidates": [
+          {
+            "bounds": {
+              "end_exclusive": 1,
+              "start": 0
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 1,
+              "start": 0,
+              "sum": -7
+            },
+            "parent": null
+          },
+          {
+            "bounds": {
+              "end_exclusive": 6,
+              "start": 5
+            },
+            "checked": true,
+            "interval": {
+              "end_exclusive": 6,
+              "start": 5,
+              "sum": 117
+            },
+            "parent": 0
+          }
+        ],
+        "execution_used": {
+          "attempts": 1,
+          "model_tokens": 0,
+          "output_bytes": 224,
+          "paid_microusd": 0,
+          "wall_ms": 38
+        },
+        "limits": {
+          "execution": {
+            "attempts": 1,
+            "model_tokens": 0,
+            "output_bytes": 4096,
+            "paid_microusd": 0,
+            "wall_ms": 1000
+          },
+          "model": {
+            "attempts": 3,
+            "model_tokens": 6336,
+            "output_bytes": 768,
+            "paid_microusd": 0,
+            "wall_ms": 105000
+          },
+          "verifier": {
+            "attempts": 3,
+            "model_tokens": 0,
+            "output_bytes": 0,
+            "paid_microusd": 0,
+            "wall_ms": 300
+          }
+        },
+        "model_digest": null,
+        "model_used": {
+          "attempts": 3,
+          "model_tokens": 312,
+          "output_bytes": 87,
+          "paid_microusd": 0,
+          "wall_ms": 2
+        },
+        "provider": "scripted-fixture",
+        "schema": "aether.inference-development/1",
+        "seed": 617,
+        "steps": [
+          {
+            "action": "GENERATE",
+            "candidate": 0,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 1
+            },
+            "outcome": "candidate",
+            "parent": null,
+            "prompt_sha256": "fced8bb211e967977136d62c4c1ebcce8ec0710a3b6296e5df494bfba06ab59e",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 1
+          },
+          {
+            "action": "VERIFY",
+            "artifact_sha256": "9d29c7df94b9ab4666a512c9d4f521d2a9673b9c65fb8356470f68552bf538d3",
+            "phase": "native_preparation",
+            "wall_ms": 38,
+            "within_limits": true
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 0,
+            "passed": false,
+            "phase": "authoritative_check",
+            "wall_ms": 1
+          },
+          {
+            "action": "CRITIQUE",
+            "candidate": 1,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 1
+            },
+            "outcome": "candidate",
+            "parent": 0,
+            "prompt_sha256": "dec8327472f36006c5f4449de56215f37e508b2f9ef408dddd8995d623e9e45c",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 1
+          },
+          {
+            "action": "VERIFY",
+            "candidate": 1,
+            "passed": false,
+            "phase": "authoritative_check",
+            "wall_ms": 0
+          },
+          {
+            "action": "REFINE",
+            "candidate": 1,
+            "charged": {
+              "attempts": 1,
+              "model_tokens": 104,
+              "output_bytes": 29,
+              "paid_microusd": 0,
+              "wall_ms": 0
+            },
+            "outcome": "duplicate",
+            "parent": 1,
+            "prompt_sha256": "210f45dd375348091a3ba5f95acc4af0a809faf95f1583ac2f8e79fc00a26953",
+            "usage": {
+              "output_tokens": 24,
+              "prompt_tokens": 80,
+              "reasoning_tokens": 0
+            },
+            "wall_ms": 0
+          },
+          {
+            "action": "STOP",
+            "reason": "abstained"
+          }
+        ],
+        "stop": "abstained",
+        "strategy": "adaptive",
+        "values": [
+          -7,
+          -66,
+          -56,
+          1,
+          24,
+          117
+        ],
+        "verified_candidate": null,
+        "verifier_used": {
+          "attempts": 2,
+          "model_tokens": 0,
+          "output_bytes": 0,
+          "paid_microusd": 0,
+          "wall_ms": 1
+        }
+      }
+    }
+  ]
+}

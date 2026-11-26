@@ -633,6 +633,13 @@ impl Lab {
         )
     }
 
+    pub(crate) fn record_inference(&self, report: &crate::inference::Report) -> Result<String> {
+        storage(
+            self.store()?
+                .record_discovery_artifact(&serde_json::to_vec(report)?),
+        )
+    }
+
     pub fn report(&self, id: &str) -> Result<Value> {
         let store = self.store()?;
         let campaign = self.get(&store, id)?;

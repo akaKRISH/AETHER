@@ -101,6 +101,42 @@ fn discovery_persists_replayable_content_addressed_evidence() {
 }
 
 #[test]
+fn inference_study_persists_bounded_traces_and_independent_results() {
+    let work = Workspace::new();
+    let result = work.success(&["inference-study", "fixture"]);
+    assert_eq!(result["complete"], true);
+    let trials = result["trials"].as_array().unwrap();
+    assert_eq!(trials.len(), 12);
+    let db = aether_store::Store::open(work.0.join("laboratory.sqlite3")).unwrap();
+    let mut saw_rejection = false;
+    let mut saw_success = false;
+    for trial in trials {
+        let report = &trial["report"];
+        let hash = trial["artifact_sha256"].as_str().unwrap();
+        let bytes = db.artifact(hash).unwrap().unwrap();
+        assert_eq!(aether_store::artifact_sha256(&bytes), hash);
+        assert_eq!(serde_json::from_slice::<Value>(&bytes).unwrap(), *report);
+        assert!(report["model_used"]["attempts"].as_u64().unwrap() <= 3);
+        assert!(report["model_used"]["model_tokens"].as_u64().unwrap() <= 6_336);
+        assert!(report["verifier_used"]["attempts"].as_u64().unwrap() <= 3);
+        assert!(report["execution_used"]["attempts"].as_u64().unwrap() <= 1);
+        for (i, candidate) in report["candidates"].as_array().unwrap().iter().enumerate() {
+            assert!(
+                candidate["parent"]
+                    .as_u64()
+                    .is_none_or(|parent| parent < i as u64)
+            );
+        }
+        let steps = report["steps"].as_array().unwrap();
+        assert_eq!(steps.last().unwrap()["action"], "STOP");
+        saw_rejection |= steps.iter().any(|s| s["passed"] == false);
+        saw_success |= steps.iter().any(|s| s["passed"] == true);
+    }
+    assert!(saw_rejection && saw_success);
+    assert_eq!(work.success(&["list"]), json!([]));
+}
+
+#[test]
 fn reviewed_campaign_persists_independent_replay_and_verified_report() {
     let work = Workspace::new();
     let report = work.success(&["demo", "first", "29"]);
