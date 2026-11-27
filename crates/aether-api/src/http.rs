@@ -112,6 +112,12 @@ pub async fn serve(lab: Lab, port: u16, token: String, assets: PathBuf) -> std::
         .route("/v1/workflows/executions", get(workflow_executions))
         .route("/v1/workflows/execute", post(workflow_execute))
         .route("/v1/workflows/{sha256}", get(workflow_inspect))
+        .route("/v1/workflow-benchmarks", get(workflow_benchmark_list))
+        .route("/v1/workflow-benchmarks/run", post(workflow_benchmark_run))
+        .route(
+            "/v1/workflow-benchmarks/{sha256}",
+            get(workflow_benchmark_inspect),
+        )
         .route("/v1/benchmarks", post(benchmarks))
         .route("/v1/evolution", post(evolution))
         .route("/v1/literature", get(literature))
@@ -586,6 +592,36 @@ async fn workflow_execute(
     let cancel = app.shutdown.clone();
     blocking(move || {
         crate::models::workflows::execute(&app.lab, request, &cancel)
+            .map_err(|error| Error::Input(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn workflow_benchmark_list(State(app): State<App>) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::workflow_evaluation::list(&app.lab)
+            .map_err(|error| Error::Storage(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn workflow_benchmark_run(State(app): State<App>) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::workflow_evaluation::run(&app.lab)
+            .map_err(|error| Error::Input(error.to_string()))
+    })
+    .await
+    .map(Json)
+}
+
+async fn workflow_benchmark_inspect(
+    State(app): State<App>,
+    Path(sha): Path<String>,
+) -> ApiResult<Json<Value>> {
+    blocking(move || {
+        crate::models::workflow_evaluation::inspect(&app.lab, &sha)
             .map_err(|error| Error::Input(error.to_string()))
     })
     .await

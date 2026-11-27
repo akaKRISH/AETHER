@@ -70,6 +70,9 @@ Commands
   aether-lab workflow-revoke <workflow-sha>     Revoke local workflow consent
   aether-lab workflow-execute <request.json>    Execute sequentially through the APO-09 kernel
   aether-lab workflows-executions               List integrity-checked workflow receipts
+  aether-lab workflow-benchmark                  Run the two-process APO-10 fixture evaluation
+  aether-lab workflow-benchmarks                 Inspect benchmark specification and reports
+  aether-lab workflow-benchmark-inspect <sha256>  Inspect one content-addressed report
   aether-lab hardware               Read local NVIDIA driver telemetry, when available
   aether-lab propose <request.json> Produce deterministic reviewed-task proposals
   aether-lab propose-local <request.json> <model>  Use an existing local Ollama model
@@ -131,6 +134,10 @@ fn execute(args: &[String]) -> Result<()> {
         }
         [command] if matches!(command.as_str(), "--help" | "-h" | "help") => {
             print!("{HELP}");
+            return Ok(());
+        }
+        [command] if command == "--workflow-benchmark-fixture-runner" => {
+            print_json(&models::workflow_evaluation::worker()?)?;
             return Ok(());
         }
         [command] if command == "benchmark" => {
@@ -310,6 +317,15 @@ fn execute(args: &[String]) -> Result<()> {
         }
         [command] if command == "workflows-executions" => {
             print_json(&models::workflows::executions(&lab)?)
+        }
+        [command] if command == "workflow-benchmark" => {
+            print_json(&models::workflow_evaluation::run(&lab)?)
+        }
+        [command] if command == "workflow-benchmarks" => {
+            print_json(&models::workflow_evaluation::list(&lab)?)
+        }
+        [command, digest] if command == "workflow-benchmark-inspect" => {
+            print_json(&models::workflow_evaluation::inspect(&lab, digest)?)
         }
         [command, seed, evaluations] if command == "discover" => {
             let report = aether_engine::discover(seed.parse()?, evaluations.parse()?)?;

@@ -368,6 +368,34 @@ export async function getWorkflowExecutions(token: string, signal: AbortSignal):
   return value
 }
 
+export async function getWorkflowBenchmarks(token: string, signal: AbortSignal): Promise<Row> {
+  const value = await json(token, '/workflow-benchmarks', { signal })
+  if (!isRow(value) || value.schema !== 'aether.workflow-benchmarks/1'
+    || !isRow(value.specification) || !Array.isArray(value.reports)) {
+    throw new Error('Invalid workflow benchmark registry response.')
+  }
+  return value
+}
+
+export async function runWorkflowBenchmark(token: string): Promise<Row> {
+  const value = await json(token, '/workflow-benchmarks/run', { method: 'POST' })
+  if (!isRow(value) || typeof value.report_sha256 !== 'string' || !isRow(value.report)
+    || value.report.schema !== 'aether.workflow-benchmark-report/1') {
+    throw new Error('Invalid workflow benchmark report.')
+  }
+  return value
+}
+
+export async function getWorkflowBenchmark(token: string, hash: string, signal?: AbortSignal): Promise<Row> {
+  if (!/^[a-f0-9]{64}$/.test(hash)) throw new Error('Invalid workflow benchmark digest.')
+  const value = await json(token, `/workflow-benchmarks/${encodeURIComponent(hash)}`, { signal })
+  if (!isRow(value) || value.report_sha256 !== hash || !isRow(value.report)
+    || value.report.schema !== 'aether.workflow-benchmark-report/1') {
+    throw new Error('Invalid content-addressed workflow benchmark report.')
+  }
+  return value
+}
+
 export async function getModelReport(token: string, hash: string, signal: AbortSignal): Promise<Row> {
   if (!/^[a-f0-9]{64}$/.test(hash)) throw new Error('Invalid model artifact digest.')
   const bytes = await (await request(token, `/artifacts/${hash}`, { signal })).arrayBuffer()

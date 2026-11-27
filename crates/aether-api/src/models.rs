@@ -3,6 +3,7 @@ mod evaluation;
 mod metadata;
 pub(crate) mod skills;
 pub(crate) mod training;
+pub(crate) mod workflow_evaluation;
 pub(crate) mod workflows;
 
 use std::fs::{self, File};

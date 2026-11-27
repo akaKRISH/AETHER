@@ -2388,6 +2388,41 @@ pub(crate) fn execute_workflow_node(
     execute(lab, request, cancel)
 }
 
+pub(crate) fn malformed_evidence_fixture(lab: &Lab) -> Result<Value> {
+    let record = seed_builtins(lab)?
+        .into_iter()
+        .find(|record| record.definition.id == "literature-review")
+        .ok_or("literature review skill is unavailable")?;
+    let result = execute(
+        lab,
+        ExecutionRequest {
+            skill: SkillPin {
+                id: record.definition.id,
+                version: record.definition.version,
+                sha256: record.sha256,
+            },
+            input: json!({"question":"CAVEAT"}),
+            budget: ExecutionBudget {
+                operations: 1,
+                dependency_depth: 0,
+            },
+            resources: record.definition.maximum_resources,
+            evidence: vec![EvidenceReference {
+                sha256: "invalid".into(),
+                kind: EvidenceKind::SourcePassage,
+                provenance: "APO-10 adversarial fixture".into(),
+            }],
+        },
+        &std::sync::atomic::AtomicBool::new(false),
+    )?;
+    Ok(json!({
+        "execution_sha256":result["execution_sha256"],
+        "state":result["receipt"]["state"],
+        "failure":result["receipt"]["failure"],
+        "evidence_status":result["receipt"]["evidence_status"]
+    }))
+}
+
 pub(crate) fn executions(lab: &Lab) -> Result<Value> {
     let registry = lab.model_registry()?;
     let mut statement = registry.0.prepare(

@@ -363,6 +363,53 @@ fn discovery_persists_replayable_content_addressed_evidence() {
 }
 
 #[test]
+fn workflow_benchmark_replays_identically_in_fresh_cli_processes() {
+    let work = Workspace::new();
+    let first = work.success(&["workflow-benchmark"]);
+    let report = &first["report"];
+    assert_eq!(report["passed"], true, "APO-10 report: {report}");
+    assert_eq!(report["fixture_count"], 9);
+    assert_eq!(report["adversarial_fixture_count"], 7);
+    assert_eq!(report["fresh_process_replay"]["process_runs"], 2);
+    assert_eq!(report["fresh_process_replay"]["worker_reports_match"], true);
+    assert_eq!(
+        report["fresh_process_replay"]["workflow_receipt_digests_match"],
+        true
+    );
+    assert_eq!(
+        report["fresh_process_replay"]["worker_report_sha256s"][0],
+        report["fresh_process_replay"]["worker_report_sha256s"][1]
+    );
+    assert_eq!(
+        report["fresh_process_replay"]["workflow_receipt_sha256s"][0],
+        report["fresh_process_replay"]["workflow_receipt_sha256s"][1]
+    );
+    assert_eq!(
+        report["scientific_quality_metrics"]["status"],
+        "unavailable_not_evaluated"
+    );
+    assert!(
+        report["fixtures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|fixture| fixture["passed"] == true)
+    );
+
+    let digest = first["report_sha256"].as_str().unwrap();
+    let inspected = work.success(&["workflow-benchmark-inspect", digest]);
+    assert_eq!(inspected["report"], *report);
+    let listed = work.success(&["workflow-benchmarks"]);
+    assert_eq!(listed["schema"], "aether.workflow-benchmarks/1");
+    assert_eq!(listed["reports"][0]["report_sha256"], digest);
+
+    let store = aether_store::Store::open(work.0.join("laboratory.sqlite3")).unwrap();
+    let artifact = store.artifact(digest).unwrap().unwrap();
+    assert_eq!(aether_store::artifact_sha256(&artifact), digest);
+    assert_eq!(serde_json::from_slice::<Value>(&artifact).unwrap(), *report);
+}
+
+#[test]
 fn inference_study_persists_bounded_traces_and_independent_results() {
     let work = Workspace::new();
     let result = work.success(&["inference-study", "fixture"]);
@@ -1359,6 +1406,45 @@ fn authenticated_loopback_api_runs_a_campaign_and_serves_evidence() {
         workflow_receipts["executions"][0]["workflow_execution_sha256"],
         workflow_run["workflow_execution_sha256"]
     );
+    assert_eq!(
+        agent
+            .get(format!("{origin}/v1/workflow-benchmarks"))
+            .call()
+            .unwrap()
+            .status()
+            .as_u16(),
+        401
+    );
+    let benchmark_spec: Value = get("/v1/workflow-benchmarks")
+        .body_mut()
+        .read_json()
+        .unwrap();
+    assert_eq!(benchmark_spec["schema"], "aether.workflow-benchmarks/1");
+    assert_eq!(
+        benchmark_spec["specification"]["specification"]["version"],
+        "1.0.0"
+    );
+    let benchmark_agent = ureq::Agent::new_with_config(
+        ureq::Agent::config_builder()
+            .timeout_global(Some(Duration::from_secs(240)))
+            .http_status_as_error(false)
+            .build(),
+    );
+    let benchmark: Value = benchmark_agent
+        .post(format!("{origin}/v1/workflow-benchmarks/run"))
+        .header("Authorization", format!("Bearer {TOKEN}"))
+        .send_json(json!({}))
+        .unwrap()
+        .body_mut()
+        .read_json()
+        .unwrap();
+    assert_eq!(benchmark["report"]["passed"], true);
+    let benchmark_sha = benchmark["report_sha256"].as_str().unwrap();
+    let benchmark_detail: Value = get(&format!("/v1/workflow-benchmarks/{benchmark_sha}"))
+        .body_mut()
+        .read_json()
+        .unwrap();
+    assert_eq!(benchmark_detail["report"], benchmark["report"]);
     let stored: Value = get("/v1/datasets").body_mut().read_json().unwrap();
     assert_eq!(stored["datasets"], json!([]));
     let qualified: Value = post(

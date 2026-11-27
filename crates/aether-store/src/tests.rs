@@ -383,6 +383,11 @@ fn file_reopen_preserves_schema_state_and_audit() {
     }
     {
         let reopened = Store::open(&path).unwrap();
+        let journal_mode: String = reopened
+            .conn
+            .pragma_query_value(None, "journal_mode", |row| row.get(0))
+            .unwrap();
+        assert_eq!(journal_mode, "delete");
         assert_eq!(
             reopened.snapshot(CAMPAIGN).unwrap().campaign.spec,
             spec(CAMPAIGN)

@@ -100,7 +100,11 @@ impl Store {
     fn initialize(mut conn: Connection) -> Result<Self> {
         conn.busy_timeout(Duration::from_secs(3))?;
         conn.pragma_update(None, "foreign_keys", true)?;
-        conn.pragma_update(None, "journal_mode", "DELETE")?;
+        let journal_mode: String =
+            conn.pragma_query_value(None, "journal_mode", |row| row.get(0))?;
+        if !journal_mode.eq_ignore_ascii_case("delete") {
+            conn.pragma_update(None, "journal_mode", "DELETE")?;
+        }
         conn.pragma_update(None, "synchronous", "FULL")?;
         let version: u32 = conn.pragma_query_value(None, "user_version", |row| row.get(0))?;
         match version {

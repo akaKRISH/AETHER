@@ -235,6 +235,8 @@ async function main() {
     await desktop.getByText('QLoRA · aether-fixture · Unapproved', { exact: true }).click()
     await desktop.getByRole('heading', { name: 'Feasibility and blockers' }).waitFor()
     await desktop.getByRole('table', { name: 'Synthetic training rehearsals' }).getByText('cancelled', { exact: true }).waitFor()
+    await desktop.getByText('No dataset versions are saved.', { exact: true }).waitFor()
+    await desktop.waitForLoadState('networkidle')
     const datasetQualification = desktop.waitForResponse(response =>
       response.url().endsWith('/v1/datasets') && response.request().method() === 'POST')
     await desktop.getByRole('button', { name: 'Qualify development corpus' }).click()
@@ -276,6 +278,16 @@ async function main() {
       await desktop.screenshot({ path: join(process.env.AETHER_SCREENSHOT_DIR, 'aether-optimization.png') })
     }
 
+    await desktop.getByRole('button', { name: 'Intelligence Observatory', exact: true }).click()
+    await desktop.getByRole('button', { name: 'Run APO-10 fixture evaluation', exact: true }).click()
+    await desktop.getByText('Running fixed fixtures…', { exact: true }).waitFor()
+    const benchmarkReports = desktop.getByRole('table', { name: 'APO-10 content-addressed reports' })
+    await benchmarkReports.waitFor({ timeout: 240_000 })
+    await benchmarkReports.getByRole('row').filter({ hasText: 'Yes' }).waitFor()
+    await benchmarkReports.getByRole('button', { name: 'Inspect report', exact: true }).click()
+    await desktop.getByRole('table', { name: 'APO-10 fixture results' }).waitFor()
+    await desktop.getByText(/unavailable_not_evaluated/).waitFor()
+
     const phone = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
     phone.on('pageerror', error => browserErrors.push(error.message))
     await connect(phone, origin, token)
@@ -296,6 +308,7 @@ async function main() {
     await phone.getByRole('button', { name: 'Intelligence Observatory', exact: true }).click()
     await phone.getByRole('heading', { name: 'Research workflow registry', exact: true }).scrollIntoViewIfNeeded()
     await phone.getByRole('table', { name: 'Registered research workflows' }).waitFor()
+    await phone.getByRole('table', { name: 'APO-10 content-addressed reports' }).waitFor()
     assert.equal(await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true)
     await phone.getByRole('table', { name: 'Saved model evaluations' })
       .getByRole('button', { name: 'Read report' }).first().click()
@@ -305,7 +318,7 @@ async function main() {
       await phone.screenshot({ path: join(process.env.AETHER_SCREENSHOT_DIR, 'aether-mobile.png'), fullPage: true })
     }
     assert.deepEqual(browserErrors, [])
-    console.log('Browser smoke passed: workflows, campaigns, knowledge and design review, model inspection and comparison, archived results, security limits, and mobile layout.')
+    console.log('Browser smoke passed: APO-08/10 workflows and reports, campaigns, knowledge and design review, model inspection and comparison, archived results, security limits, and mobile layout.')
   } finally {
     await browser?.close()
     if (server.exitCode === null && server.signalCode === null) {

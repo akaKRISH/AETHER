@@ -1663,6 +1663,104 @@ pub(crate) fn execute(lab: &Lab, request: WorkflowRequest, cancel: &AtomicBool) 
     )
 }
 
+pub(crate) fn authorize_benchmark_fixture_lab(lab: &Lab) -> Result<()> {
+    for record in seed(lab)? {
+        for skill in skills::workflow_skill_closure(lab, &pins(&record.definition))? {
+            if !skill.approved {
+                skills::approve(lab, &skill.sha256, skill.required_capabilities)?;
+            }
+        }
+        if record.approval_receipt_sha256.is_none() {
+            approve(lab, &record.sha256)?;
+        }
+    }
+    Ok(())
+}
+
+pub(crate) fn execute_benchmark_case(
+    lab: &Lab,
+    id: &str,
+    version: &str,
+    input: Value,
+    operation_limit: Option<u8>,
+    cancel: &AtomicBool,
+) -> Result<Value> {
+    let record = seed(lab)?
+        .into_iter()
+        .find(|record| record.definition.id == id && record.definition.version == version)
+        .ok_or("benchmark references an unknown workflow version")?;
+    let mut budget = record.definition.maximum_budget;
+    if let Some(limit) = operation_limit {
+        budget.operations = limit;
+    }
+    let input_valid = skills::matches_workflow_shape(&record.definition.input_schema, &input);
+    let mut result = execute(
+        lab,
+        WorkflowRequest {
+            workflow: WorkflowPin {
+                id: record.definition.id,
+                version: record.definition.version,
+                sha256: record.sha256.clone(),
+            },
+            input,
+            budget,
+        },
+        cancel,
+    )?;
+    result["benchmark_workflow_sha256"] = json!(record.sha256);
+    result["benchmark_input_valid"] = json!(input_valid);
+    result["benchmark_output_valid"] = json!(
+        result["receipt"]["output_sha256"].is_string()
+            && skills::matches_workflow_shape(&record.definition.output_schema, &result["output"])
+    );
+    Ok(result)
+}
+
+pub(crate) fn adversarial_definition_fixtures(lab: &Lab) -> Result<Vec<Value>> {
+    let record = seed(lab)?
+        .into_iter()
+        .find(|record| record.definition.id == "literature-hypothesis")
+        .ok_or("literature-hypothesis workflow is unavailable")?;
+
+    let mut tampered_definition = record.definition.clone();
+    tampered_definition.description.push('!');
+    let digest_tampering_rejected = definition_digest(&tampered_definition)? != record.sha256;
+
+    let mut permission_escalation = serde_json::to_value(&record.definition)?;
+    permission_escalation["capabilities"] = json!(["read_network"]);
+    let permission_escalation_rejected =
+        serde_json::from_value::<WorkflowDefinition>(permission_escalation).is_err();
+
+    let mut tampered_skill = record.definition.clone();
+    tampered_skill.nodes[0].skill.sha256 = "f".repeat(64);
+    let tampered_skill_rejected = validate_definition(lab, &tampered_skill).is_err();
+
+    let mut missing_dependency = record.definition.clone();
+    missing_dependency.nodes[1].depends_on = vec!["missing-node".into()];
+    let missing_dependency_rejected = validate_definition(lab, &missing_dependency).is_err();
+
+    let mut tampered_pin = WorkflowRequest {
+        workflow: WorkflowPin {
+            id: record.definition.id.clone(),
+            version: record.definition.version.clone(),
+            sha256: record.sha256.clone(),
+        },
+        input: json!({"root_id":"0".repeat(64),"question":"CAVEAT"}),
+        budget: record.definition.maximum_budget,
+    };
+    tampered_pin.workflow.sha256 = "f".repeat(64);
+    let tampered_run = execute(lab, tampered_pin, &AtomicBool::new(false))?;
+    let workflow_pin_rejected = tampered_run["receipt"]["failure"] == "unknown_workflow";
+
+    Ok(vec![
+        json!({"id":"workflow_definition_digest","passed":digest_tampering_rejected,"rejected":digest_tampering_rejected}),
+        json!({"id":"workflow_permission_escalation","passed":permission_escalation_rejected,"rejected":permission_escalation_rejected}),
+        json!({"id":"skill_digest_tampering","passed":tampered_skill_rejected,"rejected":tampered_skill_rejected}),
+        json!({"id":"missing_dependency","passed":missing_dependency_rejected,"rejected":missing_dependency_rejected}),
+        json!({"id":"workflow_pin_tampering","passed":workflow_pin_rejected,"rejected":workflow_pin_rejected}),
+    ])
+}
+
 pub(crate) fn executions(lab: &Lab) -> Result<Value> {
     let registry = lab.model_registry()?;
     let mut statement = registry.0.prepare(
