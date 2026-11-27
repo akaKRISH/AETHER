@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 340" width="1280" height="340" role="img" aria-labelledby="aether-banner-title aether-banner-desc">
+  <title id="aether-banner-title">AETHER — Personal Intelligence OS &amp; Scientific Discovery Platform</title>
+  <desc id="aether-banner-desc">Editorial dark-navy banner for AETHER depicting an orbital emblem, Rust Edition 2024 positioning, and a content-addressed scientific evidence and structural evaluation graph.</desc>
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#060A11"/>
+      <stop offset="52%" stop-color="#0B1320"/>
+      <stop offset="100%" stop-color="#111C2E"/>
+    </linearGradient>
+    <radialGradient id="glow-cyan" cx="76%" cy="46%" r="48%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.18"/>
+      <stop offset="55%" stop-color="#6366F1" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#060A11" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow-left" cx="14%" cy="50%" r="36%">
+      <stop offset="0%" stop-color="#22D3EE" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#060A11" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="title-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="65%" stop-color="#E0F2FE"/>
+      <stop offset="100%" stop-color="#7DD3FC"/>
+    </linearGradient>
+    <linearGradient id="accent-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="50%" stop-color="#60A5FA"/>
+      <stop offset="100%" stop-color="#A78BFA"/>
+    </linearGradient>
+    <linearGradient id="edge-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#A78BFA" stop-opacity="0.85"/>
+    </linearGradient>
+    <pattern id="micro-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#1E293B" stroke-width="0.7" stroke-opacity="0.55"/>
+    </pattern>
+  </defs>
+
+  <!-- Canvas & Frame -->
+  <rect x="4" y="4" width="1272" height="332" rx="18" fill="url(#bg-grad)" stroke="#1E293B" stroke-width="1.5"/>
+  <rect x="4" y="4" width="1272" height="332" rx="18" fill="url(#micro-grid)" opacity="0.48"/>
+  <rect x="4" y="4" width="1272" height="332" rx="18" fill="url(#glow-cyan)"/>
+  <rect x="4" y="4" width="1272" height="332" rx="18" fill="url(#glow-left)"/>
+
+  <!-- Subtle architectural top & bottom hairlines -->
+  <line x1="48" y1="24" x2="1232" y2="24" stroke="#1E3A5F" stroke-width="0.75" stroke-opacity="0.65"/>
+  <line x1="48" y1="316" x2="1232" y2="316" stroke="#1E3A5F" stroke-width="0.75" stroke-opacity="0.65"/>
+
+  <!-- Left Orbital + Prism Emblem -->
+  <g transform="translate(96, 152)">
+    <circle cx="0" cy="0" r="46" fill="#0B1628" stroke="#1E3A5F" stroke-width="1.25"/>
+    <circle cx="0" cy="0" r="36" fill="none" stroke="url(#accent-grad)" stroke-width="1.5" stroke-dasharray="14 6"/>
+    <ellipse cx="0" cy="0" rx="44" ry="16" transform="rotate(-26)" fill="none" stroke="#38BDF8" stroke-opacity="0.45" stroke-width="1.2"/>
+    <ellipse cx="0" cy="0" rx="44" ry="16" transform="rotate(26)" fill="none" stroke="#818CF8" stroke-opacity="0.4" stroke-width="1.2"/>
+    <polygon points="0,-20 17,10 -17,10" fill="none" stroke="#E0F2FE" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="0" cy="-20" r="3.5" fill="#38BDF8"/>
+    <circle cx="17" cy="10" r="3.5" fill="#60A5FA"/>
+    <circle cx="-17" cy="10" r="3.5" fill="#A78BFA"/>
+    <circle cx="0" cy="0" r="3" fill="#F8FAFC"/>
+  </g>
+
+  <!-- Left Editorial Typography -->
+  <g transform="translate(172, 62)">
+    <!-- Eyebrow Pill -->
+    <rect x="0" y="0" width="368" height="26" rx="13" fill="#0E2239" stroke="#1D4ED8" stroke-opacity="0.55" stroke-width="1"/>
+    <circle cx="16" cy="13" r="3.5" fill="#38BDF8"/>
+    <text x="29" y="17" fill="#7DD3FC" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="11.5" font-weight="600" letter-spacing="1.1">RUST EDITION 2024 · DETERMINISTIC KERNEL</text>
+
+    <!-- Main Wordmark -->
+    <text x="-2" y="92" fill="url(#title-grad)" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="60" font-weight="800" letter-spacing="6">AETHER</text>
+
+    <!-- Subtitle -->
+    <text x="0" y="124" fill="#CBD5E1" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18.5" font-weight="500" letter-spacing="0.2">Personal Intelligence OS &amp; Scientific Discovery Partner</text>
+
+    <!-- Principle Chips -->
+    <g transform="translate(0, 148)">
+      <rect x="0" y="0" width="150" height="28" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <text x="75" y="18" text-anchor="middle" fill="#94A3B8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11.5">Evidence-Grounded</text>
+
+      <rect x="160" y="0" width="154" height="28" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <text x="237" y="18" text-anchor="middle" fill="#94A3B8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11.5">Content-Addressed</text>
+
+      <rect x="324" y="0" width="166" height="28" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <text x="407" y="18" text-anchor="middle" fill="#94A3B8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11.5">Human-Authored Gate</text>
+    </g>
+
+    <!-- Spec Footer Line -->
+    <text x="0" y="205" fill="#64748B" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11.5" letter-spacing="0.4">6 Rust Crates · React 19 Research OS · Local SQLite Provenance Ledger</text>
+  </g>
+
+  <!-- Right Provenance & Evaluation DAG Diagram -->
+  <g transform="translate(724, 48)">
+    <!-- Outer architectural frame -->
+    <rect x="0" y="0" width="508" height="244" rx="12" fill="#09101C" fill-opacity="0.88" stroke="#1E293B" stroke-width="1.2"/>
+
+    <!-- Header bar -->
+    <text x="18" y="24" fill="#64748B" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10.5" letter-spacing="1.2">PROVENANCE &amp; VERIFICATION BOUNDARY</text>
+    <text x="490" y="24" text-anchor="end" fill="#38BDF8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10.5">sha256:pinned</text>
+    <line x1="16" y1="34" x2="492" y2="34" stroke="#1E293B" stroke-width="1"/>
+
+    <!-- Edges -->
+    <path d="M 118 86 C 148 86, 150 86, 180 86" fill="none" stroke="url(#edge-grad)" stroke-width="1.8"/>
+    <path d="M 118 164 C 148 164, 150 96, 180 94" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <path d="M 284 86 C 312 86, 314 86, 342 86" fill="none" stroke="url(#edge-grad)" stroke-width="1.8"/>
+    <path d="M 284 96 C 314 96, 314 164, 342 164" fill="none" stroke="#38BDF8" stroke-opacity="0.65" stroke-width="1.6"/>
+    <path d="M 118 164 C 190 186, 268 186, 342 168" fill="none" stroke="#A78BFA" stroke-opacity="0.5" stroke-width="1.4"/>
+
+    <!-- Node 1: Source Span -->
+    <rect x="20" y="60" width="98" height="52" rx="8" fill="#0F1B2E" stroke="#38BDF8" stroke-opacity="0.7" stroke-width="1.2"/>
+    <text x="32" y="81" fill="#7DD3FC" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="700">ARCHIVE</text>
+    <text x="32" y="97" fill="#94A3B8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10">UTF-8 span</text>
+
+    <!-- Node 2: Graph Claim -->
+    <rect x="20" y="138" width="98" height="52" rx="8" fill="#0F1B2E" stroke="#64748B" stroke-width="1.2"/>
+    <text x="32" y="159" fill="#CBD5E1" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="700">HYPOTHESIS</text>
+    <text x="32" y="175" fill="#94A3B8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10">unverified</text>
+
+    <!-- Node 3: Rust Core / Workflow -->
+    <rect x="180" y="56" width="104" height="62" rx="8" fill="#13223A" stroke="#60A5FA" stroke-width="1.4"/>
+    <text x="192" y="79" fill="#F8FAFC" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10.5" font-weight="700">RUST ENGINE</text>
+    <text x="192" y="95" fill="#93C5FD" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9.5">aether-core</text>
+    <text x="192" y="109" fill="#64748B" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9">pure / replay</text>
+
+    <!-- Node 4: Structural Check -->
+    <rect x="342" y="58" width="146" height="54" rx="8" fill="#0D2229" stroke="#2DD4BF" stroke-opacity="0.75" stroke-width="1.2"/>
+    <text x="354" y="79" fill="#5EEAD4" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="700">CONTRACT CHECK</text>
+    <text x="354" y="96" fill="#99F6E4" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9.5">typed · bounded · hashed</text>
+
+    <!-- Node 5: Epistemic Gate -->
+    <rect x="342" y="138" width="146" height="54" rx="8" fill="#18152C" stroke="#A78BFA" stroke-opacity="0.75" stroke-width="1.2"/>
+    <text x="354" y="159" fill="#DDD6FE" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="700">HUMAN + HELD-OUT</text>
+    <text x="354" y="176" fill="#C4B5FD" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9.5">independent truth gate</text>
+
+    <!-- Bottom Legend -->
+    <line x1="16" y1="208" x2="492" y2="208" stroke="#1E293B" stroke-width="1"/>
+    <circle cx="26" cy="226" r="4" fill="#2DD4BF"/>
+    <text x="36" y="230" fill="#94A3B8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10">Verified determinism</text>
+    <circle cx="182" cy="226" r="4" fill="#A78BFA"/>
+    <text x="192" y="230" fill="#94A3B8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10">Separate scientific validity</text>
+    <text x="490" y="230" text-anchor="end" fill="#64748B" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10">deny-by-default</text>
+  </g>
+</svg>
