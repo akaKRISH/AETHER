@@ -6,9 +6,11 @@ import { Benchmarks, Catalog, Evolution, GpuTelemetry, Hypotheses, Report } from
 import { Badge, Empty, Modal, Panel, errorText, integer, readNumber } from './components'
 import { ComputeObservatory, DiscoveryLaboratory, IntelligenceObservatory, MissionControl, ResearchArchiveView, SecurityCentre } from './researchViews'
 import { KnowledgeGraph } from './knowledgeView'
+import { QualityEvaluationWorkspace } from './qualityEvaluationView'
 
 const commandViews = [
   ['mission-control', 'Mission Control'], ['evidence', 'Evidence Explorer'], ['knowledge', 'Knowledge Graph'],
+  ['quality-evaluation', 'Quality Evaluation'],
   ['discovery', 'Discovery Laboratory'], ['intelligence', 'Intelligence Observatory'],
   ['compute', 'Compute Observatory'], ['archive', 'Research Archive'], ['security', 'Security Centre'],
 ] as const
@@ -302,6 +304,8 @@ export function App() {
     content = <SecurityCentre />
   } else if (view === 'knowledge') {
     content = <KnowledgeGraph token={token} />
+  } else if (view === 'quality-evaluation') {
+    content = <QualityEvaluationWorkspace token={token} />
   } else if (['discovery', 'intelligence', 'compute', 'archive'].includes(view)) {
     content = archive ? view === 'discovery' ? <DiscoveryLaboratory token={token} archive={archive} />
       : view === 'intelligence' ? <IntelligenceObservatory archive={archive} token={token} />

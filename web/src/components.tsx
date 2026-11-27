@@ -23,13 +23,24 @@ export function integer(value: number, min: number, max = Number.MAX_SAFE_INTEGE
 }
 
 const good = new Set(['approved', 'verified', 'succeeded', 'completed', 'connected'])
-const caution = new Set(['running', 'supported', 'paused', 'inconclusive', 'stale'])
-const fault = new Set(['failed', 'rejected', 'revoked', 'cancelled', 'expired', 'disconnected'])
+const structural = new Set(['pass', 'structural_pass'])
+const caution = new Set(['running', 'supported', 'paused', 'inconclusive', 'stale', 'partial', 'abstained'])
+const fault = new Set([
+  'failed', 'rejected', 'revoked', 'cancelled', 'expired', 'disconnected', 'fail', 'structural_fail', 'invalid',
+])
 
-export function Badge({ value }: { value: string }) {
+export function Badge({ value, label }: { value: string; label?: string }) {
   const state = value.toLowerCase()
-  const tone = good.has(state) ? 'good' : caution.has(state) ? 'warn' : fault.has(state) ? 'fault' : 'neutral'
-  return <span className={`badge badge--${tone}`}><span aria-hidden="true" />{pretty(value)}</span>
+  const tone = good.has(state)
+    ? 'good'
+    : structural.has(state)
+      ? 'structural'
+      : caution.has(state)
+        ? 'warn'
+        : fault.has(state)
+          ? 'fault'
+          : 'neutral'
+  return <span className={`badge badge--${tone}`}><span aria-hidden="true" />{label ?? pretty(value)}</span>
 }
 
 export function Empty({ title, children }: { title: string; children?: ReactNode }) {
