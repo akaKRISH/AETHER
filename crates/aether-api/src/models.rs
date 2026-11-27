@@ -1,6 +1,7 @@
 pub(crate) mod datasets;
 mod evaluation;
 mod metadata;
+pub(crate) mod quality;
 pub(crate) mod skills;
 pub(crate) mod training;
 pub(crate) mod workflow_evaluation;
@@ -10,7 +11,7 @@ use std::fs::{self, File};
 use std::io::{Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 
-use rusqlite::{Connection, params};
+use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -254,9 +255,85 @@ impl Registry {
             "CREATE TABLE IF NOT EXISTS model_registry (
                  kind TEXT NOT NULL, key TEXT NOT NULL, sha256 TEXT NOT NULL, record TEXT NOT NULL,
                  PRIMARY KEY (kind, key, sha256)
+             ) STRICT;
+             CREATE TABLE IF NOT EXISTS quality_report_sequence (
+                 sequence INTEGER PRIMARY KEY AUTOINCREMENT,
+                 report_sha256 TEXT NOT NULL UNIQUE,
+                 benchmark_sha256 TEXT NOT NULL,
+                 snapshot_sha256 TEXT NOT NULL
              ) STRICT;",
         )?;
         Ok(Self(db))
+    }
+
+    pub(crate) fn index_quality_report(
+        &mut self,
+        report_sha256: &str,
+        benchmark_sha256: &str,
+        snapshot_sha256: &str,
+    ) -> rusqlite::Result<(i64, bool)> {
+        let tx = self
+            .0
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)?;
+        let existing = tx
+            .query_row(
+                "SELECT sequence,benchmark_sha256,snapshot_sha256 FROM quality_report_sequence WHERE report_sha256=?1",
+                [report_sha256],
+                |row| Ok((row.get::<_, i64>(0)?, row.get::<_, String>(1)?, row.get::<_, String>(2)?)),
+            )
+            .optional()?;
+        let (sequence, inserted) = match existing {
+            Some((sequence, benchmark, snapshot)) => {
+                if benchmark != benchmark_sha256 || snapshot != snapshot_sha256 {
+                    return Err(rusqlite::Error::InvalidQuery);
+                }
+                (sequence, false)
+            }
+            None => {
+                tx.execute(
+                    "INSERT INTO quality_report_sequence(report_sha256,benchmark_sha256,snapshot_sha256)
+                     VALUES (?1,?2,?3)",
+                    params![report_sha256, benchmark_sha256, snapshot_sha256],
+                )?;
+                let sequence = tx.last_insert_rowid();
+                tx.execute(
+                    "INSERT INTO model_registry(kind,key,sha256,record) VALUES ('quality-report',?1,?1,?2)",
+                    params![report_sha256, format!("{{\"report_sha256\":\"{report_sha256}\"}}")],
+                )?;
+                (sequence, true)
+            }
+        };
+        tx.commit()?;
+        Ok((sequence, inserted))
+    }
+
+    pub(crate) fn quality_report_page(
+        &self,
+        before_sequence: Option<i64>,
+        limit: usize,
+    ) -> rusqlite::Result<Vec<(i64, String)>> {
+        let mut statement = self.0.prepare(
+            "SELECT sequence,report_sha256 FROM quality_report_sequence
+             WHERE (?1 IS NULL OR sequence < ?1) ORDER BY sequence DESC LIMIT ?2",
+        )?;
+        statement
+            .query_map(params![before_sequence, limit as i64], |row| {
+                Ok((row.get(0)?, row.get(1)?))
+            })?
+            .collect()
+    }
+
+    pub(crate) fn quality_report_sequence(
+        &self,
+        report_sha256: &str,
+    ) -> rusqlite::Result<Option<(i64, String, String)>> {
+        self.0
+            .query_row(
+                "SELECT sequence,benchmark_sha256,snapshot_sha256 FROM quality_report_sequence WHERE report_sha256=?1",
+                [report_sha256],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+            )
+            .optional()
     }
 
     fn save(

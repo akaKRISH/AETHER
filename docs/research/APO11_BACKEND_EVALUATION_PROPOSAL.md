@@ -1,6 +1,6 @@
 # APO-11 Backend Research-Quality Evaluation Proposal
 
-**Status:** Proposal only; no implementation or shared API change is authorized until the project owner approves the contract.
+**Status:** Historical proposal; superseded as the active wire contract by [`contracts/apo11/quality-evaluation.schema.json`](../../contracts/apo11/quality-evaluation.schema.json). The implemented structural-only slice and its limits are recorded in [`APO11_STRUCTURAL_EVALUATION.md`](APO11_STRUCTURAL_EVALUATION.md).
 
 ## Recommendation
 
