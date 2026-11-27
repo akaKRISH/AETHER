@@ -19,7 +19,7 @@ const { chromium } = require(playwrightPath)
 const binaryName = process.platform === 'win32' ? 'aether-lab.exe' : 'aether-lab'
 const executable =
   process.env.AETHER_EXECUTABLE ||
-  resolve(repoRoot, '..', 'AETHER-apo11-codex', 'target', 'release', binaryName)
+  resolve(repoRoot, 'target', 'release', binaryName)
 const webDist = process.env.AETHER_WEB_DIR || resolve(webDir, 'dist')
 
 function waitForAddress(server) {

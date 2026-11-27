@@ -29,8 +29,8 @@ import {
 } from '../src/qualityModels.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))
-const codexContractDir = process.env.AETHER_APO11_CONTRACT_DIR
-  || resolve(here, '..', '..', '..', 'AETHER-apo11-codex', 'contracts', 'apo11')
+const contractDir = process.env.AETHER_APO11_CONTRACT_DIR
+  || resolve(here, '..', '..', 'contracts', 'apo11')
 
 test('defines four principal workspace areas and preserves all eight evaluation dimensions', () => {
   assert.deepEqual(
@@ -267,8 +267,8 @@ test('validates canonical snapshot -> run request builders and rejects unsafe ex
 })
 
 test('matches Codex canonical JSON Schema and all golden fixtures', async () => {
-  assert.equal(existsSync(resolve(codexContractDir, 'quality-evaluation.schema.json')), true)
-  const readJson = (relPath) => JSON.parse(readFileSync(resolve(codexContractDir, relPath), 'utf8'))
+  assert.equal(existsSync(resolve(contractDir, 'quality-evaluation.schema.json')), true)
+  const readJson = (relPath) => JSON.parse(readFileSync(resolve(contractDir, relPath), 'utf8'))
 
   const schema = readJson('quality-evaluation.schema.json')
   const benchmarkSpec = readJson('benchmark.json')
