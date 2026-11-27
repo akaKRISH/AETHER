@@ -199,6 +199,16 @@ pub struct GraphExport {
     graph: GraphSlice,
 }
 
+impl GraphExport {
+    pub(crate) fn digest_valid(&self) -> bool {
+        digest(&self.graph).is_ok_and(|actual| actual == self.graph_sha256)
+    }
+
+    pub(crate) fn graph_sha256(&self) -> &str {
+        &self.graph_sha256
+    }
+}
+
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct NodeInput {

@@ -48,6 +48,11 @@ impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let (status, code, message) = match self.0 {
             Error::Input(message) => (StatusCode::BAD_REQUEST, "invalid_request", message),
+            Error::TooLarge => (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                "request_too_large",
+                "request body exceeds the 8192-byte limit".into(),
+            ),
             Error::Missing => (
                 StatusCode::NOT_FOUND,
                 "not_found",
@@ -118,6 +123,12 @@ pub async fn serve(lab: Lab, port: u16, token: String, assets: PathBuf) -> std::
             "/v1/workflow-benchmarks/{sha256}",
             get(workflow_benchmark_inspect),
         )
+        .route("/v1/eval/benchmarks", get(quality_benchmarks))
+        .route("/v1/eval/benchmarks/{sha256}", get(quality_benchmark))
+        .route("/v1/eval/snapshots", post(quality_snapshot))
+        .route("/v1/eval/runs", post(quality_run))
+        .route("/v1/eval/reports", get(quality_reports))
+        .route("/v1/eval/reports/{sha256}", get(quality_report))
         .route("/v1/benchmarks", post(benchmarks))
         .route("/v1/evolution", post(evolution))
         .route("/v1/literature", get(literature))
@@ -626,6 +637,97 @@ async fn workflow_benchmark_inspect(
     })
     .await
     .map(Json)
+}
+
+async fn quality_benchmarks(State(app): State<App>) -> ApiResult<Json<Value>> {
+    blocking(move || crate::models::quality::benchmarks(&app.lab))
+        .await
+        .map(Json)
+}
+
+async fn quality_benchmark(
+    State(app): State<App>,
+    Path(sha256): Path<String>,
+) -> ApiResult<Json<Value>> {
+    blocking(move || crate::models::quality::benchmark(&app.lab, &sha256))
+        .await
+        .map(Json)
+}
+
+fn json_rejection(error: axum::extract::rejection::JsonRejection) -> ApiError {
+    if error.status() == StatusCode::PAYLOAD_TOO_LARGE {
+        ApiError(Error::TooLarge)
+    } else {
+        ApiError(Error::Input(
+            "malformed JSON or invalid request schema".into(),
+        ))
+    }
+}
+
+async fn quality_snapshot(
+    State(app): State<App>,
+    body: Result<
+        Json<crate::models::quality::SnapshotRequest>,
+        axum::extract::rejection::JsonRejection,
+    >,
+) -> ApiResult<(StatusCode, Json<Value>)> {
+    let Json(request) = body.map_err(json_rejection)?;
+    let (receipt, created) =
+        blocking(move || crate::models::quality::snapshot(&app.lab, request)).await?;
+    Ok((
+        if created {
+            StatusCode::CREATED
+        } else {
+            StatusCode::OK
+        },
+        Json(receipt),
+    ))
+}
+
+async fn quality_run(
+    State(app): State<App>,
+    body: Result<Json<crate::models::quality::RunRequest>, axum::extract::rejection::JsonRejection>,
+) -> ApiResult<(StatusCode, Json<Value>)> {
+    let Json(request) = body.map_err(json_rejection)?;
+    let (report, created) =
+        blocking(move || crate::models::quality::run(&app.lab, request)).await?;
+    Ok((
+        if created {
+            StatusCode::CREATED
+        } else {
+            StatusCode::OK
+        },
+        Json(report),
+    ))
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct QualityReportPage {
+    limit: Option<usize>,
+    before_sequence: Option<i64>,
+}
+
+async fn quality_reports(
+    State(app): State<App>,
+    query: Result<Query<QualityReportPage>, axum::extract::rejection::QueryRejection>,
+) -> ApiResult<Json<Value>> {
+    let Query(page) =
+        query.map_err(|_| ApiError(Error::Input("invalid report pagination query".into())))?;
+    blocking(move || {
+        crate::models::quality::reports(&app.lab, page.limit.unwrap_or(32), page.before_sequence)
+    })
+    .await
+    .map(Json)
+}
+
+async fn quality_report(
+    State(app): State<App>,
+    Path(sha256): Path<String>,
+) -> ApiResult<Json<Value>> {
+    blocking(move || crate::models::quality::inspect(&app.lab, &sha256))
+        .await
+        .map(Json)
 }
 
 async fn research_archive() -> ApiResult<Json<Value>> {

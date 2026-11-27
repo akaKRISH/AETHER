@@ -2,6 +2,7 @@
 
 pub mod budget;
 pub mod evolution;
+pub mod quality;
 pub mod reliability;
 pub mod scheduler;
 pub mod simulation;

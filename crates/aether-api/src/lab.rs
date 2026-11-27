@@ -10,7 +10,7 @@ use aether_store::{
     Action as StoredAction, ArtifactInput, AttemptCompletion, AttemptOutcome, BudgetUnits,
     Campaign, CampaignState, EvidenceRelation, EvidenceTarget, MetricInput, NewAttempt,
     NewCampaign, NewClaim, NewContradiction, NewEvidence, NewExperiment, NewHypothesis,
-    NewReplication, NewRun, NewVerification, Store, VerificationVerdict,
+    NewReplication, NewRun, NewVerification, Store, StoreError, VerificationVerdict,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -42,6 +42,8 @@ pub enum Error {
     Conflict(String),
     #[error("{0}")]
     Integrity(String),
+    #[error("request body exceeds the API limit")]
+    TooLarge,
     #[error("storage: {0}")]
     Storage(String),
     #[error("scheduling: {0}")]
@@ -233,6 +235,10 @@ impl Lab {
         lab.store()?;
         lab.seed_catalog()?;
         Ok(lab)
+    }
+
+    pub(crate) fn evaluator_executable_sha256(&self) -> &str {
+        &self.evaluator_hash
     }
 
     fn store(&self) -> Result<Store> {
@@ -627,7 +633,14 @@ impl Lab {
         if !valid_digest(hash) {
             return Err(Error::Input("invalid artifact SHA-256".into()));
         }
-        storage(self.store()?.artifact(hash))?.ok_or(Error::Missing)
+        match self.store()?.artifact(hash) {
+            Ok(Some(bytes)) => Ok(bytes),
+            Ok(None) => Err(Error::Missing),
+            Err(StoreError::Integrity(_)) => Err(Error::Integrity(
+                "stored artifact failed its integrity check".into(),
+            )),
+            Err(error) => Err(Error::Storage(error.to_string())),
+        }
     }
 
     pub fn record_discovery(&self, report: &aether_engine::DiscoveryReport) -> Result<String> {

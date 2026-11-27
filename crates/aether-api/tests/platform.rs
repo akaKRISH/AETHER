@@ -825,6 +825,252 @@ impl Drop for Server {
     }
 }
 
+fn start_api(work: &Workspace) -> (Server, String) {
+    let mut server = Server(
+        work.command()
+            .args(["serve", "0"])
+            .env("AETHER_TOKEN", TOKEN)
+            .stderr(Stdio::piped())
+            .stdout(Stdio::null())
+            .spawn()
+            .unwrap(),
+    );
+    let mut output = BufReader::new(server.0.stderr.take().unwrap());
+    let mut line = String::new();
+    output.read_line(&mut line).unwrap();
+    let origin = line
+        .trim()
+        .strip_prefix("AETHER listening on ")
+        .unwrap()
+        .to_owned();
+    (server, origin)
+}
+
+#[test]
+fn apo11_structural_evaluation_is_authenticated_bounded_replayable_and_content_addressed() {
+    let work = Workspace::new();
+    let indexed = work.success(&["hypothesis-index"]);
+    let root = indexed["root"].as_str().unwrap();
+    let graph = work.success(&["graph-export", root, "2"]);
+    let source_statement = graph["graph"]["nodes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|node| node["current"]["statement"].as_str())
+        .find(|statement| !statement.trim().is_empty())
+        .unwrap()
+        .to_owned();
+    let (server, origin) = start_api(&work);
+    let agent = ureq::Agent::new_with_config(
+        ureq::Agent::config_builder()
+            .timeout_global(Some(Duration::from_secs(30)))
+            .http_status_as_error(false)
+            .build(),
+    );
+    let get = |path: &str| {
+        agent
+            .get(format!("{origin}{path}"))
+            .header("Authorization", format!("Bearer {TOKEN}"))
+            .call()
+            .unwrap()
+    };
+    let post = |path: &str, body: Value| {
+        agent
+            .post(format!("{origin}{path}"))
+            .header("Authorization", format!("Bearer {TOKEN}"))
+            .send_json(body)
+            .unwrap()
+    };
+
+    assert_eq!(
+        agent
+            .get(format!("{origin}/v1/eval/benchmarks"))
+            .call()
+            .unwrap()
+            .status()
+            .as_u16(),
+        401
+    );
+    let catalog: Value = get("/v1/eval/benchmarks").body_mut().read_json().unwrap();
+    let benchmark_sha = catalog["benchmarks"][0]["benchmark_sha256"]
+        .as_str()
+        .unwrap();
+    assert_eq!(
+        catalog["benchmarks"][0]["dimensions"]
+            .as_array()
+            .unwrap()
+            .len(),
+        8
+    );
+    let detail: Value = get(&format!("/v1/eval/benchmarks/{benchmark_sha}"))
+        .body_mut()
+        .read_json()
+        .unwrap();
+    assert_eq!(detail["benchmark_sha256"], benchmark_sha);
+
+    let snapshot_request = json!({
+        "schema":"aether.quality-snapshot-request/1",
+        "graph_root_id":root,
+        "graph_depth":2,
+        "subjects":[],
+        "generate_hypotheses":true,
+        "generate_experiment_designs":true
+    });
+    let mut created = post("/v1/eval/snapshots", snapshot_request.clone());
+    assert_eq!(created.status().as_u16(), 201);
+    let receipt: Value = created.body_mut().read_json().unwrap();
+    assert_eq!(receipt["schema"], "aether.quality-snapshot-receipt/1");
+    assert_eq!(receipt["source_text_included"], false);
+    assert_eq!(receipt["source_replay"], "unavailable");
+    let snapshot_sha = receipt["snapshot_sha256"].as_str().unwrap().to_owned();
+    let duplicate_snapshot = post("/v1/eval/snapshots", snapshot_request);
+    assert_eq!(duplicate_snapshot.status().as_u16(), 200);
+    let duplicate_receipt: Value = duplicate_snapshot.into_body().read_json().unwrap();
+    assert_eq!(duplicate_receipt["snapshot_sha256"], snapshot_sha);
+
+    let snapshot_blob = get(&format!("/v1/artifacts/{snapshot_sha}"));
+    assert_eq!(snapshot_blob.status().as_u16(), 200);
+    let mut snapshot_bytes = Vec::new();
+    snapshot_blob
+        .into_body()
+        .into_reader()
+        .read_to_end(&mut snapshot_bytes)
+        .unwrap();
+    assert!(
+        !String::from_utf8(snapshot_bytes.clone())
+            .unwrap()
+            .contains(&source_statement)
+    );
+    let snapshot_value: Value = serde_json::from_slice(&snapshot_bytes).unwrap();
+    assert_eq!(snapshot_value["source_text_included"], false);
+    assert_eq!(
+        snapshot_value["input"]["subjects"]
+            .as_array()
+            .unwrap()
+            .len(),
+        6
+    );
+
+    let run_request = json!({
+        "schema":"aether.quality-run-request/1",
+        "benchmark_sha256":benchmark_sha,
+        "snapshot_sha256":snapshot_sha
+    });
+    let mut response = post("/v1/eval/runs", run_request.clone());
+    assert_eq!(response.status().as_u16(), 201);
+    let first: Value = response.body_mut().read_json().unwrap();
+    assert_eq!(first["report"]["execution_outcome"], "completed");
+    assert_eq!(first["report"]["dimensions"].as_array().unwrap().len(), 8);
+    assert_eq!(first["report"]["semantic_assessment"], "not_evaluated");
+    assert_eq!(
+        first["report"]["independent_scientific_validation"],
+        "not_performed"
+    );
+    let first_digest = first["report_sha256"].as_str().unwrap().to_owned();
+    let report_bytes = get(&format!("/v1/artifacts/{first_digest}"))
+        .body_mut()
+        .read_to_vec()
+        .unwrap();
+    assert_eq!(aether_runner::sha256(&report_bytes), first_digest);
+    let repeat = post("/v1/eval/runs", run_request.clone());
+    assert_eq!(repeat.status().as_u16(), 200);
+    let repeated: Value = repeat.into_body().read_json().unwrap();
+    assert_eq!(first, repeated);
+
+    let second_snapshot_request = json!({"schema":"aether.quality-snapshot-request/1","graph_root_id":root,"graph_depth":1,"subjects":[],"generate_hypotheses":false,"generate_experiment_designs":false});
+    let second_snapshot: Value = post("/v1/eval/snapshots", second_snapshot_request)
+        .into_body()
+        .read_json()
+        .unwrap();
+    let second_run = json!({"schema":"aether.quality-run-request/1","benchmark_sha256":benchmark_sha,"snapshot_sha256":second_snapshot["snapshot_sha256"]});
+    let second_report: Value = post("/v1/eval/runs", second_run)
+        .into_body()
+        .read_json()
+        .unwrap();
+    assert_eq!(second_report["sequence"], 2);
+
+    let bad_request = post(
+        "/v1/eval/snapshots",
+        json!({"schema":"aether.quality-snapshot-request/1","unexpected":true}),
+    );
+    assert_eq!(bad_request.status().as_u16(), 400);
+    let bad_json: Value = bad_request.into_body().read_json().unwrap();
+    assert_eq!(bad_json["code"], "invalid_request");
+    let too_large = agent
+        .post(format!("{origin}/v1/eval/snapshots"))
+        .header("Authorization", format!("Bearer {TOKEN}"))
+        .send_json(json!({"oversized":"x".repeat(9000)}))
+        .unwrap();
+    assert_eq!(too_large.status().as_u16(), 413);
+    assert_eq!(
+        too_large.into_body().read_json::<Value>().unwrap()["code"],
+        "request_too_large"
+    );
+    let bad_page = get("/v1/eval/reports?limit=0");
+    assert_eq!(bad_page.status().as_u16(), 400);
+    assert_eq!(
+        bad_page.into_body().read_json::<Value>().unwrap()["code"],
+        "invalid_request"
+    );
+
+    let page: Value = get("/v1/eval/reports?limit=1")
+        .body_mut()
+        .read_json()
+        .unwrap();
+    assert_eq!(page["reports"][0]["sequence"], 2);
+    assert_eq!(page["truncated"], true);
+    assert_eq!(page["next_before_sequence"], 2);
+    let before: Value = get("/v1/eval/reports?limit=1&before_sequence=2")
+        .body_mut()
+        .read_json()
+        .unwrap();
+    assert_eq!(before["reports"][0]["sequence"], 1);
+    assert_eq!(before["truncated"], false);
+    let db = rusqlite::Connection::open(work.0.join("model-lab.sqlite3")).unwrap();
+    db.execute_batch("VACUUM").unwrap();
+    drop(db);
+    let after_vacuum: Value = get("/v1/eval/reports?limit=1")
+        .body_mut()
+        .read_json()
+        .unwrap();
+    assert_eq!(after_vacuum["reports"][0]["sequence"], 2);
+
+    drop(server);
+    let (server, new_origin) = start_api(&work);
+    let replay: Value = agent
+        .post(format!("{new_origin}/v1/eval/runs"))
+        .header("Authorization", format!("Bearer {TOKEN}"))
+        .send_json(run_request)
+        .unwrap()
+        .body_mut()
+        .read_json()
+        .unwrap();
+    assert_eq!(replay, first);
+
+    let tampered = format!("{}!", serde_json::to_string(&snapshot_value).unwrap());
+    let db = rusqlite::Connection::open(work.0.join("laboratory.sqlite3")).unwrap();
+    // Simulate offline storage corruption in this disposable test database.
+    db.execute_batch("DROP TRIGGER blob_immutable_update")
+        .unwrap();
+    db.execute(
+        "UPDATE blob SET content=?1 WHERE sha256=?2",
+        rusqlite::params![tampered.as_bytes(), snapshot_sha],
+    )
+    .unwrap();
+    drop(db);
+    let tamper_response = agent
+        .post(format!("{new_origin}/v1/eval/runs"))
+        .header("Authorization", format!("Bearer {TOKEN}"))
+        .send_json(json!({"schema":"aether.quality-run-request/1","benchmark_sha256":benchmark_sha,"snapshot_sha256":snapshot_sha}))
+        .unwrap();
+    assert_eq!(tamper_response.status().as_u16(), 409);
+    assert_eq!(
+        tamper_response.into_body().read_json::<Value>().unwrap()["code"],
+        "integrity_failed"
+    );
+    drop(server);
+}
+
 #[test]
 fn experimental_designs_reproduce_and_cannot_enter_campaigns() {
     let work = Workspace::new();
