@@ -1,0 +1,23 @@
+{
+  "schema": "aether.quality-benchmark-detail/1",
+  "benchmark_sha256": "dc3c508b31fe9b652596c62f5a26f7ed33c3ca07290137a8831bdcd9df633b45",
+  "benchmark": {
+    "schema": "aether.quality-benchmark/1",
+    "id": "aether-research-quality-structural",
+    "version": "1.0.0",
+    "scope": "structural_checks_only",
+    "evaluator_version": "aether-structural-evaluator/1.0.0",
+    "dimension_rules": [
+      {"dimension":"literature_scope_inventory_integrity","rule_id":"literature_inventory_present","version":"1","title":"Literature inventory exists","scope":"Checks for a nonempty, untruncated paper inventory.","cannot_establish":"Literature coverage, relevance, source quality, or truth.","empty_collection_policy":"fail_required"},
+      {"dimension":"claim_source_locator_integrity","rule_id":"claim_source_locators_resolve","version":"1","title":"Claim locators resolve structurally","scope":"Checks typed evidence links and source locator fields.","cannot_establish":"Semantic entailment or whether the passage supports a claim.","empty_collection_policy":"unavailable_optional"},
+      {"dimension":"evidence_provenance_field_integrity","rule_id":"evidence_provenance_fields_present","version":"1","title":"Evidence provenance fields are present","scope":"Checks typed origin, source identity state, and epistemic state fields.","cannot_establish":"Real-world source identity or epistemic correctness.","empty_collection_policy":"unavailable_optional"},
+      {"dimension":"counterevidence_edge_integrity","rule_id":"counterevidence_edges_preserve_relation","version":"1","title":"Counterevidence edges preserve polarity","scope":"Checks explicit contradiction edges and endpoint references.","cannot_establish":"Whether the contradiction is substantively valid.","empty_collection_policy":"unavailable_optional"},
+      {"dimension":"hypothesis_structure_completeness","rule_id":"hypothesis_required_fields_present","version":"1","title":"Hypothesis fields are complete","scope":"Checks nonempty structural fields and required list presence.","cannot_establish":"Novelty, plausibility, or truth.","empty_collection_policy":"fail_required"},
+      {"dimension":"experiment_design_arithmetic_integrity","rule_id":"experiment_design_budget_arithmetic","version":"1","title":"Experiment design and budget arithmetic are complete","scope":"Checks declared controls, analysis fields, and checked budget sums.","cannot_establish":"Power, feasibility, fairness, or scientific validity.","empty_collection_policy":"fail_required"},
+      {"dimension":"uncertainty_field_wellformedness","rule_id":"uncertainty_fields_explicit_and_bounded","version":"1","title":"Uncertainty fields are explicit and bounded","scope":"Checks declared uncertainty grades and explicit epistemic status.","cannot_establish":"Calibration or whether uncertainty is justified.","empty_collection_policy":"fail_required"},
+      {"dimension":"artifact_snapshot_replay_integrity","rule_id":"snapshot_and_source_replay_integrity","version":"1","title":"Snapshot identity and replay state are explicit","scope":"Checks digest-bound snapshot identity and reports unavailable source replay.","cannot_establish":"Reproducibility of unavailable source documents or scientific findings.","empty_collection_policy":"fail_required"}
+    ],
+    "limits": {"request_bytes":8192,"graph_depth":3,"graph_nodes":64,"graph_edges":192,"subjects":8,"artifact_bytes":2097152,"snapshot_bytes":4194304,"report_bytes":1048576,"report_list_bytes":262144,"page_size":32},
+    "excluded_metrics": ["semantic_entailment", "source_relevance", "scientific_novelty", "uncertainty_calibration", "scientific_truth", "independent_validation"]
+  }
+}

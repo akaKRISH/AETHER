@@ -4,6 +4,8 @@
 
 APO-10 evaluates the APO-09/08 workflow contract on nine controlled fixtures and seven adversarial cases. Both fresh-process replays matched report and receipt digests. Its archived report separates system correctness from unavailable scientific-quality metrics; evidence remains unverified and no discovery claim is made. [Checkpoint and limits](RESUME.md#apo-10-end-to-end-research-workflow-evaluation)
 
+APO-11A is implemented and locally validated: an authenticated, bounded structural evaluation API over immutable graph/artifact snapshots, eight version-pinned rules, content-addressed reports, and stable report pagination. Structural failure is a completed evaluation outcome; scientific validation remains `not_performed`, source replay is unavailable when source text is not retained, and the scores must not guide generator optimization. Validation details and open limits are in [the implementation checkpoint](RESUME.md#apo-11-structural-evaluation-backend).
+
 APO-01 adds versioned provider metadata and a local passage archive to the Research OS. Exact byte spans remain source quotations with unverified status. [Scope and limits](RESUME.md#apo-01-scientific-literature-intelligence)
 
 APO-02 adds a persistent SQLite graph with immutable research revisions, typed links and source groups for exploration. Captured campaign receipts retain their original authority boundary. PDF ingestion and live provider qualification are pending. [Graph scope](RESUME.md#apo-02-persistent-scientific-knowledge-graph)
