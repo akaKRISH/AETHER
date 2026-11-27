@@ -39,10 +39,9 @@
 ---
 
 > [!IMPORTANT]
-> **Implemented vs. Open Integration vs. Deferred Scope:**
-> - **Implemented on `main`:** Core deterministic Rust workspace (`aether-core`, `aether-engine`, `aether-store`, `aether-runner`, `aether-cli`, `aether-api`), literature archive & byte-span knowledge graph (`APO-01`–`04`), local model & dev dataset labs (`APO-05`/`06B`), declarative skills & DAG workflows (`APO-07`–`10`), local Research OS SPA (`web/`), and the **APO-11 structural evaluation backend** (merged via [PR #2](https://github.com/akaKRISH/AETHER/pull/2)).
-> - **Open in Review ([PR #1](https://github.com/akaKRISH/AETHER/pull/1), `work/apo11-antigravity`):** The 4-area Research Quality Evaluation frontend workspace consuming `/v1/eval/*` (passing CI; not yet merged to `main`).
-> - **Deferred / Not Implemented:** Live adapter training (`APO-06C–F`), automated multi-agent runtime daemons, human-review write endpoints, and independent held-out scientific validation (`not_performed`). No public hosted demo exists; AETHER runs locally on loopback `127.0.0.1`.
+> **Implemented vs. Deferred Scope:**
+> - **Implemented on `main`:** Core deterministic Rust workspace (`aether-core`, `aether-engine`, `aether-store`, `aether-runner`, `aether-cli`, `aether-api`), literature archive & byte-span knowledge graph (`APO-01`–`04`), local model & dev dataset labs (`APO-05`/`06B`), declarative skills & DAG workflows (`APO-07`–`10`), local Research OS SPA (`web/`), **APO-11 structural evaluation backend ([PR #2](https://github.com/akaKRISH/AETHER/pull/2))**, and the **4-area Research Quality Evaluation workspace ([PR #1](https://github.com/akaKRISH/AETHER/pull/1))**.
+> - **Deferred / Not Implemented:** Live adapter training (`APO-06C–F`), automated multi-agent runtime daemons, human-review write endpoints (`not_evaluated`), and independent held-out scientific validation (`not_performed`). No public hosted demo exists; AETHER runs locally on loopback `127.0.0.1`.
 
 ---
 
@@ -74,7 +73,7 @@ What AETHER executes and verifies today on `main` versus what remains open in re
 | **Local Models & Datasets** | Local GGUF/SafeTensors inspection, Ollama loopback gate (`APO-05`), group-disjoint dev dataset splits (`APO-06B`) | `independent_test: external_custody_required`; LoRA/QLoRA live training (`APO-06C–F`) blocked/deferred |
 | **Skills & Workflows** | Versioned inert skills (`APO-07`), closed Rust operation allowlist (`APO-09`), sequential DAGs (`APO-08`), 9+7 fixture eval (`APO-10`) | Zero shell, Python, or network execution in skills; cooperative cancellation only |
 | **Research OS Web UI** | React 19 + TypeScript SPA over loopback bearer-token Axum API & SSE (`web/`, `DAE-08`) | Binds strictly to `127.0.0.1`; constant-time auth; 8 KiB body cap |
-| **APO-11 Evaluation** | **Backend merged on `main` ([PR #2](https://github.com/akaKRISH/AETHER/pull/2)):** Draft 2020-12 contract, 8 structural rules, `/v1/eval/*` API | **Frontend in open [PR #1](https://github.com/akaKRISH/AETHER/pull/1);** checks structure/arithmetic only; `independent_scientific_validation: not_performed` |
+| **APO-11 Evaluation** | **Backend & UI merged on `main` ([PR #2](https://github.com/akaKRISH/AETHER/pull/2), [PR #1](https://github.com/akaKRISH/AETHER/pull/1)):** Draft 2020-12 contract, 8 structural rules, `/v1/eval/*` API, and 4-area Research Quality Evaluation UI | Structural completeness & arithmetic checks only; `human_review: not_evaluated`; `independent_scientific_validation: not_performed` |
 
 ---
 
@@ -177,7 +176,7 @@ flowchart LR
 ```
 
 <details>
-<summary><strong>Milestone progression and key CLI journeys (Phase 0 through APO-11A)</strong></summary>
+<summary><strong>Milestone progression and key CLI journeys (Phase 0 through APO-11)</strong></summary>
 
 | Milestone | Status on `main` | Key Verified Deliverable |
 |---|---|---|
@@ -187,8 +186,7 @@ flowchart LR
 | **APO-01 – APO-04** | Complete | Provider fixture parsing, transactional knowledge graph, DAE-04 hypothesis ranking, 3 unapproved experiment design drafts |
 | **APO-05 – APO-06A/B** | Complete for dev/proposals | Local GGUF/SafeTensors hashing, synthetic LoRA/QLoRA rehearsal, 26-row dev dataset manifest (`0c52ab...`) |
 | **APO-07 / 09 / 08 / 10** | Complete | Declarative skills, closed native operation kernel, sequential workflow DAGs, 2-process contract benchmark ([report](research/results/apo-10-workflow-contract-evaluation.json)) |
-| **APO-11A Backend** | Merged on `main` ([PR #2](https://github.com/akaKRISH/AETHER/pull/2)) | Draft 2020-12 contract (`contracts/apo11/`), 8 fixed structural dimensions, snapshots & paginated `/v1/eval/*` reports |
-| **APO-11B Frontend** | Open [PR #1](https://github.com/akaKRISH/AETHER/pull/1) | 4-area Research Quality Evaluation workspace on `work/apo11-antigravity` (CI passing; unmerged) |
+| **APO-11A / 11B Evaluation** | Merged on `main` ([PR #2](https://github.com/akaKRISH/AETHER/pull/2), [PR #1](https://github.com/akaKRISH/AETHER/pull/1)) | Draft 2020-12 contract (`contracts/apo11/`), 8 fixed structural dimensions, snapshots, paginated `/v1/eval/*` reports, and 4-area Research Quality Evaluation workspace |
 
 </details>
 
@@ -229,8 +227,8 @@ flowchart TB
     Owner["Project Owner\nScope, Architecture & Merge Authority"] --> SharedLedger["Shared Coordination Ledger\ndocs/agent-handoff/AGENT_SHARED.md"]
 
     SharedLedger --> CodexWT["work/apo11-codex (Merged PR #2)\nBackend Evaluator · Schema · /v1/eval API"]
-    SharedLedger --> AgWT["work/apo11-antigravity (Open PR #1)\nFrontend 4-Area Workspace · Browser QA"]
-    SharedLedger --> DocWT["docs/readme-experience (This PR)\nREADME · Banner SVG · UI Screenshots"]
+    SharedLedger --> AgWT["work/apo11-antigravity (Merged PR #1)\nFrontend 4-Area Workspace · Browser QA"]
+    SharedLedger --> DocWT["docs/readme-experience (Merged PR #3)\nREADME · Banner SVG · UI Screenshots"]
 
     CodexWT --> ReviewGate["Cross-Agent Contract Audit &\nHuman Approval Gate"]
     AgWT --> ReviewGate
@@ -245,13 +243,13 @@ flowchart TB
 ## APO-11 Structural Evaluation
 
 > [!NOTE]
-> **Integration Status:** The APO-11 structural evaluation backend is **merged on `main`** via [PR #2](https://github.com/akaKRISH/AETHER/pull/2) ([spec & limits](docs/research/APO11_STRUCTURAL_EVALUATION.md), [canonical schema](contracts/apo11/quality-evaluation.schema.json)). Its companion 4-area Research Quality Evaluation React workspace lives in **open [PR #1](https://github.com/akaKRISH/AETHER/pull/1)** (`work/apo11-antigravity`, CI green) and is pending merge.
+> **Integration Status:** Both the APO-11 structural evaluation backend ([PR #2](https://github.com/akaKRISH/AETHER/pull/2) — [spec & limits](docs/research/APO11_STRUCTURAL_EVALUATION.md), [canonical schema](contracts/apo11/quality-evaluation.schema.json)) and the 4-area Research Quality Evaluation React workspace ([PR #1](https://github.com/akaKRISH/AETHER/pull/1)) are **merged on `main`**.
 
 Instead of grading mutable database state, APO-11 enforces a two-step content-addressed evaluation flow:
 
 ```mermaid
 flowchart LR
-    Client["Authorized API Client /\nPR #1 4-Area UI (In Review)"] -->|"1. GET /v1/eval/benchmarks"| Bench["Pinned Benchmark Spec\nDraft 2020-12 Schema +\n8 Versioned Rule IDs"]
+    Client["Authorized 4-Area Quality UI\n(Merged on main)"] -->|"1. GET /v1/eval/benchmarks"| Bench["Pinned Benchmark Spec\nDraft 2020-12 Schema +\n8 Versioned Rule IDs"]
     Client -->|"2. POST /v1/eval/snapshots\ngraph_root_id + SubjectRef pointers"| Snap["Immutable Snapshot Projection\nSource Text Redacted · Graph Digest\nVerified Before & After"]
     Snap -->|"3. POST /v1/eval/runs\nbenchmark_sha256 + snapshot_sha256"| Engine["Pure Engine Evaluator\ncrates/aether-engine/src/quality.rs\nexecution_outcome: completed"]
     Engine -->|"4. Raw Report SHA-256 +\nAUTOINCREMENT Sequence Index"| Reports["GET /v1/eval/reports\nCursor Pagination (before_sequence)\n& GET /v1/eval/reports/{sha256}"]
@@ -284,7 +282,7 @@ flowchart LR
 
 ## Screenshots
 
-Captured directly from a local release build of the current `main` branch (`aether-lab serve` + built `web/dist`) using Playwright and non-sensitive development fixtures (`evidence-demo`, `DAE-04`, built-in declarative skill registry). **No public hosted demo exists; screenshots reflect the local loopback Research OS.**
+Captured directly from a local release build of `main` (`aether-lab serve` + built `web/dist`) using Playwright and non-sensitive development fixtures (`evidence-demo`, `DAE-04`, declarative skill registry, and APO-11 snapshot evaluation). **No public hosted demo exists; screenshots reflect the local loopback Research OS.**
 
 <table width="100%">
   <tr>
@@ -296,31 +294,38 @@ Captured directly from a local release build of the current `main` branch (`aeth
       <sub><strong>Evidence Explorer &amp; Claim Dependency Graph (Desktop):</strong> Interactive SVG claim DAG showing <code>SUPPORTS</code> / <code>REPRODUCES</code> links converging on a <code>VERIFIED</code> claim and inspector sidebar.</sub>
     </td>
     <td width="50%" valign="top">
+      <a href="docs/assets/screenshots/aether-apo11-quality.png">
+        <img src="docs/assets/screenshots/aether-apo11-quality.png" width="100%" alt="AETHER Quality Evaluation workspace displaying Structural completeness, not scientific truth., three verification layers, and newest-first run history">
+      </a>
+      <br>
+      <sub><strong>APO-11 Quality Evaluation Workspace (Desktop):</strong> Explicit 3-layer separation across automated structural checks, disabled human semantic review (<code>NOT_EVALUATED</code>), and external scientific validation (<code>NOT_PERFORMED</code>).</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
       <a href="docs/assets/screenshots/aether-knowledge-discovery.png">
         <img src="docs/assets/screenshots/aether-knowledge-discovery.png" width="100%" alt="AETHER Knowledge Graph searching DAE-04 matched hybrid search entities with SHA-256 source metadata inspector">
       </a>
       <br>
       <sub><strong>Knowledge Graph Explorer (Desktop):</strong> Pinned search over the <code>DAE-04 matched</code> slice inspecting exact SHA-256 node identity, statement schema, and archive pointer.</sub>
     </td>
-  </tr>
-  <tr>
-    <td width="64%" valign="top">
+    <td width="50%" valign="top">
       <a href="docs/assets/screenshots/aether-intelligence-observatory.png">
         <img src="docs/assets/screenshots/aether-intelligence-observatory.png" width="100%" alt="AETHER Intelligence Observatory showing Inference is advisory. Verification decides. heading and local model evaluation fixtures">
       </a>
       <br>
       <sub><strong>Intelligence Observatory (Desktop):</strong> Advisory inference framing (<em>"Inference is advisory. Verification decides."</em>) paired with local regression fixture comparisons.</sub>
     </td>
-    <td width="36%" valign="top">
-      <p align="center">
-        <a href="docs/assets/screenshots/aether-mission-mobile.png">
-          <img src="docs/assets/screenshots/aether-mission-mobile.png" width="215" alt="AETHER Mission Control responsive mobile layout at 390x844 viewport with completed campaign badge">
-        </a>
-      </p>
-      <sub><strong>Mobile Command View (390×844):</strong> Responsive navigation and campaign header verified with zero horizontal overflow.</sub>
-    </td>
   </tr>
 </table>
+
+<p align="center">
+  <a href="docs/assets/screenshots/aether-mission-mobile.png">
+    <img src="docs/assets/screenshots/aether-mission-mobile.png" width="250" alt="AETHER Mission Control responsive mobile layout at 390x844 viewport with completed campaign badge">
+  </a>
+  <br>
+  <sub><strong>Mobile Command View (390×844):</strong> Responsive navigation and campaign header verified with zero horizontal overflow.</sub>
+</p>
 
 ---
 
@@ -455,10 +460,9 @@ Development progresses strictly by verified milestones and explicit owner decisi
 
 | Horizon | Track / Item | Current State |
 |---|---|---|
-| **Completed on `main`** | Core crates (`aether-core`..`aether-api`), Prometheus/Athena, `APO-01`–`10`, `APO-11A` backend ([PR #2](https://github.com/akaKRISH/AETHER/pull/2)) | Verified across Rust workspace CI (`ubuntu-latest` + `windows-latest`), schema/doc validators, and contract suites |
-| **Active / Open PR** | `APO-11B` Research Quality Evaluation frontend workspace ([PR #1](https://github.com/akaKRISH/AETHER/pull/1)) | Passing CI on `work/apo11-antigravity`; awaiting final merge to `main` |
+| **Completed on `main`** | Core crates (`aether-core`..`aether-api`), Prometheus/Athena, `APO-01`–`10`, `APO-11A` backend ([PR #2](https://github.com/akaKRISH/AETHER/pull/2)) & `APO-11B` frontend workspace ([PR #1](https://github.com/akaKRISH/AETHER/pull/1)) | Verified across Rust workspace CI (`ubuntu-latest` + `windows-latest`), frontend lint/typecheck/tests/build, schema/doc validators, and contract suites |
 | **Deferred / Blocked** | Live adapter training (`APO-06C–F`), paired ECAR held-out study (`ATH-02B`) | Resource-blocked behind qualified hardware, independent test-set custody, and pre-registered review |
-| **Proposed / Future** | Reviewer-identity write APIs, PDF full-text conversion & live provider qualification, R2/R3 SDK | Requires separate threat review, license adoption, and explicit owner authorization |
+| **Proposed / Future** | Reviewer-identity write APIs, PDF full-text conversion & live provider qualification, R2/R3 SDK, OSS license & release gate | Requires separate threat review, license adoption, and explicit owner authorization |
 
 ---
 

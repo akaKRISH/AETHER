@@ -110,10 +110,6 @@ AETHER/
 - [RESUME.md](../RESUME.md)
 - [SECURITY.md](../SECURITY.md)
 
-### .github
-
-- [README.md](../.github/README.md)
-
 ### .github/workflows
 
 - [ci.yml](../.github/workflows/ci.yml)
