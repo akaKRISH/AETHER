@@ -1,3 +1,14 @@
+import type {
+  CanonicalBenchmarkCatalog,
+  CanonicalBenchmarkDetail,
+  CanonicalReportEnvelope,
+  CanonicalReportList,
+  CanonicalRunRequest,
+  CanonicalSnapshotDocument,
+  CanonicalSnapshotReceipt,
+  CanonicalSnapshotRequest,
+} from './qualityModels'
+
 export type Row = Record<string, unknown>
 
 export interface Units extends Row {
@@ -101,10 +112,12 @@ export interface ResearchArchive extends Row {
 
 export class ApiError extends Error {
   readonly status: number
+  readonly code?: string
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, code?: string) {
     super(message)
     this.status = status
+    this.code = code
   }
 }
 
@@ -141,7 +154,8 @@ async function request(token: string, path: string, options?: RequestInit) {
     const text = isRow(detail)
       ? [detail.message, detail.error].find((value) => typeof value === 'string')
       : null
-    throw new ApiError(response.status, text || `API request failed (HTTP ${response.status}).`)
+    const code = isRow(detail) && typeof detail.code === 'string' ? detail.code : undefined
+    throw new ApiError(response.status, text || `API request failed (HTTP ${response.status}).`, code)
   }
   return response
 }
@@ -418,4 +432,153 @@ export async function getResearchArtifact(token: string, id: string): Promise<Ar
   const digest = await contentDigest(bytes)
   if (response.headers.get('x-content-sha256') !== digest) throw new Error('Research artifact integrity check failed.')
   return bytes
+}
+
+function isDigest(value: unknown): value is string {
+  return typeof value === 'string' && /^[0-9a-f]{64}$/.test(value)
+}
+
+export async function getEvalBenchmarks(token: string, signal?: AbortSignal): Promise<CanonicalBenchmarkCatalog> {
+  const value = await json(token, '/eval/benchmarks', { signal })
+  if (!isRow(value) || value.schema !== 'aether.quality-benchmarks/1' || !Array.isArray(value.benchmarks)) {
+    throw new Error('Invalid structural evaluation benchmark catalog.')
+  }
+  return value as unknown as CanonicalBenchmarkCatalog
+}
+
+export async function getEvalBenchmark(
+  token: string,
+  sha256: string,
+  signal?: AbortSignal,
+): Promise<CanonicalBenchmarkDetail> {
+  if (!isDigest(sha256)) throw new Error('Invalid benchmark SHA-256 digest.')
+  const value = await json(token, `/eval/benchmarks/${encodeURIComponent(sha256)}`, { signal })
+  if (
+    !isRow(value) ||
+    value.schema !== 'aether.quality-benchmark-detail/1' ||
+    value.benchmark_sha256 !== sha256 ||
+    !isRow(value.benchmark) ||
+    value.benchmark.schema !== 'aether.quality-benchmark/1' ||
+    !Array.isArray(value.benchmark.dimension_rules) ||
+    value.benchmark.dimension_rules.length !== 8
+  ) {
+    throw new Error('Invalid structural evaluation benchmark detail.')
+  }
+  return value as unknown as CanonicalBenchmarkDetail
+}
+
+export async function createEvalSnapshot(
+  token: string,
+  body: CanonicalSnapshotRequest,
+): Promise<CanonicalSnapshotReceipt> {
+  const value = await json(token, '/eval/snapshots', { method: 'POST', body: JSON.stringify(body) })
+  if (
+    !isRow(value) ||
+    value.schema !== 'aether.quality-snapshot-receipt/1' ||
+    !isDigest(value.snapshot_sha256) ||
+    !isDigest(value.graph_root_id) ||
+    !isDigest(value.graph_sha256) ||
+    value.source_text_included !== false
+  ) {
+    throw new Error('Invalid structural evaluation snapshot receipt.')
+  }
+  return value as unknown as CanonicalSnapshotReceipt
+}
+
+export async function runEvalQuality(token: string, body: CanonicalRunRequest): Promise<CanonicalReportEnvelope> {
+  const value = await json(token, '/eval/runs', { method: 'POST', body: JSON.stringify(body) })
+  if (
+    !isRow(value) ||
+    value.schema !== 'aether.quality-report-envelope/1' ||
+    !isDigest(value.report_sha256) ||
+    typeof value.sequence !== 'number' ||
+    !isRow(value.report) ||
+    value.report.schema !== 'aether.quality-report/1' ||
+    !Array.isArray(value.report.dimensions) ||
+    value.report.dimensions.length !== 8 ||
+    value.report.independent_scientific_validation !== 'not_performed'
+  ) {
+    throw new Error('Invalid structural evaluation report envelope.')
+  }
+  return value as unknown as CanonicalReportEnvelope
+}
+
+export async function listEvalReports(
+  token: string,
+  limit = 32,
+  beforeSequence?: number,
+  signal?: AbortSignal,
+): Promise<CanonicalReportList> {
+  const safeLimit = Math.min(32, Math.max(1, Math.floor(limit) || 32))
+  const params = new URLSearchParams({ limit: String(safeLimit) })
+  if (beforeSequence !== undefined) {
+    if (!Number.isSafeInteger(beforeSequence) || beforeSequence < 1) {
+      throw new Error('Invalid before_sequence pagination cursor.')
+    }
+    params.set('before_sequence', String(beforeSequence))
+  }
+  const value = await json(token, `/eval/reports?${params}`, { signal })
+  if (!isRow(value) || value.schema !== 'aether.quality-reports/1' || !Array.isArray(value.reports)) {
+    throw new Error('Invalid structural evaluation report listing.')
+  }
+  return value as unknown as CanonicalReportList
+}
+
+export async function getEvalReport(
+  token: string,
+  sha256: string,
+  signal?: AbortSignal,
+): Promise<CanonicalReportEnvelope> {
+  if (!isDigest(sha256)) throw new Error('Invalid evaluation report SHA-256 digest.')
+  const value = await json(token, `/eval/reports/${encodeURIComponent(sha256)}`, { signal })
+  if (
+    !isRow(value) ||
+    value.schema !== 'aether.quality-report-envelope/1' ||
+    value.report_sha256 !== sha256 ||
+    !isRow(value.report) ||
+    value.report.schema !== 'aether.quality-report/1' ||
+    !Array.isArray(value.report.dimensions) ||
+    value.report.dimensions.length !== 8 ||
+    value.report.independent_scientific_validation !== 'not_performed'
+  ) {
+    throw new Error('Invalid structural evaluation report envelope.')
+  }
+  return value as unknown as CanonicalReportEnvelope
+}
+
+export async function getEvalArtifactBytes(
+  token: string,
+  sha256: string,
+  signal?: AbortSignal,
+): Promise<Uint8Array> {
+  if (!isDigest(sha256)) throw new Error('Invalid artifact SHA-256 digest.')
+  const bytes = await (await request(token, `/artifacts/${encodeURIComponent(sha256)}`, { signal })).arrayBuffer()
+  return new Uint8Array(bytes)
+}
+
+export async function getEvalSnapshotDocument(
+  token: string,
+  snapshotSha256: string,
+  signal?: AbortSignal,
+): Promise<CanonicalSnapshotDocument> {
+  if (!isDigest(snapshotSha256)) throw new Error('Invalid snapshot SHA-256 digest.')
+  const bytes = await (
+    await request(token, `/artifacts/${encodeURIComponent(snapshotSha256)}`, { signal })
+  ).arrayBuffer()
+  if ((await contentDigest(bytes)) !== snapshotSha256) {
+    throw new Error('Evaluation snapshot artifact integrity check failed.')
+  }
+  const value: unknown = JSON.parse(new TextDecoder().decode(bytes))
+  if (
+    !isRow(value) ||
+    value.schema !== 'aether.quality-snapshot/1' ||
+    value.source_text_included !== false ||
+    !isRow(value.input) ||
+    !Array.isArray(value.input.nodes) ||
+    !Array.isArray(value.input.edges) ||
+    !Array.isArray(value.input.subjects)
+  ) {
+    throw new Error('Invalid structural evaluation snapshot document.')
+  }
+  return value as unknown as CanonicalSnapshotDocument
 }

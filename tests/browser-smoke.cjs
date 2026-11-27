@@ -8,7 +8,7 @@ const { randomBytes } = require('node:crypto')
 const root = resolve(__dirname, '..')
 const playwright = process.env.AETHER_PLAYWRIGHT_PATH || join(root, 'web', 'node_modules', 'playwright')
 const { chromium } = require(playwright)
-const executable = join(root, 'target', 'release', process.platform === 'win32' ? 'aether-lab.exe' : 'aether-lab')
+const executable = process.env.AETHER_EXECUTABLE || join(root, 'target', 'release', process.platform === 'win32' ? 'aether-lab.exe' : 'aether-lab')
 
 function address(server) {
   return new Promise((resolveAddress, reject) => {
@@ -256,6 +256,48 @@ async function main() {
     await desktop.getByRole('button', { name: 'Security Centre', exact: true }).click()
     await desktop.getByRole('heading', { name: 'Boundaries are part of the result.' }).waitFor()
     await desktop.getByText(/does not deny filesystem access or network egress/).waitFor()
+    await desktop.getByRole('button', { name: 'Quality Evaluation', exact: true }).click()
+    await desktop.getByRole('heading', { name: 'Structural completeness, not scientific truth.' }).waitFor()
+    assert.equal(await desktop.getByRole('tab').count(), 4)
+    assert.equal(await desktop.getByRole('tab', { name: /Human Review/i }).count(), 0)
+    await desktop.getByText(/Human review: Not started/).first().waitFor()
+    await desktop.getByText(/Independent scientific validation: Not performed/).first().waitFor()
+    const evalBenchmarksProbe = await fetch(origin + '/v1/eval/benchmarks', {
+      headers: { Authorization: 'Bearer ' + token },
+    })
+    if (process.env.AETHER_REQUIRE_APO11_BACKEND === '1') {
+      assert.equal(evalBenchmarksProbe.status, 200)
+    }
+    if (evalBenchmarksProbe.status === 200) {
+      await desktop.getByRole('table', { name: 'Available benchmark specifications' })
+        .getByText('aether-research-quality-structural').waitFor()
+      await desktop.getByLabel('Find knowledge graph root').fill('DAE-04 matched')
+      await desktop.getByRole('button', { name: 'Search graph roots' }).click()
+      await desktop.getByRole('button', { name: 'DAE-04 matched hybrid search (8 evaluations)' }).click()
+      await desktop.getByLabel('Generate APO-03 hypothesis proposals from root (requires depth = 2)').check()
+      await desktop.getByLabel('Generate APO-04 experiment designs from root (requires depth = 2)').check()
+      await desktop.getByRole('button', { name: 'Capture snapshot' }).click()
+      await desktop.getByText(/Immutable snapshot captured/).waitFor()
+      await desktop.getByRole('button', { name: 'Run evaluation against snapshot' }).click()
+      await desktop.getByRole('heading', { name: /Eight structural dimensions/ }).waitFor()
+      assert.equal(await desktop.locator('.eval-dimension-card').count(), 8)
+      await desktop.getByText('Structural pass').first().waitFor()
+      await desktop.locator('.eval-dimension-card').getByText('Unavailable', { exact: true }).first().waitFor()
+      await desktop.getByRole('tab', { name: 'Dimension & Evidence Diagnostics' }).click()
+      await desktop.getByRole('table', { name: 'Dimension structural checks' }).waitFor()
+      await desktop.getByRole('tab', { name: 'Integrity, Snapshot & Audit' }).click()
+      await desktop.getByRole('button', { name: 'Verify raw artifact bytes (Web Crypto)' }).click()
+      await desktop.getByText(/Exact raw-byte SHA-256 verified/).waitFor()
+      assert.equal(await desktop.getByRole('button', { name: 'Download verified report JSON' }).isEnabled(), true)
+    } else {
+      await desktop.getByRole('tab', { name: 'Runs & Report Overview' }).click()
+      await desktop.getByRole('heading', { name: /Eight structural dimensions/ }).waitFor()
+      assert.equal(await desktop.locator('.eval-dimension-card').count(), 8)
+      await desktop.getByRole('tab', { name: 'Dimension & Evidence Diagnostics' }).click()
+      await desktop.getByText(/Supporting evidence relationships/).waitFor()
+      await desktop.getByRole('tab', { name: 'Integrity, Snapshot & Audit' }).click()
+      await desktop.getByRole('heading', { name: /Raw-byte Web Crypto digest verification/ }).waitFor()
+    }
 
     await desktop.getByRole('button', { name: 'Overview', exact: true }).click()
     await desktop.getByRole('button', { name: 'New campaign', exact: true }).click()
@@ -313,6 +355,12 @@ async function main() {
     await phone.getByRole('table', { name: 'Saved model evaluations' })
       .getByRole('button', { name: 'Read report' }).first().click()
     await phone.getByRole('table', { name: 'Model evaluation cases' }).waitFor()
+    assert.equal(await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true)
+    await phone.getByRole('button', { name: 'Quality Evaluation', exact: true }).click()
+    await phone.getByRole('heading', { name: 'Structural completeness, not scientific truth.' }).waitFor()
+    assert.equal(await phone.getByRole('tab').count(), 4)
+    assert.equal(await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true)
+    await phone.getByRole('tab', { name: 'Runs & Report Overview' }).click()
     assert.equal(await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true)
     if (process.env.AETHER_SCREENSHOT_DIR) {
       await phone.screenshot({ path: join(process.env.AETHER_SCREENSHOT_DIR, 'aether-mobile.png'), fullPage: true })
