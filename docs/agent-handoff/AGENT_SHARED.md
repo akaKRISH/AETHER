@@ -4,8 +4,8 @@
 > **Designated Maintainer:** Google Antigravity (Gemini)  
 > **Final Authority:** Project Owner  
 > **Canonical Repository Path:** `C:\Users\2k25c\PROJECTS\AETHER\docs\agent-handoff\AGENT_SHARED.md`  
-> **Last Updated:** 2026-11-27T11:58:00+05:30  
-> **Active Base Commit:** `d6e61bdc477fbff3ee2c5f737b4759a30fb81503` (APO-10)
+> **Last Updated:** 2026-11-27T12:11:00+05:30  
+> **Active Base Commit:** `943ee72cce9dcaa0a0a06e76f75a7b4c229248f2` (SETUP-01 Checkpoint; APO-10 base `d6e61bdc477fbff3ee2c5f737b4759a30fb81503`)
 
 ---
 
@@ -23,7 +23,7 @@ AETHER is a Rust-first **Personal Intelligence OS** and **Scientific Discovery P
 ### 1.2 Current Repository State (Independently Inspected)
 - **Local Repository Root (EXISTING):** `C:\Users\2k25c\PROJECTS\AETHER` (Canonical Integration Workspace)
 - **Active Branch (EXISTING):** `main` (inspected 2026-11-27 via `git branch --list`)
-- **Verified HEAD Commit (EXISTING):** `d6e61bdc477fbff3ee2c5f737b4759a30fb81503` (APO-10 baseline)
+- **Verified HEAD Commit (EXISTING):** `943ee72cce9dcaa0a0a06e76f75a7b4c229248f2` (SETUP-01 Checkpoint; APO-10 base `d6e61bdc477fbff3ee2c5f737b4759a30fb81503`)
 - **Git Worktree Inventory (Actual State):**
   - `C:/Users/2k25c/PROJECTS/AETHER` — **EXISTING** (main working tree on branch `main`)
   - `C:/Users/2k25c/.local/share/kilo/worktree-pool/aether-1e8a3a9c6b47/inexpensive-petroleum` — **EXISTING** (detached background worktree at `d6e61bdc477fbff3ee2c5f737b4759a30fb81503`)
@@ -82,7 +82,7 @@ Allowed Task Statuses: `PROPOSED`, `READY`, `IN_PROGRESS`, `BLOCKED`, `IN_REVIEW
 | **HIST-APO09** | Bounded Skill Execution Kernel, Reviewed Rust Operations, Capability Checks and Content-Addressed Execution Receipts | UNKNOWN — NOT YET VERIFIED (Committed by akaKRISH) | `COMPLETED` *(Reported)* | High | `main` | `crates/aether-api`, `web/`, `tests/`, `docs/decisions/ADR-022.md`, `RESUME.md` | APO-07 (`b400904`) | ADR-022 (Kernel Checks) | UNKNOWN — NOT YET VERIFIED (local_operator self-receipt) | Start: UNKNOWN / Last: 2026-11-26T19:10:11+05:30 | Bounded skill execution kernel & receipts | `ef4f5bfcba83c9e801c3e757da830278680809a5` (checkpoint pin; code in `6c507e5b271c6baebf9558bcc00282f190ce942e`) |
 | **HIST-APO08** | Deterministic Research Workflow Orchestrator, Content-Addressed Workflow DAGs, Sequential Execution and Replayable Receipts | UNKNOWN — NOT YET VERIFIED (Committed by akaKRISH) | `COMPLETED` *(Reported)* | High | `main` | `crates/aether-api`, `web/`, `tests/`, `docs/decisions/ADR-023.md` | APO-09 checkpoint (`ef4f5bf`) | ADR-023 (Workflow DAG Schemas) | UNKNOWN — NOT YET VERIFIED (local_operator self-receipt) | Start: UNKNOWN / Last: 2026-11-26T22:00:40+05:30 | Deterministic workflow orchestrator & DAG engine | `d20d0a755ded1cbcd2f19389620bc8b995399b54` |
 | **HIST-APO10** | End-to-End Research Workflow Contract Evaluation | UNKNOWN — NOT YET VERIFIED (Committed by akaKRISH) | `COMPLETED` *(Reported)* | High | `main` | `crates/aether-api`, `crates/aether-store`, `web/`, `tests/`, `research/results/` | APO-08 (`d20d0a7`) | aether-workflow-contract v1.0.0 | UNKNOWN — NOT YET VERIFIED (local_operator self-receipt) | Start: UNKNOWN / Last: 2026-11-27T10:12:58+05:30 | End-to-end workflow contract evaluation report | `d6e61bdc477fbff3ee2c5f737b4759a30fb81503` |
-| **SETUP-01** | Multi-Agent Collaboration Infrastructure Setup | Antigravity | `IN_PROGRESS` | High | `main` (doc only) | `docs/agent-handoff/` | None | File ownership & journal contract | Project Owner | 2026-11-27T11:02 / 2026-11-27T11:15 | Handoff directory, copied docs, verified hashes, 4 coordination files | Pending |
+| **SETUP-01** | Multi-Agent Collaboration Infrastructure Setup | Antigravity | `COMPLETED` | High | `main` | `docs/agent-handoff/`, root handoff files | None | File ownership & journal contract | Project Owner | 2026-11-27T11:02 / 2026-11-27T12:10 | Handoff directory, copied docs, verified hashes, 4 coordination files | `943ee72cce9dcaa0a0a06e76f75a7b4c229248f2` |
 | **APO11-PROP** | Independent Research Quality Evaluation (Proposal) | Claude (Proto) / Codex (Core) / Antigravity (UI) | `PROPOSED` | High | TBD (separate worktrees upon approval) | TBD | SETUP-01 completion & Owner approval | Evaluation Protocol v1 (unapproved) | Project Owner + Claude | 2026-11-27T11:15 (Proposed) | Protocol design, Rust evaluator, persistence, Research OS inspection UI | None *(Not Started)* |
 
 ---
@@ -121,6 +121,7 @@ All meaningful cross-agent events are recorded chronologically. Detailed progres
 - **[2026-11-27T11:42:00+05:30] LOG-CORR-005 (Antigravity):** TASK 01.1 correction: updated historical milestone descriptions in Global Task Board to authoritative text and established implementation sequence as APO-07 → APO-09 → APO-08 → APO-10. Preserved all prior log entries. Historical records remain reported history and not independently verified.
 - **[2026-11-27T11:49:00+05:30] LOG-AUDIT-006 (Antigravity):** TASK 01.2 integrity audit: independently inspected Git commit history for APO-07, APO-09, APO-08, and APO-10. Verified commit existence, commit messages, and changed file lists. Corrected owned paths from hypothetical crates to verified modified paths (primarily `crates/aether-api/`, `web/`, `tests/`, `docs/decisions/`). Marked unverified historical primary owner, external reviewer, and start times as `UNKNOWN — NOT YET VERIFIED` per policy. Preserved handoff file hashes.
 - **[2026-11-27T11:58:00+05:30] LOG-WT-007 (Antigravity):** TASK 01.3 worktree and branch readiness audit: executed `git worktree list --porcelain` and `git branch --list`. Confirmed only `main` branch exists. Verified proposed worktrees `..\AETHER-apo11-codex` and `..\AETHER-apo11-antigravity` do not exist on disk (PLANNED / NOT CREATED). Reconciled planned branch naming to `work/apo11-codex` and `work/apo11-antigravity`. Documented that separate worktrees do not automatically synchronize Markdown files.
+- **[2026-11-27T12:10:54+05:30] LOG-CMT-008 (Antigravity):** TASK 01.4 checkpoint commit created on `main`: `943ee72cce9dcaa0a0a06e76f75a7b4c229248f2` ("docs: add AETHER multi-agent handoff and coordination system"). Staged exactly 8 permitted documentation files; confirmed 0 source files modified; verified clean working tree.
 
 ---
 
